@@ -1,0 +1,1 @@
+g++ -o testReadTemp testRead.cc -I./EDepSimEvents/ ./EDepSimEvents/EDepSimEvents.so -I$EIGEN_INC  -L${LOG4CPP_LIB} -I${GENIE_INC}/GENIE -I$GENIE_INC -Wl,--start-group `genie-config --libs` -Wl,--end-group  `root-config --glibs --cflags --evelibs` -lxml2 -llog4cpp -L$PYTHIA6_LIBRARY-lPythia6 -lGenVector -lEGPythia6
