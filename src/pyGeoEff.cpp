@@ -7,5 +7,5 @@ PYBIND11_MODULE(pyGeoEff, m) {
     m.doc() = "DUNE ND Geometric efficiency python module";
     
     py::class_<geoEff>(m, "geoEff")
-      .def(py::init<>());
+      .def(py::init<int, bool>(), py::arg("seed"), py::arg("verbose")=false);
 }

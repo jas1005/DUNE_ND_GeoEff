@@ -1,4 +1,3 @@
-include_directories(${geoEff_SOURCE_DIR}/include)
 add_library(geoEff SHARED geoEff.cpp)
 
 pybind11_add_module(pyGeoEff pyGeoEff.cpp)

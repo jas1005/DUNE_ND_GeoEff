@@ -5,6 +5,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${geoEff_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${geoEff_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${geoEff_SOURCE_DIR}/bin)
 
+include_directories($ENV{EIGEN_INC} ${geoEff_SOURCE_DIR}/include)
+
 add_subdirectory(pybind11)
 add_subdirectory(src)
 add_subdirectory(app)
