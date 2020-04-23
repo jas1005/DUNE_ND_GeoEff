@@ -18,7 +18,7 @@ class geoEff
   // Vector to store positions of hit segments 
   std::vector<float> hitSegPoss;
   
-  // Range of coordinates to randomize over. Set negative for no randomization
+  // Range of coordinates to randomize over. Set negative for no randomization.
   float range[3][2];
 
   // Active volume:
@@ -29,6 +29,12 @@ class geoEff
   
   // Beam direction:
   float beamdir[3];
+  
+  // Decay position used to calculate neutrino direction.
+  float decaypos[3];
+
+  // Flag to determine whether to use fixed beam direction (appropriate for FD) or calculate direction from vertex position and decay point.
+  bool useFixedBeamDir;
   
   // Number of throws. Should be a multiple of 64 to optimize output efficiency
   unsigned long N_THROWS;
@@ -75,6 +81,8 @@ class geoEff
   void setOffsetZ(float z);
   
   void setBeamDir(float xdir, float ydir, float zdir);
+  void setDecayPos(float x, float y, float z);
+  void setUseFixedBeamDir(bool use);
 
   void setVetoSizes(std::vector< float > vSizes);
   void setVetoEnergyThresholds(std::vector< float > vThresholds);
