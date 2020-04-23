@@ -57,7 +57,7 @@ void geoEff::setNthrows(unsigned long n){
     std::cout << "geoEff set number of throws to " << N_THROWS << std::endl;
   }
 
-  if (N_THROWS%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output file size."  << std::endl;
+  if (N_THROWS%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
 }
 
 void geoEff::setVertex(float x, float y, float z){
@@ -232,7 +232,7 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
     for (int i = 0; i < vetoSize.size(); i++){
       for (int j = 0; j < vetoEnergy.size(); j++){
         // Check containment and set bit
-        if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j][t/64] += 1<<(t%64);
+        if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j][t/64] += ((uint64_t)1)<<(t%64);
       }
     }
   }
