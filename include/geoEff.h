@@ -30,8 +30,8 @@ class geoEff
   // Beam direction:
   float beamdir[3];
   
-  // Hard-coded to optimize output size (N_THROWS matches hadThrowResult's uint32_t)
-  const unsigned long N_THROWS = sizeof(uint32_t)*8;
+  // Number of throws. Should be a multiple of 64 to optimize output efficiency
+  unsigned long N_THROWS;
 
   // Veto size. Each element defines a veto region in cm from the end of the active volume in all directions.
   std::vector < float > vetoSize;
@@ -56,6 +56,8 @@ class geoEff
   geoEff(int seed, bool verbose = false);
   ~geoEff(){;}
 
+  void setNthrows(unsigned long n);
+  
   void setVertex(float x, float y, float z);
   void setHitSegEdeps(std::vector<float> thishitSegEdeps);
   void setHitSegPoss(std::vector<float> thishitSegPoss);
@@ -85,7 +87,7 @@ class geoEff
   std::vector< float > getCurrentThrowRotations();
 
   // Pass/fail for each set of vetoSize and vetoEnergy
-  std::vector< std::vector< uint32_t > > getHadronContainment();
+  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainment();
 
   void setSeed(int seed);
   

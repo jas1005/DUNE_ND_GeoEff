@@ -18,6 +18,11 @@ geoEff::geoEff(int seed, bool verbose){
   if (verbosity) {
     std::cout << "geoEff set seed to " << seed << std::endl;
   }
+
+  N_THROWS = 64*64;
+  if (verbosity){
+    std::cout << "Number of throws set to " << N_THROWS << std::endl;
+  }
   
   prnGenerator = std::mt19937_64(seed);
   if (verbosity) {
@@ -46,10 +51,22 @@ geoEff::geoEff(int seed, bool verbose){
 
 }
 
+void geoEff::setNthrows(unsigned long n){
+  N_THROWS = n;
+  if (verbosity){
+    std::cout << "geoEff set number of throws to " << N_THROWS << std::endl;
+  }
+
+  if (N_THROWS%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output file size."  << std::endl;
+}
+
 void geoEff::setVertex(float x, float y, float z){
   vertex[0] = x;
   vertex[1] = y;
   vertex[2] = z;
+  if(verbosity){
+    std::cout << "geoEff set vertex to " << vertex[0] << " "<< vertex[1] << " "<< vertex[2] << std::endl;
+  }
 }
 
 void geoEff::setHitSegEdeps(std::vector<float> thishitSegEdeps){
@@ -108,9 +125,19 @@ void geoEff::setBeamDir(float xdir, float ydir, float zdir){
 
 void geoEff::setVetoSizes(std::vector< float > vSizes){
   vetoSize = vSizes;
+  if(verbosity){
+    std::cout << "geoEff set veto sizes to ";
+    for (int i = 0; i < vetoSize.size(); i++) std::cout << vetoSize[i] << " ";
+  }
+  std::cout << std::endl;
 }
 void geoEff::setVetoEnergyThresholds(std::vector< float > vThresholds){
   vetoEnergy = vThresholds;
+  if(verbosity){
+    std::cout << "geoEff set veto energy thresholds to ";
+    for (int i = 0; i < vetoEnergy.size(); i++) std::cout << vetoEnergy[i] << " ";
+  }
+  std::cout << std::endl;
 }
 
 void geoEff::throwTransforms(){
@@ -174,10 +201,15 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
 
-std::vector< std::vector< uint32_t > > geoEff::getHadronContainment(){
-  // Pass/fail for each set of vetoSize and vetoEnergy
-  std::vector< std::vector< uint32_t > > hadronContainment(vetoSize.size(), std::vector< uint32_t >(vetoEnergy.size(), 0));
+std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainment(){
 
+  // Figure out how many multiples of 64 bits needed to store output
+  int n_longs = N_THROWS / 64;
+  if (N_THROWS % 64) n_longs++;
+  
+  // Pass/fail for each set of vetoSize and vetoEnergy 
+  std::vector< std::vector< std::vector< uint64_t > > > hadronContainment(vetoSize.size(), std::vector< std::vector< uint64_t > >(vetoEnergy.size(), std::vector < uint64_t >(n_longs, 0)));
+  
   // Set the Eigen map
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
   
@@ -200,7 +232,7 @@ std::vector< std::vector< uint32_t > > geoEff::getHadronContainment(){
     for (int i = 0; i < vetoSize.size(); i++){
       for (int j = 0; j < vetoEnergy.size(); j++){
         // Check containment and set bit
-        if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j] += 1<<t;
+        if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j][t/64] += 1<<(t%64);
       }
     }
   }
