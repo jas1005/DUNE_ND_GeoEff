@@ -9,4 +9,4 @@ export PYTHONPATH=${PYTHONPATH}:${PWD}/lib/
 
 # Optional
 setup root v6_12_06a -q e15:prof
-setup geant4 v4_10_3_p01b -q e15:prof
+#setup geant4 v4_10_3_p01b -q e15:prof
