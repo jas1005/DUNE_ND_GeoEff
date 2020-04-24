@@ -252,7 +252,7 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
 
-std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainment(){
+std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(){
 
   // Figure out how many multiples of 64 bits needed to store output
   int n_longs = N_THROWS / 64;
@@ -266,9 +266,10 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   
   // Check if event is contained by any of the existing conditions
   int origContained = 0;
+  std::vector< std::vector< bool > > vecOrigContained = getHadronContainmentOrigin();
   for (int i = 0; i < vetoSize.size(); i++){
     for (int j = 0; j < vetoEnergy.size(); j++){
-      if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) origContained++;
+      if (vecOrigContained[i][j]) origContained++;
     }
   }
   
@@ -295,6 +296,22 @@ void geoEff::setSeed(int seed){
   prnGenerator = std::mt19937_64(seed);
 }
 
+std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
+  // Initialize return vector
+  std::vector< std::vector< bool > > hadronContainment(vetoSize.size(), std::vector< bool >(vetoEnergy.size(), false));
+
+  // Set Eigen Map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
+  
+  for (int i = 0; i < vetoSize.size(); i++){
+    for (int j = 0; j < vetoEnergy.size(); j++){
+      if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j] = true;
+    }
+  }
+
+  return hadronContainment;
+}
+
 bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold ){
 
   float vetoEnergy = 0.;
@@ -318,3 +335,4 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
 
   return vetoEnergy < vetoEnergyThreshold;
 }
+

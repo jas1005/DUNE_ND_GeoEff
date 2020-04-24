@@ -95,8 +95,11 @@ class geoEff
   std::vector< float > getCurrentThrowRotations();
 
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
-  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainment();
+  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows();
 
+  // Get pass/fail containment criterion for original event
+  std::vector< std::vector< bool > > getHadronContainmentOrigin();
+  
   void setSeed(int seed);
   
 };

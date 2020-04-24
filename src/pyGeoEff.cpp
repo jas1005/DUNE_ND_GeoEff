@@ -24,6 +24,8 @@ PYBIND11_MODULE(pyGeoEff, m) {
       .def("setOffsetY", &geoEff::setOffsetY)
       .def("setOffsetZ", &geoEff::setOffsetZ)
       .def("setBeamDir", &geoEff::setBeamDir)
+      .def("setDecayPos", &geoEff::setDecayPos)
+      .def("setUseFixedBeamDir", &geoEff::setUseFixedBeamDir)
       .def("setVetoSizes", &geoEff::setVetoSizes)
       .def("setVetoEnergyThresholds", &geoEff::setVetoEnergyThresholds)
       .def("throwTransforms", &geoEff::throwTransforms)
@@ -31,6 +33,7 @@ PYBIND11_MODULE(pyGeoEff, m) {
       .def("getCurrentThrowTranslationsY", &geoEff::getCurrentThrowTranslationsY)
       .def("getCurrentThrowTranslationsZ", &geoEff::getCurrentThrowTranslationsZ)
       .def("getCurrentThrowRotations", &geoEff::getCurrentThrowRotations)
-      .def("getHadronContainment", &geoEff::getHadronContainment)
+      .def("getHadronContainmentThrows", &geoEff::getHadronContainmentThrows)
+      .def("getHadronContainmentThrowsOrigin", &geoEff::getHadronContainmentOrigin)
       .def("setSeed", &geoEff::setSeed);
 }
