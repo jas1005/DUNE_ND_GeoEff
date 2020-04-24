@@ -16,8 +16,6 @@ if ( ${ROOT_FOUND} AND ${Geant4_FOUND} )
   include_directories(${ROOT_INCLUDE_DIRS} ${Geant4_INCLUDE_DIRS})
   add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
 
-  # Why is this necessary?
-  link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
   target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES} ${Geant4_LIBRARIES})
 else ()
   Message("Couldn't find either ROOT or Geant4. Skipping runGeoEffEDepSimBeamDir app. Library will still compile.")
