@@ -50,6 +50,9 @@ geoEff::geoEff(int seed, bool verbose){
   }
 
   useFixedBeamDir = false;    
+
+  // Initialize to all dimensions randomized
+  for (int dim = 0; dim < 3; dim++) randomizeVertex[dim] = true;
 }
 
 void geoEff::setNthrows(unsigned long n){
@@ -91,6 +94,18 @@ void geoEff::setRangeY(float ymin, float ymax){
 void geoEff::setRangeZ(float zmin, float zmax){
   range[2][0] = zmin;
   range[2][1] = zmax;
+}
+
+void geoEff::setRandomizeX(bool r){
+  randomizeVertex[0] = r;
+}
+
+void geoEff::setRandomizeY(bool r){
+  randomizeVertex[1] = r;
+}
+
+void geoEff::setRandomizeZ(bool r){
+  randomizeVertex[2] = r;
 }
 
 void geoEff::setActiveX(float xmin, float xmax){
@@ -161,12 +176,12 @@ void geoEff::throwTransforms(){
   transforms.clear();
 
   for (int dim = 0; dim < 3; dim++){
-    if ((range[dim][0] < 0) or (range[dim][1] < 0)){
+    if (not randomizeVertex[dim]){
       translations[dim].resize(N_THROWS, vertex[dim]);
     } else {
       translations[dim].clear();
       for (int i = 0; i < N_THROWS; i++){
-        translations[dim].emplace_back(uniform(prnGenerator)*(range[dim][1]-range[dim][0])+range[dim][0]+ offset[dim]);
+        translations[dim].emplace_back(uniform(prnGenerator)*(range[dim][1]-range[dim][0])+range[dim][0]+offset[dim]);
       }
     }
   }
@@ -252,6 +267,35 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
 
+std::vector< float > geoEff::getCurrentThrowDeps(int i, int dim){
+  
+  // Set the Eigen map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
+
+  Eigen::Matrix3Xf transformedEdeps = transforms[i] * hitSegPosOrig;
+  
+  int nEdeps = hitSegEdeps.size();
+
+  std::vector< float > ret(nEdeps);
+  
+  for (int iDep = 0; iDep < nEdeps; iDep++){
+    ret[iDep] = transformedEdeps(dim, iDep);
+  }
+
+  return ret;
+}
+
+std::vector< float > geoEff::getCurrentThrowDepsX(int i){
+  return getCurrentThrowDeps(i, 0);
+}
+std::vector< float > geoEff::getCurrentThrowDepsY(int i){
+  return getCurrentThrowDeps(i, 1);
+}
+std::vector< float > geoEff::getCurrentThrowDepsZ(int i){
+  return getCurrentThrowDeps(i, 2);
+}
+
+
 std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(){
 
   // Figure out how many multiples of 64 bits needed to store output
@@ -284,7 +328,9 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
     for (int i = 0; i < vetoSize.size(); i++){
       for (int j = 0; j < vetoEnergy.size(); j++){
         // Check containment and set bit
-        if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j][t/64] += ((uint64_t)1)<<(t%64);
+        if (isContained(transformedEdeps, hitSegEdeps, vetoSize[i], vetoEnergy[i])) {
+	  hadronContainment[i][j][t/64] |= ((uint64_t)1)<<(t%64);
+	}
       }
     }
   }

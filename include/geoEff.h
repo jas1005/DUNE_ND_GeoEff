@@ -21,6 +21,9 @@ class geoEff
   // Range of coordinates to randomize over. Set negative for no randomization.
   float range[3][2];
 
+  // If false, use vertex for this dimension in every throw: do not randomize
+  bool randomizeVertex[3];
+
   // Active volume:
   float active[3][2];
 
@@ -72,6 +75,10 @@ class geoEff
   void setRangeY(float ymin, float ymax);
   void setRangeZ(float zmin, float zmax);
 
+  void setRandomizeX(bool r);
+  void setRandomizeY(bool r);
+  void setRandomizeZ(bool r);
+
   void setActiveX(float xmin, float xmax);
   void setActiveY(float ymin, float ymax);
   void setActiveZ(float zmin, float zmax);
@@ -94,6 +101,10 @@ class geoEff
   std::vector< float > getCurrentThrowTranslationsZ();
   std::vector< float > getCurrentThrowRotations();
 
+  std::vector< float > getCurrentThrowDeps(int i, int dim);
+  std::vector< float > getCurrentThrowDepsX(int i);
+  std::vector< float > getCurrentThrowDepsY(int i);
+  std::vector< float > getCurrentThrowDepsZ(int i);
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
   std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows();
 
