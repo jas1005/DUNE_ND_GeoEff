@@ -8,7 +8,7 @@ if ( ${ROOT_FOUND} )
   # Use example EDepSim file to produce libraries and header files
   add_custom_command(OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
   COMMAND root -b -q ${EDEPSIM_ROOT_FILE} ${EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT}
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/EDepSimEvents/EDepSimEvents.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/EDepSimEvents/EDepSimEvents.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
   DEPENDS ${EDEPSIM_ROOT_FILE} ${EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT}
   )
 
