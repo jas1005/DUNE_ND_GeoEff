@@ -9,6 +9,7 @@ if ( ${ROOT_FOUND} )
   add_custom_command(OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
   COMMAND root -b -q ${EDEPSIM_ROOT_FILE} ${EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT}
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/EDepSimEvents/EDepSimEvents.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/EDepSimEvents/*.h ${CMAKE_SOURCE_DIR}/include/
   DEPENDS ${EDEPSIM_ROOT_FILE} ${EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT}
   )
 
@@ -18,8 +19,6 @@ if ( ${ROOT_FOUND} )
   set_property(TARGET EDepSimEvents PROPERTY IMPORTED_LOCATION  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so)
   add_dependencies(EDepSimEvents compile_EDepSimEvents)
 
-  file(GLOB EDEPSIMHEADERS ${CMAKE_CURRENT_SOURCE_DIR}/EDepSimEvents/*.h)
-  file(COPY ${EDEPSIMHEADERS} DESTINATION ${CMAKE_SOURCE_DIR}/include)
   
   include_directories(${ROOT_INCLUDE_DIRS})	
   add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
