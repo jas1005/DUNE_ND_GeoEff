@@ -153,7 +153,7 @@ void geoEff::setVetoSizes(std::vector< float > vSizes){
   vetoSize = vSizes;
   if(verbosity){
     std::cout << "geoEff set veto sizes to ";
-    for (int i = 0; i < vetoSize.size(); i++) std::cout << vetoSize[i] << " ";
+    for (unsigned int i = 0; i < vetoSize.size(); i++) std::cout << vetoSize[i] << " ";
   }
   std::cout << std::endl;
 }
@@ -161,7 +161,7 @@ void geoEff::setVetoEnergyThresholds(std::vector< float > vThresholds){
   vetoEnergy = vThresholds;
   if(verbosity){
     std::cout << "geoEff set veto energy thresholds to ";
-    for (int i = 0; i < vetoEnergy.size(); i++) std::cout << vetoEnergy[i] << " ";
+    for (unsigned int i = 0; i < vetoEnergy.size(); i++) std::cout << vetoEnergy[i] << " ";
   }
   std::cout << std::endl;
 }
@@ -180,14 +180,14 @@ void geoEff::throwTransforms(){
       translations[dim].resize(N_THROWS, vertex[dim]);
     } else {
       translations[dim].clear();
-      for (int i = 0; i < N_THROWS; i++){
+      for (unsigned int i = 0; i < N_THROWS; i++){
         translations[dim].emplace_back(uniform(prnGenerator)*(range[dim][1]-range[dim][0])+range[dim][0]+offset[dim]);
       }
     }
   }
 
   rotations.clear();
-  for (int i = 0; i < N_THROWS; i++){
+  for (unsigned int i = 0; i < N_THROWS; i++){
     rotations.emplace_back((uniform(prnGenerator)-0.5)*2*M_PI);
   }
 
@@ -199,7 +199,7 @@ void geoEff::throwTransforms(){
 
   // Store Eigen transforms
   transforms.clear();
-  for (int i = 0; i < N_THROWS; i++){
+  for (unsigned int i = 0; i < N_THROWS; i++){
     // Vertex displacement:
     Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(translations[0][i]-vertex[0],
                                                                 translations[1][i]-vertex[1],
@@ -311,8 +311,8 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   // Check if event is contained by any of the existing conditions
   int origContained = 0;
   std::vector< std::vector< bool > > vecOrigContained = getHadronContainmentOrigin();
-  for (int i = 0; i < vetoSize.size(); i++){
-    for (int j = 0; j < vetoEnergy.size(); j++){
+  for (unsigned int i = 0; i < vetoSize.size(); i++){
+    for (unsigned int j = 0; j < vetoEnergy.size(); j++){
       if (vecOrigContained[i][j]) origContained++;
     }
   }
@@ -321,12 +321,12 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   if (origContained == 0) return hadronContainment;
 
   // Else, loop through set of rotation translations
-  for (int t = 0; t < N_THROWS; t++){
+  for (unsigned int t = 0; t < N_THROWS; t++){
     // Apply transformation to energy deposit positions
     Eigen::Matrix3Xf transformedEdeps = transforms[t] * hitSegPosOrig;
     // Loop through conditions
-    for (int i = 0; i < vetoSize.size(); i++){
-      for (int j = 0; j < vetoEnergy.size(); j++){
+    for (unsigned int i = 0; i < vetoSize.size(); i++){
+      for (unsigned int j = 0; j < vetoEnergy.size(); j++){
         // Check containment and set bit
         if (isContained(transformedEdeps, hitSegEdeps, vetoSize[i], vetoEnergy[i])) {
 	  hadronContainment[i][j][t/64] |= ((uint64_t)1)<<(t%64);
@@ -349,8 +349,8 @@ std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
   // Set Eigen Map
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
   
-  for (int i = 0; i < vetoSize.size(); i++){
-    for (int j = 0; j < vetoEnergy.size(); j++){
+  for (unsigned int i = 0; i < vetoSize.size(); i++){
+    for (unsigned int j = 0; j < vetoEnergy.size(); j++){
       if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j] = true;
     }
   }
@@ -362,7 +362,7 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
 
   float vetoEnergy = 0.;
 
-  for (int i = 0; i < energyDeposits.size(); i++){
+  for (unsigned int i = 0; i < energyDeposits.size(); i++){
     for (int dim = 0; dim < 3; dim++){
       // low
       if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
