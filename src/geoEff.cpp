@@ -218,7 +218,7 @@ void geoEff::throwTransforms(){
       float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
       for (int dim = 0; dim < 3; dim++) {
         decayToVertex[dim] = vertex[dim]-decaypos[dim];
-        decayToTranslated[dim] = vertex[dim]-translations[dim][i];
+        decayToTranslated[dim] = translations[dim][i]-decaypos[dim];
         
         translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
         magDecayToVertex += pow(decayToVertex[dim], 2);
@@ -238,7 +238,7 @@ void geoEff::throwTransforms(){
       float magTranslationAxis = 0.;
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
-      for (int dim = 0; dim < 3; dim++) translationAxis[0] /= magTranslationAxis;
+      for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
         
       Eigen::Affine3f rTranslation(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
