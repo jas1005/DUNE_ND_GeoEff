@@ -6,16 +6,16 @@ if ( ${ROOT_FOUND} )
    set(EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/makeEDepSimProject.C)
 
   # Use example EDepSim file to produce libraries and header files
-  add_custom_command(OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/EDepSimEvents.so
+  add_custom_command(OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
   COMMAND root -b -q ${EDEPSIM_ROOT_FILE} ${EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT}
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/EDepSimEvents/EDepSimEvents.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/EDepSimEvents/EDepSimEvents.so ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
   DEPENDS ${EDEPSIM_ROOT_FILE} ${EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT}
   )
 
-  add_custom_target(compile_EDepSimEvents DEPENDS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/EDepSimEvents.so)
+  add_custom_target(compile_EDepSimEvents DEPENDS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so)
 
   add_library(EDepSimEvents SHARED IMPORTED)
-  set_property(TARGET EDepSimEvents PROPERTY IMPORTED_LOCATION  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/EDepSimEvents.so)
+  set_property(TARGET EDepSimEvents PROPERTY IMPORTED_LOCATION  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so)
   add_dependencies(EDepSimEvents compile_EDepSimEvents)
 
   file(GLOB EDEPSIMHEADERS ${CMAKE_SOURCE_DIR}/EDepSimEvents/*.h)
