@@ -51,9 +51,6 @@ class geoEff
   std::vector< float > translations[3];
   std::vector< float > rotations;
 
-  // Corresponding vector of Eigen transforms
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms;
-
   bool verbosity;
 
   std::mt19937_64 prnGenerator;
@@ -61,6 +58,9 @@ class geoEff
 
   bool isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold );
   
+  // Calculate transforms for current vertex
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
+
  public:
   geoEff(int seed, bool verbose = false);
   ~geoEff(){;}

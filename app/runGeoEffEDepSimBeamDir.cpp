@@ -247,7 +247,7 @@ int main(int argc, char** argv){
       unsigned long throwInFVSelected = 0;
       unsigned long throwSelected = 0;
 
-      for (int iThrow = 0; iThrow < throwVtxX.size(); iThrow++){
+      for (unsigned int iThrow = 0; iThrow < throwVtxX.size(); iThrow++){
 
 
         float thisThrowVtx[] = {throwVtxX[iThrow], throwVtxY[iThrow], throwVtxZ[iThrow]};
