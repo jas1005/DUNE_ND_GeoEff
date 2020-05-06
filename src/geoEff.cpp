@@ -75,12 +75,23 @@ void geoEff::setVertex(float x, float y, float z){
 
 void geoEff::setHitSegEdeps(std::vector<float> thishitSegEdeps){
   hitSegEdeps = thishitSegEdeps;
+  if (verbosity) {
+    std::cout << "geoEff setting hit segment energy deposits to ";
+    for (int i = 0; i < hitSegEdeps.size(); i++) std::cout << hitSegEdeps[i] << " ";
+    std::cout << std::endl;
+  }
 }
 
 void geoEff::setHitSegPoss(std::vector<float> thishitSegPoss){
 
   // Set the vector
   hitSegPoss = thishitSegPoss;
+  if (verbosity) {
+    std::cout << "geoEff setting hit segment positions to ";
+    for (int i = 0; i < hitSegPoss.size(); i++) std::cout << hitSegPoss[i] << " ";
+    std::cout << std::endl;
+  }
+
 }
 
 void geoEff::setRangeX(float xmin, float xmax){
@@ -176,7 +187,7 @@ void geoEff::throwTransforms(){
 
   for (int dim = 0; dim < 3; dim++){
     if (not randomizeVertex[dim]){
-      translations[dim].resize(N_THROWS, vertex[dim]);
+      translations[dim].resize(0, 0);
     } else {
       translations[dim].clear();
       for (unsigned int i = 0; i < N_THROWS; i++){
@@ -211,9 +222,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   
   for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
     // Vertex displacement:
-    Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(translations[0][iThrow]-vertex[0],
-                                                                translations[1][iThrow]-vertex[1],
-                                                                translations[2][iThrow]-vertex[2])));
+    Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertex[0] ? translations[0][iThrow]-vertex[0] : vertex[0],
+								randomizeVertex[1] ? translations[1][iThrow]-vertex[1] : vertex[1],
+								randomizeVertex[2] ? translations[2][iThrow]-vertex[2] : vertex[2])));
 
     // Rotation
     Eigen::Affine3f rThrow;
