@@ -222,9 +222,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   
   for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
     // Vertex displacement:
-    Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertex[0] ? translations[0][iThrow]-vertex[0] : vertex[0],
-								randomizeVertex[1] ? translations[1][iThrow]-vertex[1] : vertex[1],
-								randomizeVertex[2] ? translations[2][iThrow]-vertex[2] : vertex[2])));
+    Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertex[0] ? translations[0][iThrow]-vertex[0] : 0.,
+								randomizeVertex[1] ? translations[1][iThrow]-vertex[1] : 0.,
+								randomizeVertex[2] ? translations[2][iThrow]-vertex[2] : 0.)));
 
     // Rotation
     Eigen::Affine3f rThrow;
@@ -352,7 +352,7 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
     for (unsigned int i = 0; i < vetoSize.size(); i++){
       for (unsigned int j = 0; j < vetoEnergy.size(); j++){
         // Check containment and set bit
-        if (isContained(transformedEdeps, hitSegEdeps, vetoSize[i], vetoEnergy[i])) {
+        if (isContained(transformedEdeps, hitSegEdeps, vetoSize[i], vetoEnergy[j])) {
 	  hadronContainment[i][j][t/64] |= ((uint64_t)1)<<(t%64);
 	}
       }
@@ -375,7 +375,7 @@ std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
   
   for (unsigned int i = 0; i < vetoSize.size(); i++){
     for (unsigned int j = 0; j < vetoEnergy.size(); j++){
-      if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[i])) hadronContainment[i][j] = true;
+      if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[j])) hadronContainment[i][j] = true;
     }
   }
 
