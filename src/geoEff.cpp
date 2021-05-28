@@ -77,7 +77,7 @@ void geoEff::setHitSegEdeps(std::vector<float> thishitSegEdeps){
   hitSegEdeps = thishitSegEdeps;
   if (verbosity) {
     std::cout << "geoEff setting hit segment energy deposits to ";
-    for (int i = 0; i < hitSegEdeps.size(); i++) std::cout << hitSegEdeps[i] << " ";
+    for (unsigned int i = 0; i < hitSegEdeps.size(); i++) std::cout << hitSegEdeps[i] << " ";
     std::cout << std::endl;
   }
 }
@@ -88,7 +88,7 @@ void geoEff::setHitSegPoss(std::vector<float> thishitSegPoss){
   hitSegPoss = thishitSegPoss;
   if (verbosity) {
     std::cout << "geoEff setting hit segment positions to ";
-    for (int i = 0; i < hitSegPoss.size(); i++) std::cout << hitSegPoss[i] << " ";
+    for (unsigned int i = 0; i < hitSegPoss.size(); i++) std::cout << hitSegPoss[i] << " ";
     std::cout << std::endl;
   }
 
