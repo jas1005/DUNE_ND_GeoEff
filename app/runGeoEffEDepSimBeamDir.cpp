@@ -289,7 +289,7 @@ int main(int argc, char** argv){
 	    evDisplaysZY[iDraw] = new TH2F((histname+"_ZY").c_str(), "; z [cm]; y [cm]", 200, -250., 750., 200, -500., 500.);
 	    evDisplaysXYZ[iDraw] = new TH3F((histname+"_XYZ").c_str(), "; x [cm]; y [cm]; z [cm]", 200, -500., 500., 200, -500., 500., 200, -250., 750.);
 	    
-	    for (int iDep = 0; iDep < hitSegEdeps.size(); iDep++){
+	    for (unsigned int iDep = 0; iDep < hitSegEdeps.size(); iDep++){
 	      evDisplaysXY[iDraw]->Fill(throwDepsX[iDep] - offset[0], throwDepsY[iDep] - offset[1], hitSegEdeps[iDep]);
 	      evDisplaysZY[iDraw]->Fill(throwDepsZ[iDep] - offset[2], throwDepsY[iDep] - offset[1], hitSegEdeps[iDep]);
 	      evDisplaysXYZ[iDraw]->Fill(throwDepsX[iDep] - offset[0], throwDepsY[iDep] - offset[1], throwDepsZ[iDep] - offset[2], hitSegEdeps[iDep]);
