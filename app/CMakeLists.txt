@@ -19,14 +19,16 @@ if ( ${ROOT_FOUND} )
   set_property(TARGET EDepSimEvents PROPERTY IMPORTED_LOCATION  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so)
   add_dependencies(EDepSimEvents compile_EDepSimEvents)
 
-  
-  include_directories(${ROOT_INCLUDE_DIRS})	
-  add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
 
-  target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})	
+  include_directories(${ROOT_INCLUDE_DIRS})
+  add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
+  add_executable(runGeoEffFDEvtSim runGeoEffFDEvtSim.cpp)
+
+  target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})
+  target_link_libraries(runGeoEffFDEvtSim geoEff ${ROOT_LIBRARIES})
 
 else ()
 
-  Message("Couldn't find either ROOT. Skipping runGeoEffEDepSimBeamDir app. Library will still compile."
+  Message("Couldn't find either ROOT. Skipping app. Library will still compile."
 )
 endif()
