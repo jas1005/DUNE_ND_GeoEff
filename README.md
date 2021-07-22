@@ -12,9 +12,14 @@ cmake -DPYTHON_EXECUTABLE:FILEPATH=`which python` .
 make -j geoEff                                                                                     # Build geoEff (can also use: make -j pyGeoEff)
 ```
 
-To (re)compile and (re)run the cpp:
+The next time you login a DUNE FNAL machine (dunegpvm*), do the following to set up:
+
+
+To (re)compile and (re)run the cpp, this will produce a root file containing throws and the hadron throw result:
 ```
-cd /dune/app/users/<your_username>/NDEff/DUNE_ND_GeoEff/app
+cd /dune/app/users/<your_username>/NDEff/DUNE_ND_GeoEff/
+source setup.sh                                                                                    # Need ROOT setup
+cd app
 make runGeoEffFDEvtSim                                                                             # Compile program
 cd ../bin
 ./runGeoEffFDEvtSim                                                                                # Run program
