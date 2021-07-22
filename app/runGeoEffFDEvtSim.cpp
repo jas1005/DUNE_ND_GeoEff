@@ -1,4 +1,7 @@
-#include "geoEff.h" // All methods are in DUNE_ND_GeoEff/src/geoEff.cpp
+// Library methods
+#include "geoEff.h"
+
+// C++ includes
 #include <iostream>
 #include <iomanip>
 using namespace std;
@@ -6,6 +9,8 @@ using namespace std;
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
+
+// ROOT includes
 #include <TFile.h>
 #include <TTree.h>
 #include <TString.h>
@@ -27,13 +32,12 @@ using namespace std;
 #include <TEfficiency.h>
 #include <TMath.h>
 #include "TLorentzVector.h"
+#include <TRandom3.h>
 
-#include "Helpers.h"   // Linear interpolate average neutrino decay position as a function of off axis x
+// At the end: some customized functions and constants
+#include "Helpers.h"
 #include "TROOT.h"
 #include <vector>
-//#ifdef __MAKECINT__
-//#pragma link C++ class std::vector<std::vector<std::vector<uint64_t>>>+;
-//#endif
 
 int main(){
 
@@ -44,10 +48,11 @@ int main(){
   unsigned long int nentries;
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
-  float decayZbeamCoord; // in cm
+  float decayZbeamCoord;
   float decayXdetCoord;
   float decayYdetCoord;
   float decayZdetCoord;
+  double RnOffAxisPoint;            // random off-axis ND x position for each event
 
   //
   // Branches to be read from Ntuple produced from FD MC
@@ -105,6 +110,16 @@ int main(){
   ThrowsFD->Branch("throwRot",  &throwRot);
 
   //
+  // Get beam parameters: eventually need to read it from XML file: which XML for FD? same?
+  //
+
+  // What is this? rotate in ND y-z plane?
+  double beamLineRotation = -0.101;           // unit: rad,
+  // Coordinate transformation, units: meters
+  double beamRefDetCoord[3] = {0., 0., 15.5}; // (0, 0, 0) is ND detector origin
+  double detRefBeamCoord[3] = {0., 0., 574.}; // (0, 0, 0) is beam origin
+
+  //
   // Initialize geometric efficiency module
   //
 
@@ -118,7 +133,7 @@ int main(){
   // 30 MeV
   eff->setVetoEnergyThresholds(vector<float>(1, 30.));
 
-  // Active detector dimensions ND?
+  // Active detector dimensions for ND
   eff->setActiveX(collarLo[0]-30, collarHi[0]+30);
   eff->setActiveY(collarLo[1]-30, collarHi[1]+30);
   eff->setActiveZ(collarLo[2]-30, collarHi[2]+30);
@@ -135,16 +150,11 @@ int main(){
   eff->setOffsetZ(offset[2]);
 
   //
-  // Get beam parameters: eventually need to read it from XML file
+  // Loop over FD events
   //
-
-  double beamLineRotation = -0.101; // unit: rad
-  double beamRefDetCoord[3] = {0., 0.05387, 6.66};
-  double detRefBeamCoord[3] = {0., 0.,      562.1179};
 
   nentries = t->GetEntries();
   std::cout << "Tot evts: " << nentries << std::endl;
-  // Loop over FD events
   for ( unsigned long int ientry = 0; ientry < nentries; ientry++ ) {
     t->GetEntry(ientry);
     std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
@@ -159,20 +169,37 @@ int main(){
     HadronHitPoss.reserve(Sim_n_hadronic_Edep_a*3);
 
     //
-    // Use vertex to determine mean decay point
+    // We want to put the FD event as if it's in ND, which can be off-axis
+    // Need a random generated off-axis position for each event
     //
 
-    // Here we use lepton track start position as vertex position, eventually will need to change to true evt vtx for NC events
-    TGraph* gDecayZ = new TGraph(14, OffAxisPoints, meanPDPZ);
-    decayZbeamCoord = gDecayZ->Eval(Sim_mu_start_vx/1000. - detRefBeamCoord[0])*100.; // in cm
-    decayXdetCoord = -1*detRefBeamCoord[0]*100 + beamRefDetCoord[0]*100;
-    decayYdetCoord = (-1*detRefBeamCoord[1]*100.*cos(beamLineRotation)) + (-1*detRefBeamCoord[2]*100. + decayZbeamCoord)*sin(beamLineRotation) + beamRefDetCoord[1]*100.;
-    decayZdetCoord = (-1*detRefBeamCoord[2]*100. + decayZbeamCoord)*cos(beamLineRotation) - (-1*detRefBeamCoord[1]*100.*sin(beamLineRotation)) + beamRefDetCoord[2]*100.;
+    // Initialize random number generator
+    TRandom3 *r3 = new TRandom3();
+    // Set the seed (required to avoid repeated random numbers in each sequence)
+    r3->SetSeed(0);
+    RnOffAxisPoint = r3->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
 
-    eff->setDecayPos(decayXdetCoord, decayYdetCoord, decayZdetCoord);
+    // Mean neutrino production point (beam coordinate) on z axis as a function of ND off-axis position
+    TGraph* gDecayZ = new TGraph(14, OffAxisPoints, meanPDPZ);
+    // Interpolate event neutrino production point (beam coordinate)
+    decayZbeamCoord = gDecayZ->Eval( RnOffAxisPoint - detRefBeamCoord[0] );
+
+    // Calculate neutrino production point in detector coordinate
+    decayXdetCoord = beamRefDetCoord[0] - detRefBeamCoord[0];
+    decayYdetCoord = beamRefDetCoord[1] - detRefBeamCoord[1]*cos(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*sin(beamLineRotation);
+    decayZdetCoord = beamRefDetCoord[2] + detRefBeamCoord[1]*sin(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*cos(beamLineRotation);
+    // Set production point using cm unit
+    eff->setDecayPos(decayXdetCoord*100., decayYdetCoord*100., decayZdetCoord*100.);
+
+    //
+    // Event vertex pos in unit: cm
+    // Here we use lepton track start position as vertex position, eventually will need to change to true evt vtx for NC events
+    // These vertex vx, vy, vz are in FD coordinate sys?, need to translate to ND box?
+    // vx can be randomized in ND? Every 5cm
+    //
     eff->setVertex(Sim_mu_start_vx/10., Sim_mu_start_vy/10., Sim_mu_start_vz/10.);
 
-    if ( ientry%100 == 0 ) {
+    if ( ientry % 100 == 0 ) {
       eff->throwTransforms();
       throwVtxY.clear();
       throwVtxZ.clear();
@@ -185,17 +212,27 @@ int main(){
 
     // Read E and position info for each sim hadron hit
     for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+
       HadronHitEdeps.emplace_back(Sim_hadronic_hit_Edep_a2->at(ihadronhit));
       HadronHitPoss.emplace_back(Sim_hadronic_hit_x_a->at(ihadronhit)/10.);
       HadronHitPoss.emplace_back(Sim_hadronic_hit_y_a->at(ihadronhit)/10.);
       HadronHitPoss.emplace_back(Sim_hadronic_hit_z_a->at(ihadronhit)/10.);
+
+      //
+      // In the future consider the ND size for FD and where to put ND volume in FD
+      //
+
+      // A rough active detector dimensions for ND:
+      // eff->setActiveX(collarLo[0]-30, collarHi[0]+30);
+      // eff->setActiveY(collarLo[1]-30, collarHi[1]+30);
+      // eff->setActiveZ(collarLo[2]-30, collarHi[2]+30);
     }
 
     eff->setHitSegEdeps(HadronHitEdeps);
     eff->setHitSegPoss(HadronHitPoss);
 
     vector<vector<vector<uint64_t>>> HadronContainThrowResultList = eff->getHadronContainmentThrows();
-    std::cout << "Throw result, 0,0,1: " << HadronContainThrowResultList[0][0][1] << std::endl;
+    std::cout << "Throw result, 0,0,0: " << HadronContainThrowResultList[0][0][0] << std::endl;
 
     effTreeFD->Fill();
 
