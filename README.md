@@ -24,4 +24,4 @@ make runGeoEffFDEvtSim                                                          
 cd ../bin
 ./runGeoEffFDEvtSim                                                                                # Run program
 ```
-this will produce a root file containing throws and the hadron throw result. Don't delete the executable ```bin/runGeoEffFDEvtSim```, otherwise you need to re-compile the whole repository from scratch.
+this will produce a root file containing throws and the hadron throw result. 

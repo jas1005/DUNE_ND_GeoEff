@@ -35,10 +35,10 @@ using namespace std;
 #include <TRandom3.h>
 #include "TSystem.h"
 
-// At the end: some customized functions and constants
+// Include customized functions and constants
 #include "Helpers.h"
 #include "TROOT.h"
-#include <vector>
+#include <vector> // Need this for generate dictionary for nested vectors
 
 int main(){
 
@@ -46,7 +46,7 @@ int main(){
   // Declare variables used in this program
   //
 
-  unsigned long int nentries;
+  int nentries;
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
   float decayZbeamCoord;
@@ -67,10 +67,10 @@ int main(){
   float Sim_mu_start_vy;
   float Sim_mu_start_vz;
   Int_t Sim_n_hadronic_Edep_a;
-  vector<float> * Sim_hadronic_hit_Edep_a2;
-  vector<float> * Sim_hadronic_hit_x_a;
-  vector<float> * Sim_hadronic_hit_y_a;
-  vector<float> * Sim_hadronic_hit_z_a;
+  vector<float> *Sim_hadronic_hit_Edep_a2 = 0; // Need initialize 0 here to avoid error
+  vector<float> *Sim_hadronic_hit_x_a     = 0;
+  vector<float> *Sim_hadronic_hit_y_a     = 0;
+  vector<float> *Sim_hadronic_hit_z_a     = 0;
 
   // Read ntuple from FD MC
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
@@ -78,7 +78,7 @@ int main(){
 
   t->SetBranchAddress("Run",    &Run);
   t->SetBranchAddress("SubRun", &SubRun);
-	t->SetBranchAddress("Event",  &Event);
+  t->SetBranchAddress("Event",  &Event);
   t->SetBranchAddress("Sim_nMu",          &Sim_nMu);
   t->SetBranchAddress("Sim_mu_start_vx",  &Sim_mu_start_vx);
   t->SetBranchAddress("Sim_mu_start_vy",  &Sim_mu_start_vy);
@@ -86,17 +86,16 @@ int main(){
   t->SetBranchAddress("Sim_n_hadronic_Edep_a",    &Sim_n_hadronic_Edep_a);
   t->SetBranchAddress("Sim_hadronic_hit_Edep_a2", &Sim_hadronic_hit_Edep_a2);
   t->SetBranchAddress("Sim_hadronic_hit_x_a",     &Sim_hadronic_hit_x_a);
-	t->SetBranchAddress("Sim_hadronic_hit_y_a",     &Sim_hadronic_hit_y_a);
+  t->SetBranchAddress("Sim_hadronic_hit_y_a",     &Sim_hadronic_hit_y_a);
   t->SetBranchAddress("Sim_hadronic_hit_z_a",     &Sim_hadronic_hit_z_a);
 
   //
   // Branches to be created and write to new tree effTreeFD below
   //
 
-  if (!(gInterpreter->IsLoaded("vector"))) gInterpreter->ProcessLine("#include <vector>");
-  gSystem->Exec("rm -f AutoDict*vector*vector*vector*unsigned*long*");
+  // Remove old dictionary
   gSystem->Exec("rm -f AutoDict*vector*vector*vector*uint64_t*");
-  // gInterpreter->GenerateDictionary("vector<vector<vector<unsigned long> > >", "vector");
+  // Generate new dictionary for nested vector
   gInterpreter->GenerateDictionary("vector<vector<vector<uint64_t> > >", "vector");
   vector<vector<vector<uint64_t> > > HadronContainThrowResultList;
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
@@ -162,7 +161,8 @@ int main(){
 
   nentries = t->GetEntries();
   std::cout << "Tot evts: " << nentries << std::endl;
-  for ( unsigned long int ientry = 0; ientry < nentries; ientry++ ) {
+  for ( int ientry = 0; ientry < nentries; ientry++ ) {
+
     t->GetEntry(ientry);
     std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
 
@@ -239,7 +239,7 @@ int main(){
     eff->setHitSegPoss(HadronHitPoss);
 
     HadronContainThrowResultList = eff->getHadronContainmentThrows();
-    std::cout << "Throw result, 0,0,0: " << HadronContainThrowResultList[0][0][0] << std::endl;
+    std::cout << "Throw result, 0,0,1: " << HadronContainThrowResultList[0][0][1] << std::endl;
 
     effTreeFD->Fill();
     iwritten++;
@@ -249,7 +249,7 @@ int main(){
   std::cout << "Written evts: " << iwritten << std::endl;
 
   // Write trees
-  TFile * outFile = new TFile("./Output_FDGeoEff.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   effTreeFD->Write();
   ThrowsFD->Write();
 
