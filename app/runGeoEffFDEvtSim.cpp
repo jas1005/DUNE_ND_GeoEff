@@ -33,6 +33,7 @@ using namespace std;
 #include <TMath.h>
 #include "TLorentzVector.h"
 #include <TRandom3.h>
+#include "TSystem.h"
 
 // At the end: some customized functions and constants
 #include "Helpers.h"
@@ -92,8 +93,12 @@ int main(){
   // Branches to be created and write to new tree effTreeFD below
   //
 
-  gInterpreter->GenerateDictionary("vector<vector<vector<uint64_t>>>", "vector");
-  vector<vector<vector<uint64_t>>> HadronContainThrowResultList;
+  if (!(gInterpreter->IsLoaded("vector"))) gInterpreter->ProcessLine("#include <vector>");
+  gSystem->Exec("rm -f AutoDict*vector*vector*vector*unsigned*long*");
+  gSystem->Exec("rm -f AutoDict*vector*vector*vector*uint64_t*");
+  // gInterpreter->GenerateDictionary("vector<vector<vector<unsigned long> > >", "vector");
+  gInterpreter->GenerateDictionary("vector<vector<vector<uint64_t> > >", "vector");
+  vector<vector<vector<uint64_t> > > HadronContainThrowResultList;
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
   effTreeFD->Branch("HadronContainThrowResultList", &HadronContainThrowResultList);
 
