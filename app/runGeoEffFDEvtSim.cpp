@@ -53,6 +53,7 @@ int main(){
   float decayYdetCoord;
   float decayZdetCoord;
   double RnOffAxisPoint;            // random off-axis ND x position for each event
+  int iwritten = 0;
 
   //
   // Branches to be read from Ntuple produced from FD MC
@@ -199,7 +200,7 @@ int main(){
     //
     eff->setVertex(Sim_mu_start_vx/10., Sim_mu_start_vy/10., Sim_mu_start_vz/10.);
 
-    if ( ientry % 100 == 0 ) {
+    if ( iwritten % 100 == 0 ) {
       eff->throwTransforms();
       throwVtxY.clear();
       throwVtxZ.clear();
@@ -235,8 +236,11 @@ int main(){
     std::cout << "Throw result, 0,0,0: " << HadronContainThrowResultList[0][0][0] << std::endl;
 
     effTreeFD->Fill();
+    iwritten++;
 
   } // end loop over events
+
+  std::cout << "Written evts: " << iwritten << std::endl;
 
   // Write trees
   TFile * outFile = new TFile("./Output_FDGeoEff.root", "RECREATE");
