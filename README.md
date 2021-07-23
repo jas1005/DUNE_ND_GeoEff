@@ -18,10 +18,7 @@ cd /dune/app/users/<your_username>/NDEff/DUNE_ND_GeoEff/
 #
 # In case you log out, need to source setup.sh to setup ROOT
 #
-source setup.sh      
-make clean
-cmake -DPYTHON_EXECUTABLE:FILEPATH=`which python` .
-make -j geoEff                                                                             
+source setup.sh                                                                           
 cd app
 make runGeoEffFDEvtSim                                                                             # Compile program
 cd ../bin

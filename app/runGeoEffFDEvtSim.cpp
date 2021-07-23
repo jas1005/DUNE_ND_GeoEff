@@ -92,9 +92,10 @@ int main(){
   // Branches to be created and write to new tree effTreeFD below
   //
 
-  //vector<vector<vector<uint64_t>>> HadronContainThrowResult;
+  gInterpreter->GenerateDictionary("vector<vector<vector<uint64_t>>>", "vector");
+  vector<vector<vector<uint64_t>>> HadronContainThrowResultList;
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
-  //effTreeFD->Branch("HadronContainThrowResult", &HadronContainThrowResult);
+  effTreeFD->Branch("HadronContainThrowResultList", &HadronContainThrowResultList);
 
   //
   // Branches to be created and write to new tree ThrowsFD below
@@ -232,7 +233,7 @@ int main(){
     eff->setHitSegEdeps(HadronHitEdeps);
     eff->setHitSegPoss(HadronHitPoss);
 
-    vector<vector<vector<uint64_t>>> HadronContainThrowResultList = eff->getHadronContainmentThrows();
+    HadronContainThrowResultList = eff->getHadronContainmentThrows();
     std::cout << "Throw result, 0,0,0: " << HadronContainThrowResultList[0][0][0] << std::endl;
 
     effTreeFD->Fill();
