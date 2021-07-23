@@ -46,26 +46,36 @@ int main(){
   // Declare variables used in this program
   //
 
-  int nentries;
+  int nentries = 0;                 // Total input events
+  int iwritten = 0;                 // Output event counter
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
+  double RnOffAxisPoint;            // Random off-axis ND x position for each event
   float decayZbeamCoord;
   float decayXdetCoord;
   float decayYdetCoord;
   float decayZdetCoord;
-  double RnOffAxisPoint;            // random off-axis ND x position for each event
-  int iwritten = 0;
 
   //
-  // Branches to be read from Ntuple produced from FD MC
+  // Branches to be read from n-tuple produced from FD MC
   //
+
   Int_t Run;
   Int_t SubRun;
   Int_t Event;
   Int_t Sim_nMu;
-  float Sim_mu_start_vx;
-  float Sim_mu_start_vy;
-  float Sim_mu_start_vz;
+  double Sim_mu_start_vx;
+  double Sim_mu_start_vy;
+  double Sim_mu_start_vz;
+  double Sim_mu_end_vx;
+  double Sim_mu_end_vy;
+  double Sim_mu_end_vz;
+  double Sim_mu_start_px;
+  double Sim_mu_start_py;
+  double Sim_mu_start_pz;
+  double Sim_mu_end_px;
+  double Sim_mu_end_py;
+  double Sim_mu_end_pz;
   Int_t Sim_n_hadronic_Edep_a;
   vector<float> *Sim_hadronic_hit_Edep_a2 = 0; // Need initialize 0 here to avoid error
   vector<float> *Sim_hadronic_hit_x_a     = 0;
@@ -83,6 +93,15 @@ int main(){
   t->SetBranchAddress("Sim_mu_start_vx",  &Sim_mu_start_vx);
   t->SetBranchAddress("Sim_mu_start_vy",  &Sim_mu_start_vy);
   t->SetBranchAddress("Sim_mu_start_vz",  &Sim_mu_start_vz);
+  t->SetBranchAddress("Sim_mu_end_vx",    &Sim_mu_end_vx);
+  t->SetBranchAddress("Sim_mu_end_vy",    &Sim_mu_end_vy);
+  t->SetBranchAddress("Sim_mu_end_vz",    &Sim_mu_end_vz);
+  t->SetBranchAddress("Sim_mu_start_px",  &Sim_mu_start_px);
+  t->SetBranchAddress("Sim_mu_start_py",  &Sim_mu_start_py);
+  t->SetBranchAddress("Sim_mu_start_pz",  &Sim_mu_start_pz);
+  t->SetBranchAddress("Sim_mu_end_px",    &Sim_mu_end_px);
+  t->SetBranchAddress("Sim_mu_end_py",    &Sim_mu_end_py);
+  t->SetBranchAddress("Sim_mu_end_pz",    &Sim_mu_end_pz);
   t->SetBranchAddress("Sim_n_hadronic_Edep_a",    &Sim_n_hadronic_Edep_a);
   t->SetBranchAddress("Sim_hadronic_hit_Edep_a2", &Sim_hadronic_hit_Edep_a2);
   t->SetBranchAddress("Sim_hadronic_hit_x_a",     &Sim_hadronic_hit_x_a);
@@ -90,26 +109,55 @@ int main(){
   t->SetBranchAddress("Sim_hadronic_hit_z_a",     &Sim_hadronic_hit_z_a);
 
   //
-  // Branches to be created and write to new tree effTreeFD below
+  // A tree to store lepton info (for NN training)
+  // and result of hadron containment after applying transformations
   //
 
-  // Remove old dictionary
-  gSystem->Exec("rm -f AutoDict*vector*vector*vector*uint64_t*");
-  // Generate new dictionary for nested vector
+  // Lepton info
+  double b_Sim_mu_start_vx;   // Do not use float!
+  double b_Sim_mu_start_vy;
+  double b_Sim_mu_start_vz;
+  double b_Sim_mu_end_vx;
+  double b_Sim_mu_end_vy;
+  double b_Sim_mu_end_vz;
+  double b_Sim_mu_start_px;
+  double b_Sim_mu_start_py;
+  double b_Sim_mu_start_pz;
+  double b_Sim_mu_end_px;
+  double b_Sim_mu_end_py;
+  double b_Sim_mu_end_pz;
+
+  // Result of hadron containment is stored in nested vectors, need to generate dictionary
+  gSystem->Exec("rm -f AutoDict*vector*vector*vector*uint64_t*"); // First remove old dictionary
+  // Generate new dictionary
   gInterpreter->GenerateDictionary("vector<vector<vector<uint64_t> > >", "vector");
-  vector<vector<vector<uint64_t> > > HadronContainThrowResultList;
+  vector<vector<vector<uint64_t> > > b_Sim_hadron_throw_result;
+
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
-  effTreeFD->Branch("HadronContainThrowResultList", &HadronContainThrowResultList);
+  effTreeFD->Branch("Sim_hadron_throw_result", &b_Sim_hadron_throw_result);
+  effTreeFD->Branch("Sim_mu_start_vx",         &b_Sim_mu_start_vx, "Sim_mu_start_vx/D");
+  effTreeFD->Branch("Sim_mu_start_vy",         &b_Sim_mu_start_vy, "Sim_mu_start_vy/D");
+  effTreeFD->Branch("Sim_mu_start_vz",         &b_Sim_mu_start_vz, "Sim_mu_start_vz/D");
+  effTreeFD->Branch("Sim_mu_end_vx",           &b_Sim_mu_end_vx,   "Sim_mu_end_vx/D");
+  effTreeFD->Branch("Sim_mu_end_vy",           &b_Sim_mu_end_vy,   "Sim_mu_end_vy/D");
+  effTreeFD->Branch("Sim_mu_end_vz",           &b_Sim_mu_end_vz,   "Sim_mu_end_vz/D");
+  effTreeFD->Branch("Sim_mu_start_px",         &b_Sim_mu_start_px, "Sim_mu_start_px/D");
+  effTreeFD->Branch("Sim_mu_start_py",         &b_Sim_mu_start_py, "Sim_mu_start_py/D");
+  effTreeFD->Branch("Sim_mu_start_pz",         &b_Sim_mu_start_pz, "Sim_mu_start_pz/D");
+  effTreeFD->Branch("Sim_mu_end_px",           &b_Sim_mu_end_px,   "Sim_mu_end_px/D");
+  effTreeFD->Branch("Sim_mu_end_py",           &b_Sim_mu_end_py,   "Sim_mu_end_py/D");
+  effTreeFD->Branch("Sim_mu_end_pz",           &b_Sim_mu_end_pz,   "Sim_mu_end_pz/D");
+
 
   //
-  // Branches to be created and write to new tree ThrowsFD below
+  // A separate tree to store translations and rotations of throws
+  // which will be applied to leptons before NN training
   //
 
   vector<float> throwVtxY;
   vector<float> throwVtxZ;
   vector<float> throwRot;
 
-  // Separate tree to store translations and rotations of throws: for muon NN training?
   TTree * ThrowsFD = new TTree("ThrowsFD", "FD Throws");
   ThrowsFD->Branch("throwVtxY", &throwVtxY);
   ThrowsFD->Branch("throwVtxZ", &throwVtxZ);
@@ -171,7 +219,6 @@ int main(){
 
     HadronHitEdeps.clear();
     HadronHitPoss.clear();
-
     HadronHitEdeps.reserve(Sim_n_hadronic_Edep_a);
     HadronHitPoss.reserve(Sim_n_hadronic_Edep_a*3);
 
@@ -204,9 +251,18 @@ int main(){
     // These vertex vx, vy, vz are in FD coordinate sys?, need to translate to ND box?
     // vx can be randomized in ND? Every 5cm
     //
+    
     eff->setVertex(Sim_mu_start_vx/10., Sim_mu_start_vy/10., Sim_mu_start_vz/10.);
 
+    //
+    // Renew throws every 100th written event to save file size, i.e., if N = 128,
+    // for written evt 0-99:   same 128 transformations for each event,
+    // for written evt 99-200: same but renewed 128 transformations for each event
+    // These transformations will be applied to leptons in the event, so need to keep track of iwritten
+    //
+
     if ( iwritten % 100 == 0 ) {
+      // Produce N throws defined at setNthrows(N)
       eff->throwTransforms();
       throwVtxY.clear();
       throwVtxZ.clear();
@@ -238,8 +294,20 @@ int main(){
     eff->setHitSegEdeps(HadronHitEdeps);
     eff->setHitSegPoss(HadronHitPoss);
 
-    HadronContainThrowResultList = eff->getHadronContainmentThrows();
-    std::cout << "Throw result, 0,0,1: " << HadronContainThrowResultList[0][0][1] << std::endl;
+    b_Sim_hadron_throw_result = eff->getHadronContainmentThrows();
+    std::cout << "Throw result, 0,0,1: " << b_Sim_hadron_throw_result[0][0][1] << std::endl;
+    b_Sim_mu_start_vx = Sim_mu_start_vx;
+    b_Sim_mu_start_vy = Sim_mu_start_vy;
+    b_Sim_mu_start_vz = Sim_mu_start_vz;
+    b_Sim_mu_end_vx   = Sim_mu_end_vx;
+    b_Sim_mu_end_vy   = Sim_mu_end_vy;
+    b_Sim_mu_end_vz   = Sim_mu_end_vz;
+    b_Sim_mu_start_px = Sim_mu_start_px;
+    b_Sim_mu_start_py = Sim_mu_start_py;
+    b_Sim_mu_start_pz = Sim_mu_start_pz;
+    b_Sim_mu_end_px   = Sim_mu_end_px;
+    b_Sim_mu_end_py   = Sim_mu_end_py;
+    b_Sim_mu_end_pz   = Sim_mu_end_pz;
 
     effTreeFD->Fill();
     iwritten++;
