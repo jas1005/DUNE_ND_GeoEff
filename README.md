@@ -1,5 +1,7 @@
 # Instruction for running translation and rotations on FD n-tuples
 
+Prerequisite: [Produce Ntuple from DUNE FD MC files](https://github.com/weishi10141993/myntuples#produce-ntuple-from-dune-fd-mc-files). The produced FD n-tuples will be used as input files for the following program to run.
+
 [First time only]
 ```
 cd /dune/app/users/<your_username>
@@ -24,4 +26,6 @@ make runGeoEffFDEvtSim                                                          
 cd ../bin
 ./runGeoEffFDEvtSim                                                                                # Run program
 ```
-this will produce a root file containing throws and the hadron throw result. 
+this will produce a root file containing throws and the hadron throw result.
+
+This output root file will be used to calculate hadron containment efficiency (link?) and subsequent muon NN training (link?).
