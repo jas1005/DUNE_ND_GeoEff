@@ -318,7 +318,7 @@ std::vector< float > geoEff::getCurrentThrowDepsZ(int i){
 }
 
 
-std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(bool ignore uncontained){
+std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(bool ignore_uncontained){
 
   // Figure out how many multiples of 64 bits needed to store output
   int n_longs = N_THROWS / 64;
