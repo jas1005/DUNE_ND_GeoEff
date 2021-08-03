@@ -318,7 +318,7 @@ std::vector< float > geoEff::getCurrentThrowDepsZ(int i){
 }
 
 
-std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(){
+std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(bool ignore_uncontained){
 
   // Figure out how many multiples of 64 bits needed to store output
   int n_longs = N_THROWS / 64;
@@ -331,17 +331,18 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
   
   // Check if event is contained by any of the existing conditions
-  int origContained = 0;
-  std::vector< std::vector< bool > > vecOrigContained = getHadronContainmentOrigin();
-  for (unsigned int i = 0; i < vetoSize.size(); i++){
-    for (unsigned int j = 0; j < vetoEnergy.size(); j++){
-      if (vecOrigContained[i][j]) origContained++;
+  if (ignore_uncontained) {
+    int origContained = 0;
+    std::vector< std::vector< bool > > vecOrigContained = getHadronContainmentOrigin();
+    for (unsigned int i = 0; i < vetoSize.size(); i++){
+      for (unsigned int j = 0; j < vetoEnergy.size(); j++){
+	if (vecOrigContained[i][j]) origContained++;
+      }
     }
+    
+    // If not, then return
+    if (origContained == 0) return hadronContainment;
   }
-  
-  // If not, then return
-  if (origContained == 0) return hadronContainment;
-
   
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms = getTransforms();
   // Else, loop through set of rotation translations
