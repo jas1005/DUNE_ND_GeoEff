@@ -26,6 +26,23 @@ make runGeoEffFDEvtSim                                                          
 cd ../bin
 ./runGeoEffFDEvtSim                                                                                # Run program
 ```
-this will produce a root file containing throws and the hadron throw result.
+this will produce a root file containing throws and the hadron throw result. Interactively, running 200 events take about 1 minute.
 
-This output root file will be used to calculate hadron containment efficiency (link?) and subsequent muon NN training (link?).
+If the source files in src are changed, recompile:
+
+```
+source setup.sh
+cmake -DPYTHON_EXECUTABLE:FILEPATH=`which python` .
+make -j geoEff    
+```
+
+## Instruction for calculate FD event efficiency
+
+The output root file from running ```runGeoEffFDEvtSim``` can be used to calculate FD event hadron containment efficiency by running:
+
+```
+source setup.sh
+root -l -b -q FDEffCalc.C
+```
+
+The output root file from running ```runGeoEffFDEvtSim``` can also be used for lepton NN training.
