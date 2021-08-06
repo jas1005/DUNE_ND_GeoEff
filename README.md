@@ -26,7 +26,7 @@ make runGeoEffFDEvtSim                                                          
 cd ../bin
 ./runGeoEffFDEvtSim                                                                                # Run program
 ```
-this will produce a root file containing throws and the hadron throw result. Interactively, running 200 events take about 1 minute.
+this will produce a root file containing throws and the hadron throw result.
 
 If the source files in src are changed, recompile:
 

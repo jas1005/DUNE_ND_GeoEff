@@ -263,11 +263,11 @@ int main(){
   //
 
   nentries = t->GetEntries();
-  if (verbose) std::cout << "Tot evts: " << nentries << std::endl;
+  std::cout << "Tot evts: " << nentries << std::endl;
   for ( int ientry = 0; ientry < nentries; ientry++ ) {
 
     t->GetEntry(ientry);
-    if (verbose) std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
+    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
 
     // Skip events without hadronic deposits or muon
     if ( Sim_nMu == 0 || Sim_n_hadronic_Edep_a == 0 ) continue;
@@ -444,7 +444,7 @@ int main(){
 
   }     // end loop over events
 
-  if (verbose) std::cout << "Written evts: " << iwritten << std::endl;
+  std::cout << "Written evts: " << iwritten << std::endl;
 
   // Write trees
   TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");

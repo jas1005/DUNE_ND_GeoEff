@@ -21,7 +21,7 @@ double meanPDPZ[]               = {93.6072, 93.362,  90.346, 85.6266, 81.1443, 7
 double OffAxisPoints[]          = {-2,      0.5,     3,      5.5,     8,       10.5,    13,      15.5,    18,      20.5,   23,      25.5,    28,      30.5};
 
 bool random_vtx_vx         = false; // Set to true will only use a random vtx x per event in runGeoEffFDEvtSim
-double ND_local_x_stepsize = 40.;   // unit cm, must be a positive number below 200
+double ND_local_x_stepsize = 50.;   // unit cm, must be a positive number below 200
 double ND_local_x_min      = -200.;
 double ND_local_x_max      = 200.;
 
