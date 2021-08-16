@@ -101,8 +101,9 @@ int main(){
   // Declare variables used in this program
   //
 
-  int nentries = 0;                   // Total input events
-  int iwritten = 0;                   // Output event counter
+  int nentries = 0;        // Total input events
+  float vetoEnergyFD; // Total hadron deposited energy in FD veto region
+  int iwritten = 0;        // Output event counter
   float decayZbeamCoord;
   float decayXdetCoord;
   float decayYdetCoord;
@@ -269,8 +270,38 @@ int main(){
     t->GetEntry(ientry);
     if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
 
+    //
     // Skip events without hadronic deposits or muon
+    //
+
     if ( Sim_nMu == 0 || Sim_n_hadronic_Edep_a == 0 ) continue;
+
+    //
+    // Calculate total hadron E in FD veto region
+    //
+
+    vetoEnergyFD = 0.;
+    // Loop over hadron E deposits
+    for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+
+      // Veto region size: 30 cm from the active volume
+      if ( ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
+           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
+           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
+         ){
+           vetoEnergyFD += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+      } // end if hadron deposit in FD veto region
+
+    } // end loop over hadron E deposits
+
+    //
+    // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
+    //
+
+    if ( vetoEnergyFD > 30 ) continue; // 30 MeV
 
     // Renew throws every 100th written event to save file size, i.e., if N = 128,
     // for written evt 0-99:   same 128 transformations for each event,

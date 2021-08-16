@@ -9,6 +9,11 @@ bool verbose = false; // default to false, true for debugging, a lot of printout
 
 unsigned long N_throws = 128; // Use multiple of 64
 
+// Active volume for FD: based on ntuple hadron hit x/y/z histogram
+float FDActiveVol_min[] = {-370., -600., 0};
+float FDActiveVol_max[] = {370., 600., 1400.};
+
+// Active volume for ND
 float offset[]   = { 0., 305., 5. };
 float collarLo[] = {-320., -120., 30. };
 float collarHi[] = { 320.,  120., 470.};
