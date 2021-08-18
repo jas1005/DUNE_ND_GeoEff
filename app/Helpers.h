@@ -10,13 +10,13 @@ bool verbose = false; // default to false, true for debugging, a lot of printout
 unsigned long N_throws = 128; // Use multiple of 64
 
 // Active volume for FD: based on ntuple hadron hit x/y/z histogram
-float FDActiveVol_min[] = {-370., -600., 0};
-float FDActiveVol_max[] = {370., 600., 1400.};
+float FDActiveVol_min[] = {-370., -600.,    0.};
+float FDActiveVol_max[] = {370.,   600., 1400.};
 
 // Active volume for ND
-float offset[]   = { 0., 305., 5. };
-float collarLo[] = {-320., -120., 30. };
-float collarHi[] = { 320.,  120., 470.};
+float NDActiveVol_min[] = {-350., -150.,   0.};
+float NDActiveVol_max[] = { 350.,  150., 500.};
+float offset[]          = { 0.,      0.,   0.}; // this offset is only for ND MC, use 0 for FD MC
 
 bool random_ND_off_axis_pos     = false; // Set to true will only use a random ND off axis position per event in runGeoEffFDEvtSim
 double ND_off_axis_pos_stepsize = 2.5;   // unit meters
@@ -30,28 +30,44 @@ double ND_local_x_stepsize = 50.;   // unit cm, must be a positive number below 
 double ND_local_x_min      = -200.;
 double ND_local_x_max      = 200.;
 
-using namespace std;
+namespace FDEffCalc_cfg {
 
-void addfilesMany(TChain *ch, const std::vector<string>& v, const TString ext=".root") {
-  bool verbose(true);
-  int nfiles=0;
-  for (std::string dirname : v) {
-    TSystemDirectory dir(dirname.c_str(), dirname.c_str());
-    TList *files = dir.GetListOfFiles();
-    if (files) {
-      if (verbose) std::cout << " Found files" << std::endl;
-      TSystemFile *file;
-      TString fname;
-      TIter next(files);
-      while ((file=(TSystemFile*)next())) {
-        fname = file->GetName();
-        if (verbose) std::cout << " file name: " << dirname + fname << std::endl;
-        if (!file->IsDirectory() && fname.BeginsWith(ext)) {
-          nfiles++;
-          if (verbose) std::cout << " adding #" << nfiles << ": " << dirname + fname << std::endl;
-          ch->Add(dirname + fname);
-        }
-      }
+  // This ND FV cut function is copied from CAFAna:
+  // https://github.com/DUNE/lblpwgtools/blob/master/CAFAna/Cuts/TruthCuts.h#L65-L98
+  // To confirm: 1.6cm or 1.3cm dead region b/t modules in x?
+  inline bool IsInNDFV(double pos_x_cm, double pos_y_cm, double pos_z_cm) {
+    bool inDeadRegion = false;
+    for (int i = -3; i <= 3; ++i) {
+      // 0.5cm cathode in the middle of each module, plus 0.5cm buffer
+      double cathode_center = i * 102.1;
+      if (pos_x_cm > cathode_center - 0.75 && pos_x_cm < cathode_center + 0.75)
+        inDeadRegion = true;
+
+      // 1.6cm dead region between modules (0.5cm module wall and 0.3cm pixel
+      // plane, x2) don't worry about outer boundary because events are only
+      // generated in active Ar + insides
+      double module_boundary = i * 102.1 + 51.05;
+      if (i <= 2 && pos_x_cm > module_boundary - 1.3 &&
+          pos_x_cm < module_boundary + 1.3)
+        inDeadRegion = true;
     }
-  }
-}
+    for (int i = 1; i <= 4; ++i) {
+      // module boundaries in z are 1.8cm (0.4cm ArCLight plane + 0.5cm module
+      // wall, x2) module is 102.1cm wide, but only 101.8cm long due to cathode
+      // (0.5cm) being absent in length but ArCLight is 0.1cm thicker than pixel
+      // plane so it's 0.3cm difference positions are off-set by 0.6 because I
+      // defined 0 to be the upstream edge based on the active volume by
+      // inspecting a plot, and aparently missed by 3 mm, but whatever add 8mm =
+      // 2 pad buffer due to worse position resolution in spatial dimension z
+      // compared to timing direction x so total FV gap will be 1.8 + 2*0.8
+      // = 3.4cm
+      double module_boundary = i * 101.8 - 0.6;
+      if (pos_z_cm > module_boundary - 1.7 && pos_z_cm < module_boundary + 1.7)
+        inDeadRegion = true;
+    }
+
+    return (abs(pos_x_cm) < 300 && abs(pos_y_cm) < 100 && pos_z_cm > 50 &&
+            pos_z_cm < 350 && !inDeadRegion);
+  } // end ND FV cut
+
+} // end namespace

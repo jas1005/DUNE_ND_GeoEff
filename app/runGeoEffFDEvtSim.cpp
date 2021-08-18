@@ -184,12 +184,12 @@ int main(){
   //
 
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
-  effTreeFD->Branch("ND_off_axis_pos_vec",     &b_ND_off_axis_pos_vec);                             // vector: entries = written evts * ND_off_axis_pos_steps
-  effTreeFD->Branch("Sim_mu_start_vx",         &b_Sim_mu_start_vx);                                 // vector: entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
+  effTreeFD->Branch("ND_off_axis_pos_vec",     &b_ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+  effTreeFD->Branch("Sim_mu_start_vx",         &b_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
   effTreeFD->Branch("Sim_mu_start_vy",         &b_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
   effTreeFD->Branch("Sim_mu_start_vz",         &b_Sim_mu_start_vz,       "Sim_mu_start_vz/D");
-  effTreeFD->Branch("Sim_mu_end_vx",           &b_Sim_mu_end_vx);                                   // vector: entries = written evts * vtx_vx_steps
-  effTreeFD->Branch("Sim_mu_end_vy",           &b_Sim_mu_end_vy,         "Sim_mu_end_vy/D");        // entries = written evts
+  effTreeFD->Branch("Sim_mu_end_vx",           &b_Sim_mu_end_vx);
+  effTreeFD->Branch("Sim_mu_end_vy",           &b_Sim_mu_end_vy,         "Sim_mu_end_vy/D");
   effTreeFD->Branch("Sim_mu_end_vz",           &b_Sim_mu_end_vz,         "Sim_mu_end_vz/D");
   effTreeFD->Branch("Sim_mu_start_px",         &b_Sim_mu_start_px,       "Sim_mu_start_px/D");
   effTreeFD->Branch("Sim_mu_start_py",         &b_Sim_mu_start_py,       "Sim_mu_start_py/D");
@@ -210,7 +210,7 @@ int main(){
   vector<float> throwRot;
 
   TTree * ThrowsFD = new TTree("ThrowsFD", "FD Throws");
-  ThrowsFD->Branch("throwVtxY", &throwVtxY); // entries = [ (int)(written evts / 100) + 1 ] * N_throws
+  ThrowsFD->Branch("throwVtxY", &throwVtxY); // vector<float>: entries = [ (int)(written evts / 100) + 1 ] * N_throws
   ThrowsFD->Branch("throwVtxZ", &throwVtxZ);
   ThrowsFD->Branch("throwRot",  &throwRot);
 
@@ -244,17 +244,17 @@ int main(){
   eff->setVetoEnergyThresholds(vector<float>(1, 30.));
 
   // Active detector dimensions for ND
-  eff->setActiveX(collarLo[0]-30, collarHi[0]+30);
-  eff->setActiveY(collarLo[1]-30, collarHi[1]+30);
-  eff->setActiveZ(collarLo[2]-30, collarHi[2]+30);
+  eff->setActiveX(NDActiveVol_min[0], NDActiveVol_max[0]);
+  eff->setActiveY(NDActiveVol_min[1], NDActiveVol_max[1]);
+  eff->setActiveZ(NDActiveVol_min[2], NDActiveVol_max[2]);
 
   // Range for translation throws. Use full active volume but fix X.
   eff->setRangeX(-1, -1);
   eff->setRandomizeX(false);
-  eff->setRangeY(collarLo[1]-30, collarHi[1]+30);
-  eff->setRangeZ(collarLo[2]-30, collarHi[2]+30);
+  eff->setRangeY(NDActiveVol_min[1], NDActiveVol_max[1]);
+  eff->setRangeZ(NDActiveVol_min[2], NDActiveVol_max[2]);
 
-  // Set offset between MC coordinate system and volumes defined above: FD need changes?
+  // Set offset between MC coordinate system and det volumes
   eff->setOffsetX(offset[0]);
   eff->setOffsetY(offset[1]);
   eff->setOffsetZ(offset[2]);
@@ -304,13 +304,15 @@ int main(){
     if ( vetoEnergyFD > 30 ) continue; // 30 MeV
 
     // Renew throws every 100th written event to save file size, i.e., if N = 128,
-    // for written evt 0-99:   same 128 transformations for each event,
-    // for written evt 99-200: same but renewed 128 transformations for each event
+    // for written evt 0-99:    same 128 transformations for each event,
+    // for written evt 100-199: same but renewed 128 transformations for each evt
+    // so on so forth...
     // These transformations will be applied to leptons in the event, so need to keep track of iwritten
     if ( iwritten % 100 == 0 ) {
 
       // Produce N throws defined at setNthrows(N)
-      eff->throwTransforms(); // Doesn't depend on event vtx
+      // Same throws applied for hadron below
+      eff->throwTransforms(); // Does not depend on evt vtx
       throwVtxY.clear();
       throwVtxZ.clear();
       throwRot.clear();
@@ -326,6 +328,7 @@ int main(){
     //
 
     // Branches that are not affected by ND off axis position and vtx x (loops below)
+    // perhaps we do not need to store branches that are 0s?
     b_Sim_mu_start_vy = 0.;                              // y/z will be randomly translated later, so just use 0
     b_Sim_mu_start_vz = 0.;
     b_Sim_mu_end_vy   = Sim_mu_end_vy - Sim_mu_start_vy; // w.r.t. mu start y, + 0 omitted
@@ -436,7 +439,7 @@ int main(){
           b_Sim_mu_end_vx.emplace_back( Sim_mu_end_vx - Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
         }
 
-        // Event vertex pos in unit: cm
+        // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx, b_Sim_mu_start_vy, b_Sim_mu_start_vz );
 
         HadronHitEdeps.clear();
