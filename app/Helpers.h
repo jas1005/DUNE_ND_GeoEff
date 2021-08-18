@@ -30,6 +30,8 @@ double ND_local_x_stepsize = 50.;   // unit cm, must be a positive number below 
 double ND_local_x_min      = -200.;
 double ND_local_x_max      = 200.;
 
+double mu_mass = 105.66; // MeV
+
 namespace FDEffCalc_cfg {
 
   // This ND FV cut function is copied from CAFAna:

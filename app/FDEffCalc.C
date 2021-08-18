@@ -42,7 +42,7 @@ using namespace std;
 
 void FDEffCalc() {
 
-  bool debug           = true; // Print out for debug purpose
+  bool debug           = false; // Print out for debug purpose
   int nentries         = 0;     // Total input events
   TString TitleX       = "Vertex x [cm]";
   TString TitleY       = "Hadron contain efficiency";
@@ -57,10 +57,14 @@ void FDEffCalc() {
   //
 
   // Initialize
+  double Sim_mu_start_px;
+  double Sim_mu_start_py;
+  double Sim_mu_start_pz;
+  double Sim_hadronic_Edep_a2;
   vector<double> *ND_off_axis_pos_vec = 0; // unit: m, need initialize 0 here to avoid error
   vector<double> *Sim_mu_start_vx     = 0; // unit: cm
-  // Nested vector: ND off axis position x, evt vtx x, vetoSize, vetoEnergy, 64-throw-result chunks
-  vector<vector<vector<vector<vector<uint64_t> > > > > *Sim_hadron_throw_result = 0;
+  vector<vector<vector<vector<bool> > > > *Sim_hadron_contain_result_before_throw = 0; // Nested vector: ND off axis position x, evt vtx x, vetoSize, vetoEnergy
+  vector<vector<vector<vector<vector<uint64_t> > > > > *Sim_hadron_throw_result   = 0; // ...... ....... .. ... .... ........ .. ... ... .. ......... .........., 64-throw-result chunks
   // Random throws
   vector<float> *throwVtxY = 0; // unit: cm
   vector<float> *throwVtxZ = 0;
@@ -68,9 +72,14 @@ void FDEffCalc() {
   // Read hadron throw result
   TChain *myhadronchain = new TChain("effTreeFD");
   myhadronchain->Add( FileIn.Data() );
-  myhadronchain->SetBranchAddress("ND_off_axis_pos_vec",     &ND_off_axis_pos_vec);     // vector<double>: entries = written evts * ND_off_axis_pos_steps
-  myhadronchain->SetBranchAddress("Sim_mu_start_vx",         &Sim_mu_start_vx);         // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
-  myhadronchain->SetBranchAddress("Sim_hadron_throw_result", &Sim_hadron_throw_result); // nested vector
+  myhadronchain->SetBranchAddress("ND_off_axis_pos_vec",                    &ND_off_axis_pos_vec);     // vector<double>: entries = written evts * ND_off_axis_pos_steps
+  myhadronchain->SetBranchAddress("Sim_mu_start_vx",                        &Sim_mu_start_vx);         // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
+  myhadronchain->SetBranchAddress("Sim_hadron_contain_result_before_throw", &Sim_hadron_contain_result_before_throw);
+  myhadronchain->SetBranchAddress("Sim_hadron_throw_result",                &Sim_hadron_throw_result);
+  myhadronchain->SetBranchAddress("Sim_mu_start_px",                        &Sim_mu_start_px);
+  myhadronchain->SetBranchAddress("Sim_mu_start_py",                        &Sim_mu_start_py);
+  myhadronchain->SetBranchAddress("Sim_mu_start_pz",                        &Sim_mu_start_pz);
+  myhadronchain->SetBranchAddress("Sim_hadronic_Edep_a2",                   &Sim_hadronic_Edep_a2);    // tot hadron deposited E in the evt
 
   // Read random throws each FD evt
   TChain *mythrowchain = new TChain("ThrowsFD");
@@ -140,11 +149,13 @@ void FDEffCalc() {
 
           for ( vector<vector<uint64_t> >::iterator it_veto_energy = it_veto_size->begin(); it_veto_energy != it_veto_size->end(); ++it_veto_energy ) {
 
+            counter4++;
+
             // Every 64 throw result is a chunk
             // current test case: each evt has 128 throws, so 2 chunks
-            counter4++;
             if ( debug ) std::cout << "        #" << counter4 << ", 64-throw size (chunks): " << it_veto_energy->size() << std::endl;
 
+            bool contain_result_before_throw = false; // hadron ND-containment result of FD evt before throws
             int counter5    = 0;
             int validthrows = 0; // count no. of throws that meet ND FV cut for this evt
             int hadronpass  = 0; // count no. of throws that meet hadron containment cut
@@ -189,8 +200,12 @@ void FDEffCalc() {
 
             }     // end loop over 64-throw chunks
 
+            // Get the hadron contain result of this written event before throws
+            contain_result_before_throw = (*Sim_hadron_contain_result_before_throw)[counter1 - 1][counter2 - 1][counter3 - 1][counter4 - 1];
+            if ( debug ) std::cout << "        FD evt contained in ND before throws: " << contain_result_before_throw << std::endl;
+
             //
-            // Calculate per-event hadron containment efficiency
+            // Calculate per-event hadron containment efficiency from throws
             //
 
             // Protect against zero division error if all throws are not valid for some reason,
@@ -200,23 +215,48 @@ void FDEffCalc() {
             if ( debug ) std::cout << "        Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << hadron_contain_eff << ", evt vtx x [cm]: " << Sim_mu_start_vx->at( counter2 - 1 ) << ", nd off-axis pos [m]: " << ND_off_axis_pos_vec->at( counter1 -1 ) << std::endl;
 
             //
-            // 2D histogram: efficiency - evt vtx x, for each ND-off-axis pos
+            // Fill histograms
             //
 
             // Skip first element of evt vtx x as it is random
             if ( counter2 - 1 > 0 ) {
 
-              // Fill histograms
+              //
+              // 2D histogram for each nd off-axis pos: efficiency - evt vtx x, for each ND-off-axis pos
+              //
+
               for ( int ifill = 0; ifill < nplot; ifill++ ) {
+
                 // Also skip first element of ND-off-axis as it is random
                 if ( counter1 - 1 == ifill + 1 ) NdOffAxisPos[ifill]->Fill( Sim_mu_start_vx->at( counter2 -1 ), hadron_contain_eff );
+
               } // end fill histograms
+
+              //
+              // 1D histograms for each nd off-axis pos and evt vtx_x pos
+              //
+
+              // Generated FD MC evts
+              // this is simply all written evts, though they still met FD veto requirement
+              // lepton p and mass unit: MeV?
+
+              /*
+
+              FDGenLepP->Fill( sqrt( Sim_mu_start_px^2 + Sim_mu_start_py^2 + Sim_mu_start_pz^2 + mu_mass^2 ) );
+
+              if ( contain_result_before_throw ) {
+                // Before throw, FD evets passing ND hadron containment cut (evt vtx y/z is set to 0)
+                FDHadronNDContainLepP->Fill( sqrt( Sim_mu_start_px^2 + Sim_mu_start_py^2 + Sim_mu_start_pz^2 + mu_mass^2 ) );
+                // Weighted FD evts
+                // Avoid 0 eff
+                if ( hadron_contain_eff > 0 ) FDHadronNDContainWgtLepP->Fill( sqrt( Sim_mu_start_px^2 + Sim_mu_start_py^2 + Sim_mu_start_pz^2 + mu_mass^2 ), 1./hadron_contain_eff );
+              } // end if contain_result_before_throw
+
+              */
+
 
             } // end skip first element of evt vtx x
 
-            //
-            // 1D histograms: lepton E
-            //
 
           }     // end loop over veto energy
 
@@ -239,7 +279,7 @@ void FDEffCalc() {
 
   for ( int ic = 0; ic < nplot; ic++ ) {
 
-    // Draw the histogram
+    // Draw 2D histograms
     c_NdOffAxisPos[ic] = new TCanvas(TString::Format( "c_NdOffAxisPos_%.2f_m", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), TString::Format( "ND off-axis position: %.2f m", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), 700, 500);
     c_NdOffAxisPos[ic]->cd();
     NdOffAxisPos[ic]->GetXaxis()->SetTitle( TitleX.Data() );
@@ -250,6 +290,8 @@ void FDEffCalc() {
     NdOffAxisPos[ic]->Draw( DrawOption.Data() );
     c_NdOffAxisPos[ic]->Write();
   }
+
+  // Overlay 1D histograms
 
   outFile->Close();
 

@@ -166,17 +166,27 @@ int main(){
   // Tot hadron E dep
   double b_Sim_hadronic_Edep_a2;
   // Result of hadron containment is stored in nested vectors, need to generate dictionary
-  gSystem->Exec("rm -f AutoDict*vector*vector*vector*uint64_t*"); // Remove old dictionary if exists
+  gSystem->Exec("rm -f AutoDict*vector*vector*bool*"); // Remove old dictionary if exists
+  gSystem->Exec("rm -f AutoDict*vector*vector*vector*bool*");
+  gSystem->Exec("rm -f AutoDict*vector*vector*vector*vector*bool*");
+  gSystem->Exec("rm -f AutoDict*vector*vector*vector*uint64_t*");
   gSystem->Exec("rm -f AutoDict*vector*vector*vector*vector*uint64_t*");
   gSystem->Exec("rm -f AutoDict*vector*vector*vector*vector*vector*uint64_t*");
   // Generate new dictionary
+  gInterpreter->GenerateDictionary("vector<vector<bool> >", "vector");
+  gInterpreter->GenerateDictionary("vector<vector<vector<bool> > >", "vector");
+  gInterpreter->GenerateDictionary("vector<vector<vector<vector<bool> > > >", "vector");
   gInterpreter->GenerateDictionary("vector<vector<vector<uint64_t> > >", "vector");
   gInterpreter->GenerateDictionary("vector<vector<vector<vector<uint64_t> > > >", "vector");
   gInterpreter->GenerateDictionary("vector<vector<vector<vector<vector<uint64_t> > > > >", "vector");
+  // Nested vector (vetoSize > vetoEnergy) returned from function getHadronContainmentOrigin
+  vector<vector<bool> > hadron_contain_result_before_throw;
+  vector<vector<vector<bool> > > hadron_contain_result_before_throw_vec_for_vtx_vx; // One more vector: randomized/stepwise evt vtx x
+  vector<vector<vector<vector<bool> > > > b_Sim_hadron_contain_result_before_throw; // ................ ................... ND off axis position x
   // Nested vector (vetoSize > vetoEnergy > 64_bit_throw_result) returned from function getHadronContainmentThrows
   vector<vector<vector<uint64_t> > > hadron_throw_result;
-  vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx; // One more vector: randomized/stepwise evt vtx x
-  vector<vector<vector<vector<vector<uint64_t> > > > > b_Sim_hadron_throw_result; // One more vector: randomized/stepwise ND off axis position x
+  vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx;   // One more vector: randomized/stepwise evt vtx x
+  vector<vector<vector<vector<vector<uint64_t> > > > > b_Sim_hadron_throw_result;   // ................ ................... ND off axis position x
 
   //
   // A tree to store lepton info (for NN training)
@@ -184,21 +194,22 @@ int main(){
   //
 
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
-  effTreeFD->Branch("ND_off_axis_pos_vec",     &b_ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
-  effTreeFD->Branch("Sim_mu_start_vx",         &b_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
-  effTreeFD->Branch("Sim_mu_start_vy",         &b_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
-  effTreeFD->Branch("Sim_mu_start_vz",         &b_Sim_mu_start_vz,       "Sim_mu_start_vz/D");
-  effTreeFD->Branch("Sim_mu_end_vx",           &b_Sim_mu_end_vx);
-  effTreeFD->Branch("Sim_mu_end_vy",           &b_Sim_mu_end_vy,         "Sim_mu_end_vy/D");
-  effTreeFD->Branch("Sim_mu_end_vz",           &b_Sim_mu_end_vz,         "Sim_mu_end_vz/D");
-  effTreeFD->Branch("Sim_mu_start_px",         &b_Sim_mu_start_px,       "Sim_mu_start_px/D");
-  effTreeFD->Branch("Sim_mu_start_py",         &b_Sim_mu_start_py,       "Sim_mu_start_py/D");
-  effTreeFD->Branch("Sim_mu_start_pz",         &b_Sim_mu_start_pz,       "Sim_mu_start_pz/D");
-  effTreeFD->Branch("Sim_mu_end_px",           &b_Sim_mu_end_px,         "Sim_mu_end_px/D");
-  effTreeFD->Branch("Sim_mu_end_py",           &b_Sim_mu_end_py,         "Sim_mu_end_py/D");
-  effTreeFD->Branch("Sim_mu_end_pz",           &b_Sim_mu_end_pz,         "Sim_mu_end_pz/D");
-  effTreeFD->Branch("Sim_hadron_throw_result", &b_Sim_hadron_throw_result);                         // nested vector
-  effTreeFD->Branch("Sim_hadronic_Edep_a2",    &b_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
+  effTreeFD->Branch("ND_off_axis_pos_vec",                    &b_ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+  effTreeFD->Branch("Sim_mu_start_vx",                        &b_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
+  effTreeFD->Branch("Sim_mu_start_vy",                        &b_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
+  effTreeFD->Branch("Sim_mu_start_vz",                        &b_Sim_mu_start_vz,       "Sim_mu_start_vz/D");
+  effTreeFD->Branch("Sim_mu_end_vx",                          &b_Sim_mu_end_vx);
+  effTreeFD->Branch("Sim_mu_end_vy",                          &b_Sim_mu_end_vy,         "Sim_mu_end_vy/D");
+  effTreeFD->Branch("Sim_mu_end_vz",                          &b_Sim_mu_end_vz,         "Sim_mu_end_vz/D");
+  effTreeFD->Branch("Sim_mu_start_px",                        &b_Sim_mu_start_px,       "Sim_mu_start_px/D");
+  effTreeFD->Branch("Sim_mu_start_py",                        &b_Sim_mu_start_py,       "Sim_mu_start_py/D");
+  effTreeFD->Branch("Sim_mu_start_pz",                        &b_Sim_mu_start_pz,       "Sim_mu_start_pz/D");
+  effTreeFD->Branch("Sim_mu_end_px",                          &b_Sim_mu_end_px,         "Sim_mu_end_px/D");
+  effTreeFD->Branch("Sim_mu_end_py",                          &b_Sim_mu_end_py,         "Sim_mu_end_py/D");
+  effTreeFD->Branch("Sim_mu_end_pz",                          &b_Sim_mu_end_pz,         "Sim_mu_end_pz/D");
+  effTreeFD->Branch("Sim_hadron_contain_result_before_throw", &b_Sim_hadron_contain_result_before_throw);          // nested vector
+  effTreeFD->Branch("Sim_hadron_throw_result",                &b_Sim_hadron_throw_result);
+  effTreeFD->Branch("Sim_hadronic_Edep_a2",                   &b_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
 
   //
   // A separate tree to store translations and rotations of throws
@@ -359,6 +370,7 @@ int main(){
     // Initialize for the event
     b_Sim_mu_start_vx.clear();
     b_Sim_mu_end_vx.clear();
+    b_Sim_hadron_contain_result_before_throw.clear();
     b_Sim_hadron_throw_result.clear();
 
     //
@@ -425,6 +437,7 @@ int main(){
 
       int vtx_vx_counter = 0;
       hadron_throw_result_vec_for_vtx_vx.clear(); // Need to initialize before loop over vtx x vec
+      hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
 
       for ( double i_vtx_vx : b_vtx_vx_vec ) {
 
@@ -449,19 +462,29 @@ int main(){
 
         // Need to loop deposits many times as the hadron containment below need vtx x first
         for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+
           // Relative to muon start position
           HadronHitPoss.emplace_back( Sim_hadronic_hit_x_a->at(ihadronhit) - Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
+
           // Need to apply R_x(theta) for hadron y/z, do not affect x
           HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*(Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz) );
           HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*(Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz) );
           HadronHitEdeps.emplace_back( Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
-        }
+
+        } // end for loop
 
         eff->setHitSegEdeps(HadronHitEdeps);
-        eff->setHitSegPoss(HadronHitPoss);
+        eff->setHitSegPoss(HadronHitPoss); // this is converted hadrom deposit pos in ND coordinate sys.
 
-        // Get hadron containment result after setVertex and setDecayPos
-        // set flag to false: the check on ND event containment does not apply to FD event
+        //
+        // Get hadron containment result after everything is set to ND coordinate sys
+        //
+
+        // Store hadron containment result for the FD evt before doing random throws
+        hadron_contain_result_before_throw = eff->getHadronContainmentOrigin();
+        hadron_contain_result_before_throw_vec_for_vtx_vx.emplace_back(hadron_contain_result_before_throw);
+
+        // Do random throws regardless whether FD evt is contained in ND volume by setting a false flag
         hadron_throw_result = eff->getHadronContainmentThrows(false); // Every 64 throw results stored into a 64 bit unsigned int: 0101101...
         hadron_throw_result_vec_for_vtx_vx.emplace_back(hadron_throw_result);
 
@@ -469,6 +492,7 @@ int main(){
 
       } // end Loop over b_vtx_vx_vec
 
+      b_Sim_hadron_contain_result_before_throw.emplace_back(hadron_contain_result_before_throw_vec_for_vtx_vx);
       b_Sim_hadron_throw_result.emplace_back(hadron_throw_result_vec_for_vtx_vx);
 
     }   // end Loop over b_ND_off_axis_pos_vec
