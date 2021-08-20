@@ -47,6 +47,8 @@ void FDEffCalc() {
   TString TitleX       = "Vertex x [cm]";
   TString TitleY       = "Hadron contain efficiency";
   TString TitleZ       = "Events";
+  TString HadETitleX   = "E_{h} [MeV]";
+  TString HadETitleY   = "Events/100 MeV";
   TString LepETitleX   = "E_{l} [MeV]";
   TString LepETitleY   = "Events/MeV";
   TString DrawOption   = "COLZ TEXT";
@@ -59,14 +61,16 @@ void FDEffCalc() {
   //
 
   // Initialize
-  double Sim_mu_start_px;
-  double Sim_mu_start_py;
-  double Sim_mu_start_pz;
-  double Sim_hadronic_Edep_a2;
   vector<double> *ND_off_axis_pos_vec = 0; // unit: m, need initialize 0 here to avoid error
   vector<double> *Sim_mu_start_vx     = 0; // unit: cm
   vector<vector<vector<vector<bool> > > > *Sim_hadron_contain_result_before_throw = 0; // Nested vector: ND off axis position x, evt vtx x, vetoSize, vetoEnergy
   vector<vector<vector<vector<vector<uint64_t> > > > > *Sim_hadron_throw_result   = 0; // ...... ....... .. ... .... ........ .. ... ... .. ......... .........., 64-throw-result chunks
+  double Sim_mu_start_vy;
+  double Sim_mu_start_vz;
+  double Sim_mu_start_px;
+  double Sim_mu_start_py;
+  double Sim_mu_start_pz;
+  double Sim_hadronic_Edep_a2;
   // Random throws
   vector<float> *throwVtxY = 0; // unit: cm
   vector<float> *throwVtxZ = 0;
@@ -78,6 +82,8 @@ void FDEffCalc() {
   myhadronchain->SetBranchAddress("Sim_mu_start_vx",                        &Sim_mu_start_vx);         // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
   myhadronchain->SetBranchAddress("Sim_hadron_contain_result_before_throw", &Sim_hadron_contain_result_before_throw);
   myhadronchain->SetBranchAddress("Sim_hadron_throw_result",                &Sim_hadron_throw_result);
+  myhadronchain->SetBranchAddress("Sim_mu_start_vy",                        &Sim_mu_start_vy);
+  myhadronchain->SetBranchAddress("Sim_mu_start_vz",                        &Sim_mu_start_vz);
   myhadronchain->SetBranchAddress("Sim_mu_start_px",                        &Sim_mu_start_px);
   myhadronchain->SetBranchAddress("Sim_mu_start_py",                        &Sim_mu_start_py);
   myhadronchain->SetBranchAddress("Sim_mu_start_pz",                        &Sim_mu_start_pz);
@@ -98,18 +104,24 @@ void FDEffCalc() {
   int mplot = ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize + 1;
 
   // Create a dynamic array of pointers
-  TH2F** NdOffAxisPos = new TH2F*[nplot];
+  TH2F** Hadron_eff_vs_vtx_x   = new TH2F*[nplot];
+  TH1F** FDHadE                = new TH1F*[nplot*mplot];
+  TH1F** FDHadE_HadronInND     = new TH1F*[nplot*mplot];
+  TH1F** FDHadE_HadronEffWgted = new TH1F*[nplot*mplot];
   TH1F** FDLepE                = new TH1F*[nplot*mplot];
   TH1F** FDLepE_HadronInND     = new TH1F*[nplot*mplot];
   TH1F** FDLepE_HadronEffWgted = new TH1F*[nplot*mplot];
   for ( int ihist = 0; ihist < nplot; ihist++ ) {
 
-    NdOffAxisPos[ihist] = new TH2F( TString::Format( "Hadron_eff_vs_vtx_x_NdOffAxisPos_%.2f_m", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), TString::Format( "Hadron Eff vs vtx x: ND off-axis position: %.2f m", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize + 1, ND_local_x_min, ND_local_x_max + ND_local_x_stepsize, int(1/eff_binning)+1, 0., 1 + eff_binning);
+    Hadron_eff_vs_vtx_x[ihist] = new TH2F( TString::Format( "Hadron_eff_vs_vtx_x_NdOffAxisPos_%.2f_m", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), TString::Format( "FD evt in ND: off-axis position = %.2f m", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize + 1, ND_local_x_min, ND_local_x_max + ND_local_x_stepsize, int(1/eff_binning)+1, 0., 1 + eff_binning);
 
     for ( int jhist = 0; jhist < mplot; jhist++ ) {
-      FDLepE[ihist*mplot + jhist]                = new TH1F( TString::Format( "FDLepE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm",                ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD Lep E: ND off-axis position = %.2f m, vtx x = %.1f cm", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 100., 120.);
-      FDLepE_HadronInND[ihist*mplot + jhist]     = new TH1F( TString::Format( "FDLepE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm.HadronInND",     ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD Lep E: ND off-axis position = %.2f m, vtx x = %.1f cm, hadron in ND", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 100., 120.);
-      FDLepE_HadronEffWgted[ihist*mplot + jhist] = new TH1F( TString::Format( "FDLepE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm.HadronEffWgted", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD Lep E: ND off-axis position = %.2f m, vtx x = %.1f cm, hadron eff weighted", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 100., 120.);
+      FDHadE[ihist*mplot + jhist]                = new TH1F( TString::Format( "FDHadE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm",                ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 0., 2000.);
+      FDHadE_HadronInND[ihist*mplot + jhist]     = new TH1F( TString::Format( "FDHadE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm.HadronInND",     ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm, hadron in ND", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 0., 2000.);
+      FDHadE_HadronEffWgted[ihist*mplot + jhist] = new TH1F( TString::Format( "FDHadE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm.HadronEffWgted", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm, hadron eff weighted", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 0., 2000.);
+      FDLepE[ihist*mplot + jhist]                = new TH1F( TString::Format( "FDLepE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm",                ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 100., 120.);
+      FDLepE_HadronInND[ihist*mplot + jhist]     = new TH1F( TString::Format( "FDLepE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm.HadronInND",     ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm, hadron in ND", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 100., 120.);
+      FDLepE_HadronEffWgted[ihist*mplot + jhist] = new TH1F( TString::Format( "FDLepE_NdOffAxisPos_%.2f_m.Vtx_x_%.1f_cm.HadronEffWgted", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm, hadron eff weighted", ihist*ND_off_axis_pos_stepsize + OffAxisPoints[0], jhist*ND_local_x_stepsize + ND_local_x_min ), 20, 100., 120.);
     } // end for jhist
   }   // end for ihist
 
@@ -173,7 +185,7 @@ void FDEffCalc() {
             int counter5    = 0;
             int validthrows = 0; // count no. of throws that meet ND FV cut for this evt
             int hadronpass  = 0; // count no. of throws that meet hadron containment cut
-            double hadron_contain_eff = 0; // initialize eff to zero
+            double hadron_contain_eff = 0.; // initialize eff to zero
 
             for ( vector<uint64_t>::iterator it_chunk = it_veto_energy->begin(); it_chunk != it_veto_energy->end(); ++it_chunk ) {
 
@@ -184,8 +196,8 @@ void FDEffCalc() {
               for ( unsigned int ithrow = 0; ithrow < 64; ithrow++ ) {
 
                 // Only consider valid throws where throwed FD evt vtx x/y/z meet ND FV cut, this is same as what is done for ND evts
-                // For now, we use mu start pos as evt vtx pos, they are stored in the ThrowsFD tree as random throws, in effTreeFD tree they are set to 0
-                if ( FDEffCalc_cfg::IsInNDFV(Sim_mu_start_vx->at( counter2 - 1 ), throwVtxY->at( (counter5-1)*64 + ithrow ), throwVtxZ->at( (counter5-1)*64 + ithrow ) ) ) {
+                // For now, we use mu start pos as evt vtx pos, random throws for y/z are stored in the ThrowsFD tree
+                if ( FDEffCalc_cfg::IsInNDFV( Sim_mu_start_vx->at( counter2 - 1 ), throwVtxY->at( (counter5-1)*64 + ithrow ) + Sim_mu_start_vy, throwVtxZ->at( (counter5-1)*64 + ithrow ) + Sim_mu_start_vz ) ) {
 
                   validthrows++;
 
@@ -242,7 +254,7 @@ void FDEffCalc() {
                 //
 
                 // Also skip first element of ND-off-axis as it is random
-                if ( counter1 - 1 == ifill + 1 ) NdOffAxisPos[ifill]->Fill( Sim_mu_start_vx->at( counter2 -1 ), hadron_contain_eff );
+                if ( counter1 - 1 == ifill + 1 ) Hadron_eff_vs_vtx_x[ifill]->Fill( Sim_mu_start_vx->at( counter2 -1 ), hadron_contain_eff );
 
                 //
                 // 1D histograms for each nd off-axis pos and evt vtx_x pos
@@ -253,22 +265,32 @@ void FDEffCalc() {
                   // Again skip first random elements in both vectors
                   if ( counter1 - 1 == ifill + 1 && counter2 - 1 == jfill + 1 ) {
 
-                    // Generated FD MC evts
-                    // this is simply all written evts, though they still met FD veto requirement
-                    // lepton p and mass unit: MeV?
-                    FDLepE[ifill*mplot + jfill]->Fill( sqrt( pow(Sim_mu_start_px, 2) + pow(Sim_mu_start_py, 2) + pow(Sim_mu_start_pz, 2) + pow(mu_mass, 2) ) );
+                    // FD evt (before random throws, but already converted to nd coordinate sys) need to meet ND FV cut
+                    if ( FDEffCalc_cfg::IsInNDFV( Sim_mu_start_vx->at( counter2 - 1 ), Sim_mu_start_vy, Sim_mu_start_vz ) ) {
 
-                    if ( contain_result_before_throw ) {
+                      // Generated FD MC evts
+                      // this is simply all written evts, though they still met FD veto requirement
+                      // lepton p and mass unit: MeV?
+                      // some histograms will be empty if it failed the above IsInNDFV cut, for example the evt vtx x is at ND dead region
+                      FDHadE[ifill*mplot + jfill]->Fill( Sim_hadronic_Edep_a2 );
+                      FDLepE[ifill*mplot + jfill]->Fill( sqrt( pow(Sim_mu_start_px, 2) + pow(Sim_mu_start_py, 2) + pow(Sim_mu_start_pz, 2) + pow(mu_mass, 2) ) );
 
-                      // Before throw, FD evets passing ND hadron containment cut (evt vtx y/z is set to 0)
-                      FDLepE_HadronInND[ifill*mplot + jfill]->Fill( sqrt( pow(Sim_mu_start_px, 2) + pow(Sim_mu_start_py, 2) + pow(Sim_mu_start_pz, 2) + pow(mu_mass, 2) ) );
+                      if ( contain_result_before_throw && hadron_contain_eff > 0 ) { // no negative/zero eff
 
-                      // Weighted FD evts, avoid 0 eff
-                      if ( hadron_contain_eff > 0 ) FDLepE_HadronEffWgted[ifill*mplot + jfill]->Fill( sqrt( pow(Sim_mu_start_px, 2) + pow(Sim_mu_start_py, 2) + pow(Sim_mu_start_pz, 2) + pow(mu_mass, 2) ), 1./hadron_contain_eff );
+                        // Before throw, FD evts passing ND hadron containment cut
+                        FDHadE_HadronInND[ifill*mplot + jfill]->Fill( Sim_hadronic_Edep_a2 );
+                        FDLepE_HadronInND[ifill*mplot + jfill]->Fill( sqrt( pow(Sim_mu_start_px, 2) + pow(Sim_mu_start_py, 2) + pow(Sim_mu_start_pz, 2) + pow(mu_mass, 2) ) );
 
-                    } // end if FD evt hadron contained in ND
+                        // Weighted FD evts, avoid 0 eff, in principle there should be no 0 eff, would be curious if there is
+                        FDHadE_HadronEffWgted[ifill*mplot + jfill]->Fill( Sim_hadronic_Edep_a2, 1./hadron_contain_eff );
+                        FDLepE_HadronEffWgted[ifill*mplot + jfill]->Fill( sqrt( pow(Sim_mu_start_px, 2) + pow(Sim_mu_start_py, 2) + pow(Sim_mu_start_pz, 2) + pow(mu_mass, 2) ), 1./hadron_contain_eff );
 
-                  } // end if
+
+                      } // end if FD evt (before throws) hadron contained in ND
+
+                    }   // end if pass FV cut
+
+                  }     // end if skip random elements in vectors
 
                 } // end for jfill
 
@@ -295,42 +317,156 @@ void FDEffCalc() {
 
   // Create a dynamic array of pointers
   TCanvas** c_Hadron_eff_vs_vtx_x = new TCanvas*[nplot];
+  TCanvas** c_FDHadE = new TCanvas*[nplot*mplot];
   TCanvas** c_FDLepE = new TCanvas*[nplot*mplot];
 
   for ( int ic = 0; ic < nplot; ic++ ) {
 
     // Draw 2D histograms
-    c_Hadron_eff_vs_vtx_x[ic] = new TCanvas( TString::Format( "c_Hadron_eff_vs_vtx_x_NdOffAxisPos_%.2f_m", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), TString::Format( "Hadron Eff vs vtx x: ND off-axis position = %.2f m", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), 700, 500);
+    c_Hadron_eff_vs_vtx_x[ic] = new TCanvas( TString::Format( "c_Hadron_eff_vs_vtx_x_NdOffAxisPos_%.2f_m", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), TString::Format( "FD evt in ND: off-axis position = %.2f m", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0] ), 700, 500);
     c_Hadron_eff_vs_vtx_x[ic]->cd();
-    NdOffAxisPos[ic]->GetXaxis()->SetTitle( TitleX.Data() );
-    NdOffAxisPos[ic]->GetYaxis()->SetTitle( TitleY.Data() );
-    NdOffAxisPos[ic]->GetZaxis()->SetTitle( TitleZ.Data() );
-    NdOffAxisPos[ic]->GetZaxis()->SetTitleOffset(Offset);
-    NdOffAxisPos[ic]->SetStats(0);
-    NdOffAxisPos[ic]->Draw( DrawOption.Data() );
+    Hadron_eff_vs_vtx_x[ic]->GetXaxis()->SetTitle( TitleX.Data() );
+    Hadron_eff_vs_vtx_x[ic]->GetYaxis()->SetTitle( TitleY.Data() );
+    Hadron_eff_vs_vtx_x[ic]->GetZaxis()->SetTitle( TitleZ.Data() );
+    Hadron_eff_vs_vtx_x[ic]->GetZaxis()->SetTitleOffset(Offset);
+    Hadron_eff_vs_vtx_x[ic]->SetStats(0);
+    Hadron_eff_vs_vtx_x[ic]->Draw( DrawOption.Data() );
     c_Hadron_eff_vs_vtx_x[ic]->Write();
 
     for ( int jc = 0; jc < mplot; jc++ ) {
 
-      // Overlay 1D histograms
-      c_FDLepE[ic*mplot + jc] = new TCanvas( TString::Format( "c_FDLepE_NdOffAxisPos_%.2f_m_vtx_x_%.1f_cm", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0], jc*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD Lep E: ND off-axis position = %.2f m, vtx x = %.1f cm", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0], jc*ND_local_x_stepsize + ND_local_x_min ), 700, 500);
-      c_FDLepE[ic*mplot + jc]->cd();
+      //
+      // Overlay 1D histograms on hadron deposits
+      //
 
-      FDLepE[ic*mplot + jc]->GetXaxis()->SetTitle( LepETitleX.Data() );
+      c_FDHadE[ic*mplot + jc] = new TCanvas( TString::Format( "c_FDHadE_NdOffAxisPos_%.2f_m_vtx_x_%.1f_cm", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0], jc*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0], jc*ND_local_x_stepsize + ND_local_x_min ), 700, 500);
+      c_FDHadE[ic*mplot + jc]->Clear();
+      // Create two pads for event and ratio plots
+      TPad *uppadHadE = new TPad("uppadHadE", "", 0, 0.3, 1, 1.0); // xlow, ylow, xup, yup
+      uppadHadE->SetBottomMargin(0); uppadHadE->Draw();
+      TPad *dnpadHadE = new TPad("dnpadHadE", "", 0, 0.0, 1, 0.29);
+      dnpadHadE->SetTopMargin(0); dnpadHadE->SetBottomMargin(0.3); dnpadHadE->SetGridy(); dnpadHadE->Draw();
+
+      // Draw events
+      uppadHadE->cd();
+      FDHadE[ic*mplot + jc]->GetYaxis()->SetTitle( HadETitleY.Data() );
+      FDHadE[ic*mplot + jc]->SetLineColor(4);
+      FDHadE[ic*mplot + jc]->SetStats(0);
+      FDHadE[ic*mplot + jc]->Draw("HIST E1");
+
+      FDHadE_HadronInND[ic*mplot + jc]->SetLineColor(2);
+      FDHadE_HadronInND[ic*mplot + jc]->SetStats(0);
+      FDHadE_HadronInND[ic*mplot + jc]->Draw("HIST E1 SAME");
+
+      FDHadE_HadronEffWgted[ic*mplot + jc]->SetLineColor(3);
+      FDHadE_HadronEffWgted[ic*mplot + jc]->SetStats(0);
+      FDHadE_HadronEffWgted[ic*mplot + jc]->Draw("HIST E1 SAME");
+
+      // Build Legend
+      TLegend* uppadHadEL = new TLegend(0.6, 0.5, 0.9, 0.9);
+      uppadHadEL->SetBorderSize(0); uppadHadEL->SetFillStyle(0); uppadHadEL->SetNColumns(1);
+      uppadHadEL->AddEntry(FDHadE[ic*mplot + jc], "FD MC", "l");
+      uppadHadEL->AddEntry(FDHadE_HadronInND[ic*mplot + jc], "ND contains hadron", "l");
+      uppadHadEL->AddEntry(FDHadE_HadronEffWgted[ic*mplot + jc], "Hadron eff weighted", "l");
+      uppadHadEL->Draw();
+
+      uppadHadE->Update(); uppadHadE->Modified();
+      gPad->RedrawAxis(); gPad->SetLogy();
+      c_FDHadE[ic*mplot + jc]->cd(); c_FDHadE[ic*mplot + jc]->Update();
+
+      // Plot ratio
+      dnpadHadE->cd();
+      // ratio = FDHadE_HadronEffWgted / FDHadE
+      TH1F *ratioHadE = (TH1F*)FDHadE_HadronEffWgted[ic*mplot + jc]->Clone("ratioHadE"); // clone to avoid changing the original hist
+      ratioHadE->Divide(FDHadE[ic*mplot + jc]);
+      ratioHadE->SetTitle("");
+      ratioHadE->GetXaxis()->SetTitle( HadETitleX.Data() );
+      ratioHadE->GetXaxis()->SetTitleSize(15);
+      ratioHadE->GetXaxis()->SetTitleFont(43);
+      ratioHadE->GetXaxis()->SetTitleOffset(4.0);
+      ratioHadE->GetXaxis()->SetLabelSize(15); // labels will be 15 pixels
+      ratioHadE->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+      ratioHadE->GetYaxis()->SetTitle("ratio");
+      ratioHadE->GetYaxis()->CenterTitle();
+      ratioHadE->GetYaxis()->SetTitleSize(15);
+      ratioHadE->GetYaxis()->SetTitleFont(43);
+      ratioHadE->GetYaxis()->SetTitleOffset(.9);
+      ratioHadE->GetYaxis()->SetLabelSize(15);
+      ratioHadE->GetYaxis()->SetLabelFont(43);
+      ratioHadE->Draw("E1");
+
+      c_FDHadE[ic*mplot + jc]->Write();
+
+
+      //
+      // Overlay 1D histograms on lepton E
+      //
+
+      c_FDLepE[ic*mplot + jc] = new TCanvas( TString::Format( "c_FDLepE_NdOffAxisPos_%.2f_m_vtx_x_%.1f_cm", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0], jc*ND_local_x_stepsize + ND_local_x_min ), TString::Format( "FD evt in ND: off-axis position = %.2f m, vtx x = %.1f cm", ic*ND_off_axis_pos_stepsize + OffAxisPoints[0], jc*ND_local_x_stepsize + ND_local_x_min ), 700, 500);
+      c_FDLepE[ic*mplot + jc]->Clear();
+      TPad *uppad = new TPad("uppad", "", 0, 0.3, 1, 1.0);
+      uppad->SetBottomMargin(0); uppad->Draw();
+      TPad *dnpad = new TPad("dnpad", "", 0, 0.0, 1, 0.29);
+      dnpad->SetTopMargin(0); dnpad->SetBottomMargin(0.3); dnpad->SetGridy(); dnpad->Draw();
+
+      uppad->cd();
       FDLepE[ic*mplot + jc]->GetYaxis()->SetTitle( LepETitleY.Data() );
       FDLepE[ic*mplot + jc]->SetLineColor(4);
       FDLepE[ic*mplot + jc]->SetStats(0);
-      FDLepE[ic*mplot + jc]->Draw();
+      FDLepE[ic*mplot + jc]->Draw("HIST E1");
 
       FDLepE_HadronInND[ic*mplot + jc]->SetLineColor(2);
       FDLepE_HadronInND[ic*mplot + jc]->SetStats(0);
-      FDLepE_HadronInND[ic*mplot + jc]->Draw("SAME");
+      FDLepE_HadronInND[ic*mplot + jc]->Draw("HIST E1 SAME");
 
       FDLepE_HadronEffWgted[ic*mplot + jc]->SetLineColor(3);
       FDLepE_HadronEffWgted[ic*mplot + jc]->SetStats(0);
-      FDLepE_HadronEffWgted[ic*mplot + jc]->Draw("SAME");
+      FDLepE_HadronEffWgted[ic*mplot + jc]->Draw("HIST E1 SAME");
+
+      // Build Legend
+      TLegend* uppadL = new TLegend(0.6, 0.5, 0.9, 0.9);
+      uppadL->SetBorderSize(0); uppadL->SetFillStyle(0); uppadL->SetNColumns(1);
+      uppadL->AddEntry(FDLepE[ic*mplot + jc], "FD MC", "l");
+      uppadL->AddEntry(FDLepE_HadronInND[ic*mplot + jc], "ND contains hadron", "l");
+      uppadL->AddEntry(FDLepE_HadronEffWgted[ic*mplot + jc], "Hadron eff weighted", "l");
+      uppadL->Draw();
+
+      uppad->Update(); uppad->Modified();
+      gPad->RedrawAxis(); gPad->SetLogy();
+      c_FDLepE[ic*mplot + jc]->cd(); c_FDLepE[ic*mplot + jc]->Update();
+
+      // Plot ratio
+      dnpad->cd();
+      // ratio = FDLepE_HadronEffWgted / FDLepE
+      TH1F *ratio = (TH1F*)FDLepE_HadronEffWgted[ic*mplot + jc]->Clone("ratio");
+      ratio->Divide(FDLepE[ic*mplot + jc]);
+      ratio->SetTitle("");
+      ratio->GetXaxis()->SetTitle( LepETitleX.Data() );
+      ratio->GetXaxis()->SetTitleSize(15);
+      ratio->GetXaxis()->SetTitleFont(43);
+      ratio->GetXaxis()->SetTitleOffset(4.0);
+      ratio->GetXaxis()->SetLabelSize(15);
+      ratio->GetXaxis()->SetLabelFont(43);
+      ratio->GetYaxis()->SetTitle("ratio");
+      ratio->GetYaxis()->CenterTitle();
+      ratio->GetYaxis()->SetTitleSize(15);
+      ratio->GetYaxis()->SetTitleFont(43);
+      ratio->GetYaxis()->SetTitleOffset(.9);
+      ratio->GetYaxis()->SetLabelSize(15);
+      ratio->GetYaxis()->SetLabelFont(43);
+      ratio->Draw("E1");
 
       c_FDLepE[ic*mplot + jc]->Write();
+
+      // delete objects to avoid potential memory leak
+      delete uppadHadE;
+      delete dnpadHadE;
+      delete uppad;
+      delete dnpad;
+      delete uppadHadEL;
+      delete uppadL;
+      delete ratioHadE;
+      delete ratio;
 
     } // end mplot
 

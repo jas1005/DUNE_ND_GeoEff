@@ -150,7 +150,7 @@ int main(){
 
   if (verbose) std::cout << "b_vtx_vx_vec size: "<< b_vtx_vx_vec.size() << std::endl;
 
-  // Lepton info
+  // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   vector<double> b_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
   vector<double> b_Sim_mu_end_vx;
   double b_Sim_mu_start_vy;         // Do not use float!
@@ -335,16 +335,23 @@ int main(){
 
     //
     // Use relative coordinate for FD event (relative to muon start position)
-    // Set muon start to (x, 0, 0), eventually should use (x, 0, 0) for event vtx
+    // Set muon start pos in ND to (random x/stepwise increased x, random y, random z),
+    // eventually should set this for actual event vtx, not mu start pos
     //
 
     // Branches that are not affected by ND off axis position and vtx x (loops below)
-    // perhaps we do not need to store branches that are 0s?
-    b_Sim_mu_start_vy = 0.;                              // y/z will be randomly translated later, so just use 0
-    b_Sim_mu_start_vz = 0.;
-    b_Sim_mu_end_vy   = Sim_mu_end_vy - Sim_mu_start_vy; // w.r.t. mu start y, + 0 omitted
-    b_Sim_mu_end_vz   = Sim_mu_end_vz - Sim_mu_start_vz; // w.r.t. mu start z, + 0 omitted
-    b_Sim_mu_start_px = Sim_mu_start_px;                 // momentum is not affected by coordinate
+    // Use random y/z for each FD evt in ND volume, it will be randomly translated later anyway
+    TRandom3 *r3_mu_start_vy_nd = new TRandom3(); // Initialize random number generator, put inside the event loop so each event is different
+    r3_mu_start_vy_nd->SetSeed(0);                // Set the seed (required to avoid repeated random numbers in each sequence)
+    b_Sim_mu_start_vy = r3_mu_start_vy_nd->Uniform( NDActiveVol_min[1], NDActiveVol_max[1] );
+
+    TRandom3 *r3_mu_start_vz_nd = new TRandom3();
+    r3_mu_start_vz_nd->SetSeed(0);
+    b_Sim_mu_start_vz = r3_mu_start_vz_nd->Uniform( NDActiveVol_min[2], NDActiveVol_max[2] );
+
+    b_Sim_mu_end_vy   = Sim_mu_end_vy - Sim_mu_start_vy + b_Sim_mu_start_vy; // w.r.t. mu start random y in ND
+    b_Sim_mu_end_vz   = Sim_mu_end_vz - Sim_mu_start_vz + b_Sim_mu_start_vz;
+    b_Sim_mu_start_px = Sim_mu_start_px;                                     // momentum is not affected by coordinate
     b_Sim_mu_start_py = Sim_mu_start_py;
     b_Sim_mu_start_pz = Sim_mu_start_pz;
     b_Sim_mu_end_px   = Sim_mu_end_px;
@@ -363,7 +370,11 @@ int main(){
     // R_x(theta) =   0      cos(theta)   -sin(theta)
     //                0      sin(theta)    cos(theta) ]
     //
-    // As muon start position is set to 0 for y-z, rotation only affects end position and all hadron positions below
+
+    // Rotation affects mu start/end position and hadron positions below
+    b_Sim_mu_start_vy = cos( 2*abs(beamLineRotation) )*b_Sim_mu_start_vy - sin( 2*abs(beamLineRotation) )*b_Sim_mu_start_vz;
+    b_Sim_mu_start_vz = sin( 2*abs(beamLineRotation) )*b_Sim_mu_start_vy + cos( 2*abs(beamLineRotation) )*b_Sim_mu_start_vz;
+
     b_Sim_mu_end_vy = cos( 2*abs(beamLineRotation) )*b_Sim_mu_end_vy - sin( 2*abs(beamLineRotation) )*b_Sim_mu_end_vz;
     b_Sim_mu_end_vz = sin( 2*abs(beamLineRotation) )*b_Sim_mu_end_vy + cos( 2*abs(beamLineRotation) )*b_Sim_mu_end_vz;
 
@@ -463,12 +474,12 @@ int main(){
         // Need to loop deposits many times as the hadron containment below need vtx x first
         for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
-          // Relative to muon start position
+          // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, b_Sim_mu_start_vy, b_Sim_mu_start_vz)
           HadronHitPoss.emplace_back( Sim_hadronic_hit_x_a->at(ihadronhit) - Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
+          // Again, need to apply R_x(theta) for hadron y/z, do not affect x
+          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + b_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + b_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + b_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + b_Sim_mu_start_vz ) );
 
-          // Need to apply R_x(theta) for hadron y/z, do not affect x
-          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*(Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz) );
-          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*(Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz) );
           HadronHitEdeps.emplace_back( Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
 
         } // end for loop
