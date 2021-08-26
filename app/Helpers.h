@@ -7,7 +7,7 @@
 
 bool verbose = false; // default to false, true for debugging, a lot of printouts
 
-unsigned long N_throws = 128; // Use multiple of 64
+unsigned long N_throws = 4096; // Use multiple of 64
 
 // Active volume for FD: based on ntuple hadron hit x/y/z histogram
 float FDActiveVol_min[] = {-370., -600.,    0.};
@@ -29,8 +29,6 @@ bool random_vtx_vx         = false; // Set to true will only use a random vtx x 
 double ND_local_x_stepsize = 50.;   // unit cm, must be a positive number below 200
 double ND_local_x_min      = -200.;
 double ND_local_x_max      = 200.;
-
-double mu_mass = 105.66; // MeV
 
 namespace FDEffCalc_cfg {
 

@@ -41,7 +41,9 @@ make -j geoEff
 The output root file from running ```runGeoEffFDEvtSim``` can be used to calculate FD event hadron containment efficiency by running:
 
 ```
+cd /dune/app/users/weishi/NDEff/DUNE_ND_GeoEff
 source setup.sh
+cd app
 root -l -b -q FDEffCalc.C
 ```
 

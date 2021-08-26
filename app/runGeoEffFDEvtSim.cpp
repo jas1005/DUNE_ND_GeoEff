@@ -49,6 +49,8 @@ int main(){
   Int_t Run;
   Int_t SubRun;
   Int_t Event;
+  Int_t Sim_nNumu;
+  double Gen_numu_E;
   Int_t Sim_nMu;
   double Sim_mu_start_vx; // unit: cm?
   double Sim_mu_start_vy;
@@ -59,9 +61,11 @@ int main(){
   double Sim_mu_start_px;
   double Sim_mu_start_py;
   double Sim_mu_start_pz;
+  double Sim_mu_start_E;
   double Sim_mu_end_px;
   double Sim_mu_end_py;
   double Sim_mu_end_pz;
+  double Sim_mu_end_E;
   double Sim_hadronic_Edep_a2;
   Int_t Sim_n_hadronic_Edep_a;
   vector<float> *Sim_hadronic_hit_Edep_a2 = 0; // Need initialize 0 here to avoid error
@@ -74,23 +78,27 @@ int main(){
   // ntuple path on FNAL dunegpvm machine
   t->Add("/dune/app/users/weishi/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
-  t->SetBranchAddress("Run",    &Run);
-  t->SetBranchAddress("SubRun", &SubRun);
-  t->SetBranchAddress("Event",  &Event);
-  t->SetBranchAddress("Sim_nMu",          &Sim_nMu);
-  t->SetBranchAddress("Sim_mu_start_vx",  &Sim_mu_start_vx);
-  t->SetBranchAddress("Sim_mu_start_vy",  &Sim_mu_start_vy);
-  t->SetBranchAddress("Sim_mu_start_vz",  &Sim_mu_start_vz);
-  t->SetBranchAddress("Sim_mu_end_vx",    &Sim_mu_end_vx);
-  t->SetBranchAddress("Sim_mu_end_vy",    &Sim_mu_end_vy);
-  t->SetBranchAddress("Sim_mu_end_vz",    &Sim_mu_end_vz);
-  t->SetBranchAddress("Sim_mu_start_px",  &Sim_mu_start_px);
-  t->SetBranchAddress("Sim_mu_start_py",  &Sim_mu_start_py);
-  t->SetBranchAddress("Sim_mu_start_pz",  &Sim_mu_start_pz);
-  t->SetBranchAddress("Sim_mu_end_px",    &Sim_mu_end_px);
-  t->SetBranchAddress("Sim_mu_end_py",    &Sim_mu_end_py);
-  t->SetBranchAddress("Sim_mu_end_pz",    &Sim_mu_end_pz);
-  t->SetBranchAddress("Sim_hadronic_Edep_a2",     &Sim_hadronic_Edep_a2); // tot hadron E dep
+  t->SetBranchAddress("Run",                      &Run);
+  t->SetBranchAddress("SubRun",                   &SubRun);
+  t->SetBranchAddress("Event",                    &Event);
+  t->SetBranchAddress("Sim_nNumu",                &Sim_nNumu);
+  t->SetBranchAddress("Gen_numu_E",               &Gen_numu_E);
+  t->SetBranchAddress("Sim_nMu",                  &Sim_nMu);
+  t->SetBranchAddress("Sim_mu_start_vx",          &Sim_mu_start_vx);
+  t->SetBranchAddress("Sim_mu_start_vy",          &Sim_mu_start_vy);
+  t->SetBranchAddress("Sim_mu_start_vz",          &Sim_mu_start_vz);
+  t->SetBranchAddress("Sim_mu_end_vx",            &Sim_mu_end_vx);
+  t->SetBranchAddress("Sim_mu_end_vy",            &Sim_mu_end_vy);
+  t->SetBranchAddress("Sim_mu_end_vz",            &Sim_mu_end_vz);
+  t->SetBranchAddress("Sim_mu_start_px",          &Sim_mu_start_px);
+  t->SetBranchAddress("Sim_mu_start_py",          &Sim_mu_start_py);
+  t->SetBranchAddress("Sim_mu_start_pz",          &Sim_mu_start_pz);
+  t->SetBranchAddress("Sim_mu_start_E",           &Sim_mu_start_E);
+  t->SetBranchAddress("Sim_mu_end_px",            &Sim_mu_end_px);
+  t->SetBranchAddress("Sim_mu_end_py",            &Sim_mu_end_py);
+  t->SetBranchAddress("Sim_mu_end_pz",            &Sim_mu_end_pz);
+  t->SetBranchAddress("Sim_mu_end_E",             &Sim_mu_end_E);
+  t->SetBranchAddress("Sim_hadronic_Edep_a2",     &Sim_hadronic_Edep_a2);
   t->SetBranchAddress("Sim_n_hadronic_Edep_a",    &Sim_n_hadronic_Edep_a);
   t->SetBranchAddress("Sim_hadronic_hit_Edep_a2", &Sim_hadronic_hit_Edep_a2);
   t->SetBranchAddress("Sim_hadronic_hit_x_a",     &Sim_hadronic_hit_x_a);
@@ -151,6 +159,7 @@ int main(){
   if (verbose) std::cout << "b_vtx_vx_vec size: "<< b_vtx_vx_vec.size() << std::endl;
 
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
+  double b_Gen_numu_E;
   vector<double> b_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
   vector<double> b_Sim_mu_end_vx;
   double b_Sim_mu_start_vy;         // Do not use float!
@@ -160,9 +169,11 @@ int main(){
   double b_Sim_mu_start_px;
   double b_Sim_mu_start_py;
   double b_Sim_mu_start_pz;
+  double b_Sim_mu_start_E;
   double b_Sim_mu_end_px;
   double b_Sim_mu_end_py;
   double b_Sim_mu_end_pz;
+  double b_Sim_mu_end_E;
   // Tot hadron E dep
   double b_Sim_hadronic_Edep_a2;
   // Result of hadron containment is stored in nested vectors, need to generate dictionary
@@ -194,6 +205,7 @@ int main(){
   //
 
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
+  effTreeFD->Branch("Gen_numu_E",                             &b_Gen_numu_E,            "Gen_numu_E/D");
   effTreeFD->Branch("ND_off_axis_pos_vec",                    &b_ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
   effTreeFD->Branch("Sim_mu_start_vx",                        &b_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
   effTreeFD->Branch("Sim_mu_start_vy",                        &b_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
@@ -204,9 +216,11 @@ int main(){
   effTreeFD->Branch("Sim_mu_start_px",                        &b_Sim_mu_start_px,       "Sim_mu_start_px/D");
   effTreeFD->Branch("Sim_mu_start_py",                        &b_Sim_mu_start_py,       "Sim_mu_start_py/D");
   effTreeFD->Branch("Sim_mu_start_pz",                        &b_Sim_mu_start_pz,       "Sim_mu_start_pz/D");
+  effTreeFD->Branch("Sim_mu_start_E",                         &b_Sim_mu_start_E,        "Sim_mu_start_E/D");
   effTreeFD->Branch("Sim_mu_end_px",                          &b_Sim_mu_end_px,         "Sim_mu_end_px/D");
   effTreeFD->Branch("Sim_mu_end_py",                          &b_Sim_mu_end_py,         "Sim_mu_end_py/D");
   effTreeFD->Branch("Sim_mu_end_pz",                          &b_Sim_mu_end_pz,         "Sim_mu_end_pz/D");
+  effTreeFD->Branch("Sim_mu_end_E",                           &b_Sim_mu_end_E,          "Sim_mu_end_E/D");
   effTreeFD->Branch("Sim_hadron_contain_result_before_throw", &b_Sim_hadron_contain_result_before_throw);          // nested vector
   effTreeFD->Branch("Sim_hadron_throw_result",                &b_Sim_hadron_throw_result);
   effTreeFD->Branch("Sim_hadronic_Edep_a2",                   &b_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
@@ -282,7 +296,7 @@ int main(){
     if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
 
     //
-    // Skip events without hadronic deposits or muon
+    // Skip events without muon/hadronic deposits
     //
 
     if ( Sim_nMu == 0 || Sim_n_hadronic_Edep_a == 0 ) continue;
@@ -340,6 +354,8 @@ int main(){
     //
 
     // Branches that are not affected by ND off axis position and vtx x (loops below)
+    b_Gen_numu_E      = Gen_numu_E;
+
     // Use random y/z for each FD evt in ND volume, it will be randomly translated later anyway
     TRandom3 *r3_mu_start_vy_nd = new TRandom3(); // Initialize random number generator, put inside the event loop so each event is different
     r3_mu_start_vy_nd->SetSeed(0);                // Set the seed (required to avoid repeated random numbers in each sequence)
@@ -354,9 +370,11 @@ int main(){
     b_Sim_mu_start_px = Sim_mu_start_px;                                     // momentum is not affected by coordinate
     b_Sim_mu_start_py = Sim_mu_start_py;
     b_Sim_mu_start_pz = Sim_mu_start_pz;
+    b_Sim_mu_start_E  = Sim_mu_start_E;
     b_Sim_mu_end_px   = Sim_mu_end_px;
     b_Sim_mu_end_py   = Sim_mu_end_py;
     b_Sim_mu_end_pz   = Sim_mu_end_pz;
+    b_Sim_mu_end_E    = Sim_mu_end_E;
 
     b_Sim_hadronic_Edep_a2 = Sim_hadronic_Edep_a2;
 
