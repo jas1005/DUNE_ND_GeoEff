@@ -36,6 +36,17 @@ cmake -DPYTHON_EXECUTABLE:FILEPATH=`which python` .
 make -j geoEff    
 ```
 
+Tips on DUNE FNAL machines: if want to run interactively for longer time even when terminal connection is lost, use screen option:
+
+```
+screen
+# do the enviroment setup, in this case: source setup.sh
+nohup ./runGeoEffFDEvtSim >& out_throws_nohup.log &                                                # Check status: jobs -l
+# To detach from the screen session, press Ctrl+a (release) and then d to detach the process/screen.
+# To resume detached process, use: screen -r
+# 10k evts: 6.20pm start, end second day 4:52am, 10hrs32mins
+```
+
 ## Instruction for calculate FD event efficiency
 
 The output root file from running ```runGeoEffFDEvtSim``` can be used to calculate FD event hadron containment efficiency by running:
@@ -45,6 +56,7 @@ cd /dune/app/users/weishi/NDEff/DUNE_ND_GeoEff
 source setup.sh
 cd app
 root -l -b -q FDEffCalc.C
+# 5k evts: 10mins
 ```
 
 The output root file from running ```runGeoEffFDEvtSim``` can also be used for lepton NN training.
