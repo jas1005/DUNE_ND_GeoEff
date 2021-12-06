@@ -327,6 +327,7 @@ int main(){
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
     //
     b_vetoEnergyFD = vetoEnergyFD; // Add vetoEnergyFD ntuple before threshold 
+    effTreeFD->Fill();
     
     if ( vetoEnergyFD > 30 ) continue; // 30 MeV
 
