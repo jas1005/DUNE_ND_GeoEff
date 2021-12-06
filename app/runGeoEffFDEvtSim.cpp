@@ -111,6 +111,7 @@ int main(){
 
   int nentries = 0;        // Total input events
   float vetoEnergyFD; // Total hadron deposited energy in FD veto region
+  float b_vetoEnergyFD;   // Add vetoEnergy ntuple
   int iwritten = 0;        // Output event counter
   float decayZbeamCoord;
   float decayXdetCoord;
@@ -224,7 +225,7 @@ int main(){
   effTreeFD->Branch("Sim_hadron_contain_result_before_throw", &b_Sim_hadron_contain_result_before_throw);          // nested vector
   effTreeFD->Branch("Sim_hadron_throw_result",                &b_Sim_hadron_throw_result);
   effTreeFD->Branch("Sim_hadronic_Edep_a2",                   &b_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
-
+  effTreeFD->Branch("VetoEnergyFD",                           &b_vetoEnergyFD,            "vetoEnergyFD/F");
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -325,7 +326,8 @@ int main(){
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
     //
-
+    b_vetoEnergyFD = vetoEnergyFD; // Add vetoEnergyFD ntuple before threshold 
+    
     if ( vetoEnergyFD > 30 ) continue; // 30 MeV
 
     // Renew throws every 100th written event to save file size, i.e., if N = 128,
