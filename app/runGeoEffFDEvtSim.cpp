@@ -323,12 +323,13 @@ int main(){
 
     } // end loop over hadron E deposits
 
+    // Add vetoEnergyFD ntuple before threshold 
+    b_vetoEnergyFD = vetoEnergyFD; 
+    effTreeFD->Fill();
+    
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
     //
-    b_vetoEnergyFD = vetoEnergyFD; // Add vetoEnergyFD ntuple before threshold 
-    effTreeFD->Fill();
-    
     if ( vetoEnergyFD > 30 ) continue; // 30 MeV
 
     // Renew throws every 100th written event to save file size, i.e., if N = 128,
