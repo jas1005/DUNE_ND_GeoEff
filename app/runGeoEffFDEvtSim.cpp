@@ -225,7 +225,9 @@ int main(){
   effTreeFD->Branch("Sim_hadron_contain_result_before_throw", &b_Sim_hadron_contain_result_before_throw);          // nested vector
   effTreeFD->Branch("Sim_hadron_throw_result",                &b_Sim_hadron_throw_result);
   effTreeFD->Branch("Sim_hadronic_Edep_a2",                   &b_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
-  effTreeFD->Branch("VetoEnergyFD",                           &b_vetoEnergyFD,            "vetoEnergyFD/F");
+  // Add VetoE_FD branch
+  TBranch *vetoE = effTreeFD->Branch("VetoEnergyFD",                           &b_vetoEnergyFD,            "vetoEnergyFD/F");
+  
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -325,7 +327,7 @@ int main(){
 
     // Add vetoEnergyFD ntuple before threshold 
     b_vetoEnergyFD = vetoEnergyFD; 
-    effTreeFD->Fill();
+    vetoE->Fill();
     
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
