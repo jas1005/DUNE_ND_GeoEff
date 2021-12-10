@@ -313,12 +313,12 @@ int main(){
     for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
       // Veto region size: 30 cm from the active volume
-      if ( ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
-           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
-           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
-           ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
-           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
-           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
+      if ( ( Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 ) ||
+           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 ) ||
+           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 )
          ){
            vetoEnergyFD += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
