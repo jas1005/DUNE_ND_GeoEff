@@ -110,8 +110,8 @@ int main(){
   //
 
   int nentries = 0;        // Total input events
-  float vetoEnergyFD; // Total hadron deposited energy in FD veto region
-  float b_vetoEnergyFD;   // Add vetoEnergy ntuple
+  float vetoEnergyFD;      // Total hadron deposited energy in FD veto region
+  float vetoEnergyFD_new;  // Add vetoEnergy for new restriction
   int iwritten = 0;        // Output event counter
   float decayZbeamCoord;
   float decayXdetCoord;
@@ -161,6 +161,10 @@ int main(){
 
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double b_Gen_numu_E;
+  // Add veto E with two different restrictions
+  double b_vetoEnergyFD;
+  double b_vetoEnergyFD_new;
+  
   vector<double> b_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
   vector<double> b_Sim_mu_end_vx;
   double b_Sim_mu_start_vy;         // Do not use float!
@@ -207,6 +211,10 @@ int main(){
 
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
   effTreeFD->Branch("Gen_numu_E",                             &b_Gen_numu_E,            "Gen_numu_E/D");
+  // Add two vetoE branches
+  effTreeFD->Branch("vetoEnergyFD",                           &b_vetoEnergyFD,          "vetoEnergyFD/D");
+  effTreeFD->Branch("vetoEnergyFD_new",                       &b_vetoEnergyFD_new,       "vetoEnergyFD_new/D");
+  
   effTreeFD->Branch("ND_off_axis_pos_vec",                    &b_ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
   effTreeFD->Branch("Sim_mu_start_vx",                        &b_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
   effTreeFD->Branch("Sim_mu_start_vy",                        &b_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
@@ -225,8 +233,9 @@ int main(){
   effTreeFD->Branch("Sim_hadron_contain_result_before_throw", &b_Sim_hadron_contain_result_before_throw);          // nested vector
   effTreeFD->Branch("Sim_hadron_throw_result",                &b_Sim_hadron_throw_result);
   effTreeFD->Branch("Sim_hadronic_Edep_a2",                   &b_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
+  
   // Add VetoE_FD branch
-  TBranch *vetoE = effTreeFD->Branch("VetoEnergyFD",                           &b_vetoEnergyFD,            "vetoEnergyFD/F");
+  //TBranch *vetoE = effTreeFD->Branch("VetoEnergyFD",                           &b_vetoEnergyFD,            "vetoEnergyFD/F");
   
   //
   // A separate tree to store translations and rotations of throws
@@ -307,8 +316,32 @@ int main(){
     //
     // Calculate total hadron E in FD veto region
     //
-
+    // Old veto region restriction
     vetoEnergyFD = 0.;
+    // Loop over hadron E deposits
+    for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+
+      // Veto region size: 30 cm from the active volume
+      if ( ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
+           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
+           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
+         ){
+           vetoEnergyFD += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+      } // end if hadron deposit in FD veto region
+
+    } // end loop over hadron E deposits
+    b_vetoEnergyFD = vetoEnergyFD;
+    //add a vetoEnergyFD histogram in the root file
+    TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
+    hist_vetoEnergyFD->Fill(vetoEnergyFD);
+    
+    
+    
+    // New veto region restriction
+    vetoEnergyFD_new = 0.;
     // Loop over hadron E deposits
     for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
@@ -320,14 +353,18 @@ int main(){
            ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 ) ||
            ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 )
          ){
-           vetoEnergyFD += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+           vetoEnergyFD_new += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
 
     } // end loop over hadron E deposits
-
-    // Add vetoEnergyFD ntuple before threshold 
+    b_vetoEnergyFD_new = vetoEnergyFD_new;
+    //add a vetoEnergyFD histogram in the root file
+    TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
+    hist_vetoEnergyFD_new->Fill(vetoEnergyFD_new);
+    
+    /*// Add vetoEnergyFD ntuple before threshold 
     b_vetoEnergyFD = vetoEnergyFD; 
-    vetoE->Fill();
+    vetoE->Fill();*/
     
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
@@ -543,7 +580,9 @@ int main(){
   TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
-
+  hist_vetoEnergyFD->Write(); // Write vetoE hist
+  hist_vetoEnergyFD_new->Write(); // Write vetoE_new hist
+  
   outFile->Close();
 
 } // end main
