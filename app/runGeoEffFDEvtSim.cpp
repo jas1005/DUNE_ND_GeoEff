@@ -586,8 +586,7 @@ int main(){
   TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
-  hist_vetoEnergyFD->Write(); // Write vetoE hist
-  hist_vetoEnergyFD_new->Write(); // Write vetoE_new hist
+  c1->Write(); 
   
   outFile->Close();
 
