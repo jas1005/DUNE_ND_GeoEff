@@ -295,7 +295,12 @@ int main(){
   eff->setOffsetX(offset[0]);
   eff->setOffsetY(offset[1]);
   eff->setOffsetZ(offset[2]);
-
+  
+  //Add hist of veto E
+  TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
+  TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
+  
+  
   //
   // Loop over FD events
   //
@@ -335,12 +340,9 @@ int main(){
     } // end loop over hadron E deposits
     b_vetoEnergyFD = vetoEnergyFD;
     //add a vetoEnergyFD histogram in the root file
-    TCanvas *c1 = new TCanvas("c1","histogram of vetoEnergyFD",1400,500);
-    c1->Divide(2,1);
-    c1->cd(1);
-    TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
-    hist_vetoEnergyFD.Fill(vetoEnergyFD);
-    hist_vetoEnergyFD.Draw();
+    
+    hist_vetoEnergyFD->Fill(vetoEnergyFD);
+
     
     
     // New veto region restriction
@@ -362,11 +364,7 @@ int main(){
     } // end loop over hadron E deposits
     b_vetoEnergyFD_new = vetoEnergyFD_new;
     //add a vetoEnergyFD histogram in the root file
-    
-    c1->cd(2);
-    TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
-    hist_vetoEnergyFD_new.Fill(vetoEnergyFD_new);
-    hist_vetoEnergyFD_new.Draw();
+    hist_vetoEnergyFD_new->Fill(vetoEnergyFD_new);
     
     /*// Add vetoEnergyFD ntuple before threshold 
     b_vetoEnergyFD = vetoEnergyFD; 
@@ -586,7 +584,8 @@ int main(){
   TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
-  c1->Write(); 
+  hist_vetoEnergyFD->Write(); 
+  hist_vetoEnergyFD_new->Write();
   
   outFile->Close();
 
