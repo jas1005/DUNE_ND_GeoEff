@@ -52,6 +52,8 @@ int main(){
   Int_t Sim_nNumu;
   double Gen_numu_E;
   Int_t Sim_nMu;
+  Int_t CCNC_truth; // Choose CCNC
+  Int_t neuPDG; // neutrino PDG
   double Sim_mu_start_vx; // unit: cm?
   double Sim_mu_start_vy;
   double Sim_mu_start_vz;
@@ -84,6 +86,8 @@ int main(){
   t->SetBranchAddress("Sim_nNumu",                &Sim_nNumu);
   t->SetBranchAddress("Gen_numu_E",               &Gen_numu_E);
   t->SetBranchAddress("Sim_nMu",                  &Sim_nMu);
+  t->SetBranchAddress("CCNC_truth",                   &CCNC_truth);
+  t->SetBranchAddress("neuPDG",                       &neuPDG);
   t->SetBranchAddress("Sim_mu_start_vx",          &Sim_mu_start_vx);
   t->SetBranchAddress("Sim_mu_start_vy",          &Sim_mu_start_vy);
   t->SetBranchAddress("Sim_mu_start_vz",          &Sim_mu_start_vz);
@@ -317,6 +321,8 @@ int main(){
     //
 
     if ( Sim_nMu == 0 || Sim_n_hadronic_Edep_a == 0 ) continue;
+    if ( CCNC_truth == 1) continue;   // only use CC events
+    if (neuPDG != 14) continue;       // only use muon neu
 
     //
     // Calculate total hadron E in FD veto region
