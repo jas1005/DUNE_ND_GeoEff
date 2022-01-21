@@ -322,7 +322,7 @@ int main(){
 
     if ( Sim_nMu == 0 || Sim_n_hadronic_Edep_a == 0 ) continue;
     if ( CCNC_truth == 1) continue;   // only use CC events
-    if (neuPDG != 14) continue;       // only use muon neu
+    if ( abs(neuPDG) != 14 ) continue;       // only use muon neu
 
     //
     // Calculate total hadron E in FD veto region
