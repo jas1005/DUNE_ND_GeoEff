@@ -420,13 +420,19 @@ int main(){
 
     b_Sim_mu_end_vy   = Sim_mu_end_vy - Sim_mu_start_vy + b_Sim_mu_start_vy; // w.r.t. mu start random y in ND
     b_Sim_mu_end_vz   = Sim_mu_end_vz - Sim_mu_start_vz + b_Sim_mu_start_vz;
-    b_Sim_mu_start_px = Sim_mu_start_px;                                     // momentum is not affected by coordinate
-    b_Sim_mu_start_py = Sim_mu_start_py;
-    b_Sim_mu_start_pz = Sim_mu_start_pz;
-    b_Sim_mu_start_E  = Sim_mu_start_E;
+    
+    // X momentum is not affected by coordinate rotation
+    b_Sim_mu_start_px = Sim_mu_start_px;                                     
     b_Sim_mu_end_px   = Sim_mu_end_px;
-    b_Sim_mu_end_py   = Sim_mu_end_py;
-    b_Sim_mu_end_pz   = Sim_mu_end_pz;
+    
+    // Rotation affects mu start/end momentum vector in Y and Z axes, using the same rotation matrix below.
+    b_Sim_mu_start_py = cos( 2*abs(beamLineRotation) )*Sim_mu_start_py - sin( 2*abs(beamLineRotation) )*Sim_mu_start_pz;
+    b_Sim_mu_start_pz = sin( 2*abs(beamLineRotation) )*Sim_mu_start_py + cos( 2*abs(beamLineRotation) )*Sim_mu_start_pz;
+    b_Sim_mu_end_py   = cos( 2*abs(beamLineRotation) )*Sim_mu_end_py - sin( 2*abs(beamLineRotation) )*Sim_mu_end_pz;
+    b_Sim_mu_end_pz   = sin( 2*abs(beamLineRotation) )*Sim_mu_end_py + cos( 2*abs(beamLineRotation) )*Sim_mu_end_pz;
+    
+    // Energy is a scalar, doesn't change
+    b_Sim_mu_start_E  = Sim_mu_start_E;
     b_Sim_mu_end_E    = Sim_mu_end_E;
 
     b_Sim_hadronic_Edep_a2 = Sim_hadronic_Edep_a2;
