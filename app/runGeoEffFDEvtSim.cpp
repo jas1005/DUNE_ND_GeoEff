@@ -46,7 +46,7 @@ int main(){
   // Branches to be read from n-tuple produced from FD MC
   //
 
-  Int_t Run;
+  Int_t FD_Run;
   Int_t SubRun;
   Int_t Event;
   Int_t Sim_nNumu;
@@ -80,7 +80,7 @@ int main(){
   // ntuple path on FNAL dunegpvm machine
   t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
-  t->SetBranchAddress("Run",                      &Run);
+  t->SetBranchAddress("Run",                      &FD_Run);
   t->SetBranchAddress("SubRun",                   &SubRun);
   t->SetBranchAddress("Event",                    &Event);
   t->SetBranchAddress("Sim_nNumu",                &Sim_nNumu);
@@ -314,7 +314,7 @@ int main(){
   for ( int ientry = 0; ientry < nentries; ientry++ ) {
 
     t->GetEntry(ientry);
-    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", run: " << Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
+    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
 
     //
     // Skip events without muon/hadronic deposits
