@@ -47,7 +47,7 @@ int main(){
   //
 
   int FD_Run;
-  int SubRun;
+  int FD_SubRun;
   int Event;
   int Sim_nNumu;
   double Gen_numu_E;
@@ -81,7 +81,7 @@ int main(){
   t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
   t->SetBranchAddress("Run",                      &FD_Run);
-  t->SetBranchAddress("SubRun",                   &SubRun);
+  t->SetBranchAddress("SubRun",                   &FD_SubRun);
   t->SetBranchAddress("Event",                    &Event);
   t->SetBranchAddress("Sim_nNumu",                &Sim_nNumu);
   t->SetBranchAddress("Gen_numu_E",               &Gen_numu_E);
@@ -314,7 +314,7 @@ int main(){
   for ( int ientry = 0; ientry < nentries; ientry++ ) {
 
     t->GetEntry(ientry);
-    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", subrun: " << SubRun << ", event: " << Event << std::endl;
+    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", event: " << Event << std::endl;
 
     //
     // Skip events without muon/hadronic deposits
