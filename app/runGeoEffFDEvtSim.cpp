@@ -46,14 +46,14 @@ int main(){
   // Branches to be read from n-tuple produced from FD MC
   //
 
-  Int_t FD_Run;
-  Int_t SubRun;
-  Int_t Event;
-  Int_t Sim_nNumu;
+  int FD_Run;
+  int SubRun;
+  int Event;
+  int Sim_nNumu;
   double Gen_numu_E;
-  Int_t Sim_nMu;
-  Int_t CCNC_truth; // Choose CCNC
-  Int_t neuPDG; // neutrino PDG
+  int Sim_nMu;
+  int CCNC_truth; // Choose CCNC
+  int neuPDG; // neutrino PDG
   double Sim_mu_start_vx; // unit: cm?
   double Sim_mu_start_vy;
   double Sim_mu_start_vz;
@@ -69,7 +69,7 @@ int main(){
   double Sim_mu_end_pz;
   double Sim_mu_end_E;
   double Sim_hadronic_Edep_a2;
-  Int_t Sim_n_hadronic_Edep_a;
+  int Sim_n_hadronic_Edep_a;
   vector<float> *Sim_hadronic_hit_Edep_a2 = 0; // Need initialize 0 here to avoid error
   vector<float> *Sim_hadronic_hit_x_a     = 0; // Same as mu pos unit: cm?
   vector<float> *Sim_hadronic_hit_y_a     = 0;
