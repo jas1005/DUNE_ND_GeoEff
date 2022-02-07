@@ -401,10 +401,9 @@ int main(){
     // Set muon start pos in ND to (random x/stepwise increased x, random y, random z),
     // eventually should set this for actual event vtx, not mu start pos
     //
-
-    // Branches that are not affected by ND off axis position and vtx x (loops below)
-    ND_Gen_numu_E      = FD_Gen_numu_E;
-
+    
+    
+    /*
     // Use random y/z for each FD evt in ND volume, it will be randomly translated later anyway
     TRandom3 *r3_mu_start_vy_nd = new TRandom3(); // Initialize random number generator, put inside the event loop so each event is different
     r3_mu_start_vy_nd->SetSeed(0);                // Set the seed (required to avoid repeated random numbers in each sequence)
@@ -416,6 +415,35 @@ int main(){
 
     ND_Sim_mu_end_vy   = FD_Sim_mu_end_vy - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy; // w.r.t. mu start random y in ND
     ND_Sim_mu_end_vz   = FD_Sim_mu_end_vz - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz;
+    */
+    
+    
+    // Local y-z axes in FD and ND are rotated due to Earth curvature, x direction is not change
+    // FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
+    // Apply an active transformation matrix R_x(theta): rotate each point counterclockwise by theta around x-axis in ND
+    // theta is 2*|beamLineRotation|
+    // Transform FD relative coordinate, x coordinate unchanged
+    //
+    //              [ 1          0             0
+    // R_x(theta) =   0      cos(theta)   -sin(theta)
+    //                0      sin(theta)    cos(theta) ]
+    //
+
+    // Rotation affects mu start/end position and hadron positions below
+    ND_Sim_mu_start_vy = cos( 2*abs(beamLineRotation) )*FD_Sim_mu_start_vy - sin( 2*abs(beamLineRotation) )*FD_Sim_mu_start_vz;
+    ND_Sim_mu_start_vz = sin( 2*abs(beamLineRotation) )*FD_Sim_mu_start_vy + cos( 2*abs(beamLineRotation) )*FD_Sim_mu_start_vz;
+
+    ND_Sim_mu_end_vy = cos( 2*abs(beamLineRotation) )*FD_Sim_mu_end_vy - sin( 2*abs(beamLineRotation) )*FD_Sim_mu_end_vz;
+    ND_Sim_mu_end_vz = sin( 2*abs(beamLineRotation) )*FD_Sim_mu_end_vy + cos( 2*abs(beamLineRotation) )*FD_Sim_mu_end_vz;
+
+    // Initialize for the event
+    ND_Sim_mu_start_vx.clear();
+    ND_Sim_mu_end_vx.clear();
+    ND_Sim_hadron_contain_result_before_throw.clear();
+    ND_Sim_hadron_throw_result.clear();
+    
+    // Branches that are not affected by ND off axis position and vtx x (loops below)
+    ND_Gen_numu_E      = FD_Gen_numu_E;
     
     // X momentum is not affected by coordinate rotation
     ND_Sim_mu_start_px = FD_Sim_mu_start_px;                                     
@@ -430,32 +458,7 @@ int main(){
     // Energy is a scalar, doesn't change
     ND_Sim_mu_start_E  = FD_Sim_mu_start_E;
     ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
-
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
-
-    // Local y-z axes in FD and ND are rotated due to Earth curvature
-    // FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
-    // Apply an active transformation matrix R_x(theta): rotate each point counterclockwise by theta around x-axis in ND
-    // theta is 2*|beamLineRotation|
-    // Transform FD relative coordinate, x coordinate unchanged
-    //
-    //              [ 1          0             0
-    // R_x(theta) =   0      cos(theta)   -sin(theta)
-    //                0      sin(theta)    cos(theta) ]
-    //
-
-    // Rotation affects mu start/end position and hadron positions below
-    ND_Sim_mu_start_vy = cos( 2*abs(beamLineRotation) )*ND_Sim_mu_start_vy - sin( 2*abs(beamLineRotation) )*ND_Sim_mu_start_vz;
-    ND_Sim_mu_start_vz = sin( 2*abs(beamLineRotation) )*ND_Sim_mu_start_vy + cos( 2*abs(beamLineRotation) )*ND_Sim_mu_start_vz;
-
-    ND_Sim_mu_end_vy = cos( 2*abs(beamLineRotation) )*ND_Sim_mu_end_vy - sin( 2*abs(beamLineRotation) )*ND_Sim_mu_end_vz;
-    ND_Sim_mu_end_vz = sin( 2*abs(beamLineRotation) )*ND_Sim_mu_end_vy + cos( 2*abs(beamLineRotation) )*ND_Sim_mu_end_vz;
-
-    // Initialize for the event
-    ND_Sim_mu_start_vx.clear();
-    ND_Sim_mu_end_vx.clear();
-    ND_Sim_hadron_contain_result_before_throw.clear();
-    ND_Sim_hadron_throw_result.clear();
 
     //
     // Two options for setting ND off-axis position
