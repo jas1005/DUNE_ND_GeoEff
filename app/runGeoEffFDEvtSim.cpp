@@ -214,32 +214,28 @@ int main(){
   //
 
   TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
-  effTreeFD->Branch("Gen_numu_E",                             &ND_Gen_numu_E,            "Gen_numu_E/D");
+  effTreeFD->Branch("ND_Gen_numu_E",                             &ND_Gen_numu_E,            "Gen_numu_E/D");
   // Add two vetoE branches
-  effTreeFD->Branch("vetoEnergyFD",                           &ND_vetoEnergyFD,          "vetoEnergyFD/D");
-  effTreeFD->Branch("vetoEnergyFD_new",                       &ND_vetoEnergyFD_new,       "vetoEnergyFD_new/D");
-  
-  effTreeFD->Branch("ND_off_axis_pos_vec",                    &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
-  effTreeFD->Branch("ND_Sim_mu_start_vx",                     &ND_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to ND_vtx_vx_vec
-  effTreeFD->Branch("Sim_mu_start_vy",                        &ND_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
-  effTreeFD->Branch("Sim_mu_start_vz",                        &ND_Sim_mu_start_vz,       "Sim_mu_start_vz/D");
-  effTreeFD->Branch("Sim_mu_end_vx",                          &ND_Sim_mu_end_vx);
-  effTreeFD->Branch("Sim_mu_end_vy",                          &ND_Sim_mu_end_vy,         "Sim_mu_end_vy/D");
-  effTreeFD->Branch("Sim_mu_end_vz",                          &ND_Sim_mu_end_vz,         "Sim_mu_end_vz/D");
-  effTreeFD->Branch("Sim_mu_start_px",                        &ND_Sim_mu_start_px,       "Sim_mu_start_px/D");
-  effTreeFD->Branch("Sim_mu_start_py",                        &ND_Sim_mu_start_py,       "Sim_mu_start_py/D");
-  effTreeFD->Branch("Sim_mu_start_pz",                        &ND_Sim_mu_start_pz,       "Sim_mu_start_pz/D");
-  effTreeFD->Branch("Sim_mu_start_E",                         &ND_Sim_mu_start_E,        "Sim_mu_start_E/D");
-  effTreeFD->Branch("Sim_mu_end_px",                          &ND_Sim_mu_end_px,         "Sim_mu_end_px/D");
-  effTreeFD->Branch("Sim_mu_end_py",                          &ND_Sim_mu_end_py,         "Sim_mu_end_py/D");
-  effTreeFD->Branch("Sim_mu_end_pz",                          &ND_Sim_mu_end_pz,         "Sim_mu_end_pz/D");
-  effTreeFD->Branch("Sim_mu_end_E",                           &ND_Sim_mu_end_E,          "Sim_mu_end_E/D");
-  effTreeFD->Branch("Sim_hadron_contain_result_before_throw", &ND_Sim_hadron_contain_result_before_throw);          // nested vector
-  effTreeFD->Branch("Sim_hadron_throw_result",                &ND_Sim_hadron_throw_result);
-  effTreeFD->Branch("Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
-  
-  // Add VetoE_FD branch
-  //TBranch *vetoE = effTreeFD->Branch("VetoEnergyFD",                           &ND_vetoEnergyFD,            "vetoEnergyFD/F");
+  effTreeFD->Branch("ND_vetoEnergyFD",                           &ND_vetoEnergyFD,          "vetoEnergyFD/D");
+  effTreeFD->Branch("ND_vetoEnergyFD_new",                       &ND_vetoEnergyFD_new,       "vetoEnergyFD_new/D");  
+  effTreeFD->Branch("ND_off_axis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+  effTreeFD->Branch("ND_Sim_mu_start_vx",                        &ND_Sim_mu_start_vx);                              // ............... entries = written evts * vtx_vx_steps, equivalent to ND_vtx_vx_vec
+  effTreeFD->Branch("ND_Sim_mu_start_vy",                        &ND_Sim_mu_start_vy,       "Sim_mu_start_vy/D");   // entries = written evts
+  effTreeFD->Branch("ND_Sim_mu_start_vz",                        &ND_Sim_mu_start_vz,       "Sim_mu_start_vz/D");
+  effTreeFD->Branch("ND_Sim_mu_end_vx",                          &ND_Sim_mu_end_vx);
+  effTreeFD->Branch("ND_Sim_mu_end_vy",                          &ND_Sim_mu_end_vy,         "Sim_mu_end_vy/D");
+  effTreeFD->Branch("ND_Sim_mu_end_vz",                          &ND_Sim_mu_end_vz,         "Sim_mu_end_vz/D");
+  effTreeFD->Branch("ND_Sim_mu_start_px",                        &ND_Sim_mu_start_px,       "Sim_mu_start_px/D");
+  effTreeFD->Branch("ND_Sim_mu_start_py",                        &ND_Sim_mu_start_py,       "Sim_mu_start_py/D");
+  effTreeFD->Branch("ND_Sim_mu_start_pz",                        &ND_Sim_mu_start_pz,       "Sim_mu_start_pz/D");
+  effTreeFD->Branch("ND_Sim_mu_start_E",                         &ND_Sim_mu_start_E,        "Sim_mu_start_E/D");
+  effTreeFD->Branch("ND_Sim_mu_end_px",                          &ND_Sim_mu_end_px,         "Sim_mu_end_px/D");
+  effTreeFD->Branch("ND_Sim_mu_end_py",                          &ND_Sim_mu_end_py,         "Sim_mu_end_py/D");
+  effTreeFD->Branch("ND_Sim_mu_end_pz",                          &ND_Sim_mu_end_pz,         "Sim_mu_end_pz/D");
+  effTreeFD->Branch("ND_Sim_mu_end_E",                           &ND_Sim_mu_end_E,          "Sim_mu_end_E/D");
+  effTreeFD->Branch("ND_Sim_hadron_contain_result_before_throw", &ND_Sim_hadron_contain_result_before_throw);          // nested vector
+  effTreeFD->Branch("ND_Sim_hadron_throw_result",                &ND_Sim_hadron_throw_result);
+  effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "Sim_hadronic_Edep_a2/D"); // entries = written evts
   
   //
   // A separate tree to store translations and rotations of throws
