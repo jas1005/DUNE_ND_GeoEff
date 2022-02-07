@@ -418,8 +418,8 @@ int main(){
     r3_mu_start_vz_nd->SetSeed(0);
     ND_Sim_mu_start_vz = r3_mu_start_vz_nd->Uniform( NDActiveVol_min[2], NDActiveVol_max[2] );
 
-    ND_Sim_mu_end_vy   = Sim_mu_end_vy - Sim_mu_start_vy + ND_Sim_mu_start_vy; // w.r.t. mu start random y in ND
-    ND_Sim_mu_end_vz   = Sim_mu_end_vz - Sim_mu_start_vz + ND_Sim_mu_start_vz;
+    ND_Sim_mu_end_vy   = FD_Sim_mu_end_vy - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy; // w.r.t. mu start random y in ND
+    ND_Sim_mu_end_vz   = FD_Sim_mu_end_vz - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz;
     
     // X momentum is not affected by coordinate rotation
     ND_Sim_mu_start_px = Sim_mu_start_px;                                     
@@ -554,8 +554,8 @@ int main(){
           // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz)
           HadronHitPoss.emplace_back( Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
           // Again, need to apply R_x(theta) for hadron y/z, do not affect x
-          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
-          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
 
           HadronHitEdeps.emplace_back( Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
 
