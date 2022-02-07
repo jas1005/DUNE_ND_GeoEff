@@ -48,7 +48,7 @@ int main(){
 
   int FD_Run;
   int FD_SubRun;
-  int Event;
+  int FD_Event;
   int Sim_nNumu;
   double Gen_numu_E;
   int Sim_nMu;
@@ -82,7 +82,7 @@ int main(){
 
   t->SetBranchAddress("Run",                      &FD_Run);
   t->SetBranchAddress("SubRun",                   &FD_SubRun);
-  t->SetBranchAddress("Event",                    &Event);
+  t->SetBranchAddress("Event",                    &FD_Event);
   t->SetBranchAddress("Sim_nNumu",                &Sim_nNumu);
   t->SetBranchAddress("Gen_numu_E",               &Gen_numu_E);
   t->SetBranchAddress("Sim_nMu",                  &Sim_nMu);
@@ -314,7 +314,7 @@ int main(){
   for ( int ientry = 0; ientry < nentries; ientry++ ) {
 
     t->GetEntry(ientry);
-    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", event: " << Event << std::endl;
+    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << std::endl;
 
     //
     // Skip events without muon/hadronic deposits
