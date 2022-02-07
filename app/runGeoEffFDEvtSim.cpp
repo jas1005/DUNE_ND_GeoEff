@@ -124,13 +124,13 @@ int main(){
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
 
-  vector<double> b_ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   vector<double> b_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
 
   // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
-  b_ND_off_axis_pos_vec.emplace_back(-999.);
+  ND_off_axis_pos_vec.emplace_back(-999.);
 
   if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
     ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
@@ -141,10 +141,10 @@ int main(){
 
   // The rest elements follow fixed increments from min ND local x
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
-    b_ND_off_axis_pos_vec.emplace_back( i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0] );
+    ND_off_axis_pos_vec.emplace_back( i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0] );
   }
 
-  if (verbose) std::cout << "b_ND_off_axis_pos_vec size: "<< b_ND_off_axis_pos_vec.size() << std::endl;
+  if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
 
   // Initialize first element as -999, to be replaced by a random vtx x in each evt below
   b_vtx_vx_vec.emplace_back(-999.);
@@ -475,9 +475,9 @@ int main(){
     TRandom3 *r3_OffAxisPoint = new TRandom3();
     // Set the seed (required to avoid repeated random numbers in each sequence)
     r3_OffAxisPoint->SetSeed(0);
-    b_ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
+    ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
 
-    if (verbose) std::cout << "random OffAxisPoint [meters]: " << b_ND_off_axis_pos_vec.at(0) << std::endl;
+    if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
 
     //
     // Similarly, two options for setting event vtx x position
@@ -495,12 +495,12 @@ int main(){
     if (verbose) std::cout << "random vtx_x [cm]: " << b_vtx_vx_vec.at(0) << std::endl;
 
     //
-    // Loop over b_ND_off_axis_pos_vec: random off_axis_pos or every ND_off_axis_pos_stepsize
+    // Loop over ND_off_axis_pos_vec: random off_axis_pos or every ND_off_axis_pos_stepsize
     // Don't put it outside event loop to avoid looping over all events multiple times
     //
 
     int ND_off_axis_pos_counter = 0;
-    for ( double i_ND_off_axis_pos : b_ND_off_axis_pos_vec ) {
+    for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
 
       // Skip the stepwise increased option if only want a random off axis ND position per event to save file size
       if ( random_ND_off_axis_pos && ND_off_axis_pos_counter != 0 ) continue;
@@ -583,7 +583,7 @@ int main(){
       b_Sim_hadron_contain_result_before_throw.emplace_back(hadron_contain_result_before_throw_vec_for_vtx_vx);
       b_Sim_hadron_throw_result.emplace_back(hadron_throw_result_vec_for_vtx_vx);
 
-    }   // end Loop over b_ND_off_axis_pos_vec
+    }   // end Loop over ND_off_axis_pos_vec
 
     effTreeFD->Fill();
     iwritten++;
