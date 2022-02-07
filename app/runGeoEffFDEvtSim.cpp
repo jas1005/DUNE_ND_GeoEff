@@ -220,7 +220,7 @@ int main(){
   effTreeFD->Branch("vetoEnergyFD_new",                       &ND_vetoEnergyFD_new,       "vetoEnergyFD_new/D");
   
   effTreeFD->Branch("ND_off_axis_pos_vec",                    &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
-  effTreeFD->Branch("ND_Sim_mu_start_vx",                     &ND_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to b_vtx_vx_vec
+  effTreeFD->Branch("ND_Sim_mu_start_vx",                     &ND_Sim_mu_start_vx);                                 // ............... entries = written evts * vtx_vx_steps, equivalent to ND_vtx_vx_vec
   effTreeFD->Branch("Sim_mu_start_vy",                        &ND_Sim_mu_start_vy,       "Sim_mu_start_vy/D");      // entries = written evts
   effTreeFD->Branch("Sim_mu_start_vz",                        &ND_Sim_mu_start_vz,       "Sim_mu_start_vz/D");
   effTreeFD->Branch("Sim_mu_end_vx",                          &ND_Sim_mu_end_vx);
@@ -554,8 +554,8 @@ int main(){
           // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz)
           HadronHitPoss.emplace_back( Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
           // Again, need to apply R_x(theta) for hadron y/z, do not affect x
-          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + b_Sim_mu_start_vz ) );
-          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + b_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
 
           HadronHitEdeps.emplace_back( Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
 
