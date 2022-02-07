@@ -326,17 +326,17 @@ int main(){
     // Old veto region restriction
     vetoEnergyFD = 0.;
     // Loop over hadron E deposits
-    for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
       // Veto region size: 30 cm from the active volume
-      if ( ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
-           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
-           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
-           ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
-           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
-           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
+      if ( ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
+           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
+           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
          ){
-           vetoEnergyFD += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+           vetoEnergyFD += FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
 
     } // end loop over hadron E deposits
@@ -350,17 +350,17 @@ int main(){
     // New veto region restriction
     vetoEnergyFD_new = 0.;
     // Loop over hadron E deposits
-    for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
       // Veto region size: 30 cm from the active volume
-      if ( ( Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
-           ( Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
-           ( Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
-           ( Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 ) ||
-           ( Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 ) ||
-           ( Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 )
+      if ( ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 ) ||
+           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 ) ||
+           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 )
          ){
-           vetoEnergyFD_new += Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+           vetoEnergyFD_new += FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
 
     } // end loop over hadron E deposits
@@ -418,20 +418,20 @@ int main(){
     ND_Sim_mu_end_vz   = FD_Sim_mu_end_vz - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz;
     
     // X momentum is not affected by coordinate rotation
-    ND_Sim_mu_start_px = Sim_mu_start_px;                                     
-    ND_Sim_mu_end_px   = Sim_mu_end_px;
+    ND_Sim_mu_start_px = FD_Sim_mu_start_px;                                     
+    ND_Sim_mu_end_px   = FD_Sim_mu_end_px;
     
     // Rotation affects mu start/end momentum vector in Y and Z axes, using the same rotation matrix below.
-    ND_Sim_mu_start_py = cos( 2*abs(beamLineRotation) )*Sim_mu_start_py - sin( 2*abs(beamLineRotation) )*Sim_mu_start_pz;
-    ND_Sim_mu_start_pz = sin( 2*abs(beamLineRotation) )*Sim_mu_start_py + cos( 2*abs(beamLineRotation) )*Sim_mu_start_pz;
-    ND_Sim_mu_end_py   = cos( 2*abs(beamLineRotation) )*Sim_mu_end_py - sin( 2*abs(beamLineRotation) )*Sim_mu_end_pz;
-    ND_Sim_mu_end_pz   = sin( 2*abs(beamLineRotation) )*Sim_mu_end_py + cos( 2*abs(beamLineRotation) )*Sim_mu_end_pz;
+    ND_Sim_mu_start_py = cos( 2*abs(beamLineRotation) )*FD_Sim_mu_start_py - sin( 2*abs(beamLineRotation) )*FD_Sim_mu_start_pz;
+    ND_Sim_mu_start_pz = sin( 2*abs(beamLineRotation) )*FD_Sim_mu_start_py + cos( 2*abs(beamLineRotation) )*FD_Sim_mu_start_pz;
+    ND_Sim_mu_end_py   = cos( 2*abs(beamLineRotation) )*FD_Sim_mu_end_py - sin( 2*abs(beamLineRotation) )*FD_Sim_mu_end_pz;
+    ND_Sim_mu_end_pz   = sin( 2*abs(beamLineRotation) )*FD_Sim_mu_end_py + cos( 2*abs(beamLineRotation) )*FD_Sim_mu_end_pz;
     
     // Energy is a scalar, doesn't change
-    ND_Sim_mu_start_E  = Sim_mu_start_E;
-    ND_Sim_mu_end_E    = Sim_mu_end_E;
+    ND_Sim_mu_start_E  = FD_Sim_mu_start_E;
+    ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
 
-    ND_Sim_hadronic_Edep_a2 = Sim_hadronic_Edep_a2;
+    ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
     // Local y-z axes in FD and ND are rotated due to Earth curvature
     // FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
@@ -533,7 +533,7 @@ int main(){
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
         if ( ND_off_axis_pos_counter == 1 ) {
           ND_Sim_mu_start_vx.emplace_back( i_vtx_vx );
-          ND_Sim_mu_end_vx.emplace_back( Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
+          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
         }
 
         // Evt vtx pos in unit: cm
@@ -541,19 +541,19 @@ int main(){
 
         HadronHitEdeps.clear();
         HadronHitPoss.clear();
-        HadronHitEdeps.reserve(Sim_n_hadronic_Edep_a);
-        HadronHitPoss.reserve(Sim_n_hadronic_Edep_a*3);
+        HadronHitEdeps.reserve(FD_Sim_n_hadronic_Edep_a);
+        HadronHitPoss.reserve(FD_Sim_n_hadronic_Edep_a*3);
 
         // Need to loop deposits many times as the hadron containment below need vtx x first
-        for ( int ihadronhit = 0; ihadronhit < Sim_n_hadronic_Edep_a; ihadronhit++ ){
+        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
           // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz)
-          HadronHitPoss.emplace_back( Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
+          HadronHitPoss.emplace_back( FD_Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
           // Again, need to apply R_x(theta) for hadron y/z, do not affect x
-          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
-          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
+          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
 
-          HadronHitEdeps.emplace_back( Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
+          HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
 
         } // end for loop
 
