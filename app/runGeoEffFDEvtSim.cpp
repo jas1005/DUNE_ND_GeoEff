@@ -236,6 +236,8 @@ int main(){
   effTreeFD->Branch("ND_Sim_hadron_contain_result_before_throw", &ND_Sim_hadron_contain_result_before_throw);          // nested vector
   effTreeFD->Branch("ND_Sim_hadron_throw_result",                &ND_Sim_hadron_throw_result);
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
+  effTreeFD->Branch("FD_Sim_mu_start_vy",                        &FD_Sim_mu_start_vy,       "FD_Sim_mu_start_vy/D");
+  effTreeFD->Branch("FD_Sim_mu_start_vz",                        &FD_Sim_mu_start_vz,       "FD_Sim_mu_start_vz/D");
   
   //
   // A separate tree to store translations and rotations of throws
