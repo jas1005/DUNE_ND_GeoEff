@@ -16,7 +16,7 @@ float FDActiveVol_max[] = {370.,   600., 1400.};
 // Active volume for ND
 float NDActiveVol_min[] = {-350., -150.,   0.};
 float NDActiveVol_max[] = { 350.,  150., 500.};
-float offset[]          = { 0.,      0.,   0.}; // this offset is only for ND MC, use 0 for FD MC
+float offset[]          = { 0.,      5.5,   411.0}; // this offset is only for ND MC, use 0 for FD MC
 
 bool random_ND_off_axis_pos     = false; // Set to true will only use a random ND off axis position per event in runGeoEffFDEvtSim
 double ND_off_axis_pos_stepsize = 2.5;   // unit meters
