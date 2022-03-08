@@ -1,4 +1,3 @@
-New
 # Instruction for running translation and rotations on FD n-tuples
 
 Prerequisite: [Produce Ntuple from DUNE FD MC files](https://github.com/weishi10141993/myntuples#produce-ntuple-from-dune-fd-mc-files). The produced FD n-tuples will be used as input files for the following program to run.
