@@ -23,7 +23,7 @@ geoEff::geoEff(int seed, bool verbose){
   if (verbosity){
     std::cout << "Number of throws set to " << N_THROWS << std::endl;
   }
-  
+
   prnGenerator = std::mt19937_64(seed);
   if (verbosity) {
     std::cout << "geoEff set random number generator to mt19937_64" << std::endl;
@@ -42,14 +42,14 @@ geoEff::geoEff(int seed, bool verbose){
   if (verbosity){
     std::cout << "geoEff allocated memory for transformation vectors" << std::endl;
   }
-  
+
   vetoSize = std::vector<float>(1,30.);
   vetoEnergy = std::vector<float>(1,30.);
   if (verbosity){
     std::cout << "geoEff set veto size to 30 cm and energy threshold to 30 MeV" << std::endl;
   }
 
-  useFixedBeamDir = false;    
+  useFixedBeamDir = false;
 
   // Initialize to all dimensions randomized
   for (int dim = 0; dim < 3; dim++) randomizeVertex[dim] = true;
@@ -93,6 +93,7 @@ void geoEff::setHitSegPoss(std::vector<float> thishitSegPoss){
   }
 
 }
+
 
 void geoEff::setRangeX(float xmin, float xmax){
   range[0][0] = xmin;
@@ -143,7 +144,7 @@ void geoEff::setOffsetY(float y){
 void geoEff::setOffsetZ(float z){
   offset[2] = z;
 }
-  
+
 void geoEff::setBeamDir(float xdir, float ydir, float zdir){
   beamdir[0] = xdir;
   beamdir[1] = ydir;
@@ -204,7 +205,7 @@ void geoEff::throwTransforms(){
 }
 
 std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(unsigned int iStart, int iEnd){
-  
+
   unsigned int thisEnd;
   if (iEnd < 0) thisEnd = N_THROWS;
   else if (iEnd >= 0){
@@ -219,7 +220,8 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   Eigen::Affine3f tThere(Eigen::Translation3f(Eigen::Vector3f(-vertex[0], -vertex[1], -vertex[2])));
   // Move vertex back
   Eigen::Affine3f tBack(Eigen::Translation3f(Eigen::Vector3f(vertex[0], vertex[1], vertex[2])));
-  
+  // Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
+
   for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
     // Vertex displacement:
     Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertex[0] ? translations[0][iThrow]-vertex[0] : 0.,
@@ -239,7 +241,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       for (int dim = 0; dim < 3; dim++) {
         decayToVertex[dim] = vertex[dim]-decaypos[dim];
         decayToTranslated[dim] = translations[dim][iThrow]-decaypos[dim];
-        
+
         translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
         magDecayToVertex += pow(decayToVertex[dim], 2);
         magDecayToTranslated += pow(decayToTranslated[dim], 2);
@@ -248,7 +250,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       magDecayToTranslated = sqrt(magDecayToTranslated);
       translationAngle /= (magDecayToVertex*magDecayToTranslated);
       translationAngle = acos(translationAngle);
-      
+
       // Calculate rotation axis
       // Cross-product
       float translationAxis[3] = {0};
@@ -259,21 +261,106 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
       for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
-      
+
       Eigen::Affine3f rTranslation(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
-      
+
       // Calculate rotation due to thrown angle
       Eigen::Affine3f rPhiThrow(Eigen::Affine3f(Eigen::AngleAxisf(rotations[iThrow], Eigen::Vector3f(decayToTranslated[0]/magDecayToTranslated, decayToTranslated[1]/magDecayToTranslated, decayToTranslated[2]/magDecayToTranslated))));
-      
+
       // Combine
       rThrow = rPhiThrow * rTranslation;
     }
-    
+
     // Put everything together in single transform and store.
     transforms.emplace_back(tThrow * tBack * rThrow * tThere);
+    /*
+    I want to apply a rotation to an event and then move it to a different place.
+    First I move the event vertex to the origin of the coordinate system with tThere.
+    Then I apply the rotation, rThrow. Since I moved the event vertex to the origin, I know the rotation will not move the vertex, as intended.
+    Then, move the vertex back to its original position, tBack.
+    And finally, move it to the new position with tThrow
+    */
   }
-  
+
   return transforms;
+}
+
+//std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(){
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms_NDtoND;
+
+  // Tranformations that do not depend on the throws:
+  // Move vertex to coordinate system origin to apply rotation
+  Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-vertex[0], -vertex[1], -vertex[2])));
+  // Move vertex back
+  Eigen::Affine3f tBack_NDtoND(Eigen::Translation3f(Eigen::Vector3f(vertex[0], vertex[1], vertex[2])));
+  // Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
+
+
+    // Vertex displacement:
+    Eigen::Affine3f tThrow_NDtoND(Eigen::Translation3f(Eigen::Vector3f(new_vertex[0]-vertex[0],new_vertex[1]-vertex[1],new_vertex[2]-vertex[2])));
+
+
+    // Rotation
+    Eigen::Affine3f rThrow_NDtoND;
+
+      // Calculate rotation due to translation
+      // Calculate rotation angle
+      float decayToVertex[3] = {0};
+      float decayToTranslated[3] = {0};
+      float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
+      for (int dim = 0; dim < 3; dim++) {
+        decayToVertex[dim] = vertex[dim]-decaypos[dim];
+        decayToTranslated[dim] = new_vertex[dim]-decaypos[dim];
+
+        translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
+        magDecayToVertex += pow(decayToVertex[dim], 2);
+        magDecayToTranslated += pow(decayToTranslated[dim], 2);
+      }
+      magDecayToVertex = sqrt(magDecayToVertex);
+      magDecayToTranslated = sqrt(magDecayToTranslated);
+      translationAngle /= (magDecayToVertex*magDecayToTranslated);
+      translationAngle = acos(translationAngle);
+
+      // Calculate rotation axis
+      // Cross-product
+      float translationAxis[3] = {0};
+      translationAxis[0] = decayToVertex[1]*decayToTranslated[2] - decayToVertex[2]*decayToTranslated[1];
+      translationAxis[1] = decayToVertex[2]*decayToTranslated[0] - decayToVertex[0]*decayToTranslated[2];
+      translationAxis[2] = decayToVertex[0]*decayToTranslated[1] - decayToVertex[1]*decayToTranslated[0];
+      float magTranslationAxis = 0.;
+      for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
+      magTranslationAxis = sqrt(magTranslationAxis);
+      for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
+
+      Eigen::Affine3f rTranslation_NDtoND(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
+
+      rThrow_NDtoND = rTranslation_NDtoND;
+    }
+
+    // Put everything together in single transform and store.
+    transforms_NDtoND.emplace_back(tThrow_NDtoND * tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND);
+    /*
+    I want to apply a rotation to an event and then move it to a different place.
+    First I move the event vertex to the origin of the coordinate system with tThere.
+    Then I apply the rotation, rThrow. Since I moved the event vertex to the origin, I know the rotation will not move the vertex, as intended.
+    Then, move the vertex back to its original position, tBack.
+    And finally, move it to the new position with tThrow
+    */
+
+    return transforms_NDtoND;
+    // returen value: 1D vector
+}
+
+std::vector<float> geoEff::getCurrentThrowTranslationsX_NDtoND(){
+  return new_vertex[0];
+}
+std::vector<float> geoEff::getCurrentThrowTranslationsY_NDtoND(){
+  return new_vertex[1];
+}
+std::vector<float> geoEff::getCurrentThrowTranslationsZ_NDtoND(){
+  return new_vertex[2];
 }
 
 std::vector<float> geoEff::getCurrentThrowTranslationsX(){
@@ -290,16 +377,16 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
 }
 
 std::vector< float > geoEff::getCurrentThrowDeps(int i, int dim){
-  
+
   // Set the Eigen map
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
 
   Eigen::Matrix3Xf transformedEdeps = getTransforms(i, i+1)[0] * hitSegPosOrig;
-  
+
   int nEdeps = hitSegEdeps.size();
 
   std::vector< float > ret(nEdeps);
-  
+
   for (int iDep = 0; iDep < nEdeps; iDep++){
     ret[iDep] = transformedEdeps(dim, iDep);
   }
@@ -323,13 +410,13 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   // Figure out how many multiples of 64 bits needed to store output
   int n_longs = N_THROWS / 64;
   if (N_THROWS % 64) n_longs++;
-  
-  // Pass/fail for each set of vetoSize and vetoEnergy 
+
+  // Pass/fail for each set of vetoSize and vetoEnergy
   std::vector< std::vector< std::vector< uint64_t > > > hadronContainment(vetoSize.size(), std::vector< std::vector< uint64_t > >(vetoEnergy.size(), std::vector < uint64_t >(n_longs, 0)));
-  
+
   // Set the Eigen map
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
-  
+
   // Check if event is contained by any of the existing conditions
   if (ignore_uncontained) {
     int origContained = 0;
@@ -339,11 +426,11 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
 	if (vecOrigContained[i][j]) origContained++;
       }
     }
-    
+
     // If not, then return
     if (origContained == 0) return hadronContainment;
   }
-  
+
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms = getTransforms();
   // Else, loop through set of rotation translations
   for (unsigned int t = 0; t < N_THROWS; t++){
@@ -359,7 +446,7 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
       }
     }
   }
-  
+
   return hadronContainment;
 }
 
@@ -373,7 +460,7 @@ std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
 
   // Set Eigen Map
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
-  
+
   for (unsigned int i = 0; i < vetoSize.size(); i++){
     for (unsigned int j = 0; j < vetoEnergy.size(); j++){
       if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[j])) hadronContainment[i][j] = true;
@@ -406,4 +493,3 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
 
   return vetoEnergy < vetoEnergyThreshold;
 }
-

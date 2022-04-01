@@ -51,6 +51,7 @@ class geoEff
 
   // Current throws
   std::vector< float > translations[3];
+  std::vector< float > new_vertex[3];
   std::vector< float > rotations;
 
   bool verbosity;
@@ -62,7 +63,7 @@ class geoEff
 
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
-
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND();
  public:
   geoEff(int seed, bool verbose = false);
   ~geoEff(){;}
@@ -102,6 +103,10 @@ class geoEff
   std::vector< float > getCurrentThrowTranslationsY();
   std::vector< float > getCurrentThrowTranslationsZ();
   std::vector< float > getCurrentThrowRotations();
+
+  std::vector< float > getCurrentThrowTranslationsX_NDtoND();
+  std::vector< float > getCurrentThrowTranslationsY_NDtoND();
+  std::vector< float > getCurrentThrowTranslationsZ_NDtoND();
 
   std::vector< float > getCurrentThrowDeps(int i, int dim);
   std::vector< float > getCurrentThrowDepsX(int i);

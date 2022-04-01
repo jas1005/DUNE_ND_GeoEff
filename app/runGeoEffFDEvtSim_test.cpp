@@ -57,7 +57,7 @@ int main(){
   int FD_Sim_nMu;
   int FD_CCNC_truth; // Choose CCNC
   int FD_neuPDG; // neutrino PDG
-  double FD_Sim_mu_start_vx; // unit: cm
+  double FD_Sim_mu_start_vx; // unit: cm?
   double FD_Sim_mu_start_vy;
   double FD_Sim_mu_start_vz;
   double FD_Sim_mu_end_vx;
@@ -132,43 +132,6 @@ int main(){
   int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
 
-  /*
-  // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
-  ND_off_axis_pos_vec.emplace_back(-999.);
-
-  if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
-    ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
-  }
-  else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
-
-  if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
-
-  // The rest elements follow fixed increments from min ND local x
-  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
-    ND_off_axis_pos_vec.emplace_back( i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0] );
-  }
-
-  if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
-
-  // Initialize first element as -999, to be replaced by a random vtx x in each evt below
-  ND_vtx_vx_vec.emplace_back(-999.);
-
-  if ( ND_local_x_stepsize > 0 && ND_local_x_stepsize <= ND_local_x_max ) {
-    vtx_vx_steps = ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize;
-  }
-  else std::cout << "Error: please set the ND_local_x_stepsize above 0 and below ND_local_x_max." << std::endl;
-
-  if (verbose) std::cout << "vtx_vx_steps: " << vtx_vx_steps << std::endl;
-
-  // The rest elements follow fixed increments from min ND local x
-  for ( int i_vtx_vx_step = 0; i_vtx_vx_step < vtx_vx_steps + 1; i_vtx_vx_step++ ){
-    ND_vtx_vx_vec.emplace_back( i_vtx_vx_step*ND_local_x_stepsize + ND_local_x_min );
-  }
-
-  if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
-
-*/
-
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E;
   // Add veto E with two different restrictions
@@ -189,6 +152,9 @@ int main(){
   double ND_Sim_mu_end_py;
   double ND_Sim_mu_end_pz;
   double ND_Sim_mu_end_E;
+  double ND_new_vx;
+  double ND_new_vy;
+  double ND_new_vz;
   // Tot hadron E dep
   double ND_Sim_hadronic_Edep_a2;
   // Result of hadron containment is stored in nested vectors, need to generate dictionary
@@ -244,7 +210,9 @@ int main(){
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
   effTreeFD->Branch("FD_Sim_mu_start_vy",                        &FD_Sim_mu_start_vy,       "FD_Sim_mu_start_vy/D");
   effTreeFD->Branch("FD_Sim_mu_start_vz",                        &FD_Sim_mu_start_vz,       "FD_Sim_mu_start_vz/D");
-
+  effTreeFD->Branch("ND_Sim_new_mu_start_vx",                    &ND_new_vx,                "ND_new_vx/D");
+  effTreeFD->Branch("ND_Sim_new_mu_start_vy",                    &ND_new_vy,                "ND_new_vy/D");
+  effTreeFD->Branch("ND_Sim_new_mu_start_vz",                    &ND_new_vz,                "ND_new_vz/D");
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -253,6 +221,11 @@ int main(){
   vector<float> throwVtxY;
   vector<float> throwVtxZ;
   vector<float> throwRot;
+
+  vector<float> ND_Sim_mu_start_vertex;
+
+
+
 
 
   TTree * ThrowsFD = new TTree("ThrowsFD", "FD Throws");
@@ -305,9 +278,10 @@ int main(){
   eff->setOffsetY(offset[1]);
   eff->setOffsetZ(offset[2]);
 
-  //Add hist of veto E
+  // Add hist of veto E
   TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
   TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
+
 
 
   //
@@ -315,12 +289,15 @@ int main(){
   //
 
   nentries = t->GetEntries();
+  ND_Sim_mu_start_vertex.clear();
+  ND_Sim_mu_start_vertex.reserve(3*nentries);
   std::cout << "Tot evts: " << nentries << std::endl;
-  for ( int ientry = 0; ientry < nentries; ientry++ ) {
+  for ( int ientry = 0; ientry < 3; ientry++ ) {
 
+/*
     t->GetEntry(ientry);
     if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << std::endl;
-
+*/
     //
     // Skip events without muon/hadronic deposits
     //
@@ -405,27 +382,6 @@ int main(){
       ThrowsFD->Fill();
     }
 
-    //
-    // Use relative coordinate for FD event (relative to muon start position)
-    // Set muon start pos in ND to (random x/stepwise increased x, random y, random z),
-    // eventually should set this for actual event vtx, not mu start pos
-    //
-
-
-
-    // Use random y/z for each FD evt in ND volume, it will be randomly translated later anyway
-    TRandom3 *r3_mu_start_vy_nd = new TRandom3(); // Initialize random number generator, put inside the event loop so each event is different
-    r3_mu_start_vy_nd->SetSeed(0);                // Set the seed (required to avoid repeated random numbers in each sequence)
-    ND_Sim_mu_start_vy = r3_mu_start_vy_nd->Uniform( NDActiveVol_min[1], NDActiveVol_max[1] );
-
-    TRandom3 *r3_mu_start_vz_nd = new TRandom3();
-    r3_mu_start_vz_nd->SetSeed(0);
-    ND_Sim_mu_start_vz = r3_mu_start_vz_nd->Uniform( NDActiveVol_min[2], NDActiveVol_max[2] );
-
-    ND_Sim_mu_end_vy   = FD_Sim_mu_end_vy - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy; // w.r.t. mu start random y in ND
-    ND_Sim_mu_end_vz   = FD_Sim_mu_end_vz - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz;
-
-
 
     // Local y-z axes in FD and ND are rotated due to Earth curvature, x direction is not change
     // FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
@@ -469,48 +425,21 @@ int main(){
     ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
-    // Put back into beam center(0.0, 0.05387, 6.66)
-    ND_Sim_mu_start_vx=0.0;
-    ND_Sim_mu_start_vy=0.05387;
+    // Put back into beam center(0.0, 0.05387, 6.66) tanslation 1
+    ND_Sim_mu_start_vx_t1=0.0;
+    ND_Sim_mu_start_vy_t1=0.05387*100;
+    ND_Sim_mu_start_vz_t1=6.6*100;
+
+    // Then the new vertices of mu vx,vy, vz after translation 1: putting back to the center in the ND are:
+    double ND_Sim_mu_start_vx_t1 = ND_Sim_mu_start_vx_t1 + ( ND_Sim_mu_start_vx - ND_Sim_mu_start_vx );
+    double ND_Sim_mu_start_vy_t1 = ND_Sim_mu_start_vx_t1 + ( ND_Sim_mu_start_vy - ND_Sim_mu_start_vx );
+    double ND_Sim_mu_start_vz_t1 = ND_Sim_mu_start_vx_t1 + ( ND_Sim_mu_start_vz - ND_Sim_mu_start_vx );
+
+    ND_Sim_mu_start_vx = ND_Sim_mu_start_vx_t1;
+    ND_Sim_mu_start_vy = ND_Sim_mu_start_vy_t1;
+    ND_Sim_mu_start_vz = ND_Sim_mu_start_vz_t1;
 
 
-    //
-    // Two options for setting ND off-axis position
-    //
-    // Option 1: randomize ND off-axis position once for each event
-    // Option 2: stepwise increments along ND detector hall off axis range
-    //
-    // If only want option 1, set random_ND_off_axis_pos to true in Helpers.h; default is false (use both options)
-    //
-
-    // Initialize random number generator
-    // This needs to be inside the event loop to make sure each event has a different random number
-    TRandom3 *r3_OffAxisPoint = new TRandom3();
-    // Set the seed (required to avoid repeated random numbers in each sequence)
-    r3_OffAxisPoint->SetSeed(0);
-    ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
-
-    if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
-
-    //
-    // Similarly, two options for setting event vtx x position
-    //
-    // Option 1: randomize x once for each event
-    // Option 2: stepwise increments along ND local width in x: -2m to 2m
-    //
-    // If only want option 1, set random_vtx_vx to true in Helpers.h; default is false (use both options)
-    //
-
-    TRandom3 *r3_vtx_x = new TRandom3();
-    r3_vtx_x->SetSeed(0);
-    ND_vtx_vx_vec.at(0) = r3_vtx_x->Uniform(ND_local_x_min, ND_local_x_max);
-
-    if (verbose) std::cout << "random vtx_x [cm]: " << ND_vtx_vx_vec.at(0) << std::endl;
-
-    //
-    // Loop over ND_off_axis_pos_vec: random off_axis_pos or every ND_off_axis_pos_stepsize
-    // Don't put it outside event loop to avoid looping over all events multiple times
-    //
 
     int ND_off_axis_pos_counter = 0;
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
@@ -558,13 +487,21 @@ int main(){
         // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
 
-        float ND_Sim_mu_start_v[3]={ND_Sim_mu_start_vx,ND_Sim_mu_start_vy,ND_Sim_mu_start_vz};
-        float ND_aft_rotation[3] = eff->getTransforms_NDtoND(ND_Sim_mu_start_v[3]);
-        ND_Sim_mu_start_vx=ND_aft_rotation[0];
-        ND_Sim_mu_start_vy=ND_aft_rotation[1];
-        ND_Sim_mu_start_vz=ND_aft_rotation[2];
+        ND_Sim_mu_start_vertex.emplace_back(i_vtx_vx);
+        ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vy);
+        ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vz);
 
 
+        Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
+
+        Eigen::Matrix3Xf new_vertex = getTransforms_NDtoND[0] * mu_start_vertex_ND;
+
+        ND_new_vx=new_vertex.begin();
+        new_vertex.erase(new_vertex.begin());
+        ND_new_vy=new_vertex.begin();
+        new_vertex.erase(new_vertex.begin());
+        ND_new_vz=new_vertex.begin();
+        new_vertex.erase(new_vertex.begin());
 
         HadronHitEdeps.clear();
         HadronHitPoss.clear();
