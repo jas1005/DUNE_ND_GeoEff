@@ -71,7 +71,7 @@ class geoEff
   void setNthrows(unsigned long n);
 
   void setVertex(float x, float y, float z);
-  void setOnAxisVertex(float x, float y, float z)
+  void setOnAxisVertex(float x, float y, float z);
   void setHitSegEdeps(std::vector<float> thishitSegEdeps);
   void setHitSegPoss(std::vector<float> thishitSegPoss);
 
