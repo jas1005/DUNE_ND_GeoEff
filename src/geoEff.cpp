@@ -298,8 +298,8 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
 
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms_NDtoND;
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transformsNDtoND;
-  // Tranformations that do not depend on the throws:
+
+    // Tranformations that do not depend on the throws:
   // Move vertex to coordinate system origin to apply rotation
   Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-OnAxisVertex[0], -OnAxisVertex[1], -OnAxisVertex[2])));
   // Move vertex back
@@ -314,7 +314,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
 
     // Rotation
     Eigen::Affine3f rThrow_NDtoND;
-
+    {
       // Calculate rotation due to translation
       // Calculate rotation angle
       float decayToVertex[3] = {0};
@@ -350,7 +350,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
     }
 
     // Put everything together in single transform and store.
-    transformsNDtoND.emplace_back(tThrow_NDtoND * tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND);
+    transforms_NDtoND.emplace_back(tThrow_NDtoND * tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND);
     /*
     I want to apply a rotation to an event and then move it to a different place.
     First I move the event vertex to the origin of the coordinate system with tThere.
@@ -359,7 +359,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
     And finally, move it to the new position with tThrow
     */
 
-    return transformsNDtoND;
+    return transforms_NDtoND;
     // returen value: 1D vector
 }
 
