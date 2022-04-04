@@ -73,6 +73,15 @@ void geoEff::setVertex(float x, float y, float z){
   }
 }
 
+void geoEff::setOnAxisVertex(float x, float y, float z){
+  OnAxisVertex[0] = x;
+  OnAxisVertex[1] = y;
+  OnAxisVertex[2] = z;
+  if(verbosity){
+    std::cout << "geoEff set vertex to " << OnAxisVertex[0] << " "<< OnAxisVertex[1] << " "<< OnAxisVertex[2] << std::endl;
+  }
+}
+
 void geoEff::setHitSegEdeps(std::vector<float> thishitSegEdeps){
   hitSegEdeps = thishitSegEdeps;
   if (verbosity) {
@@ -286,20 +295,21 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
 }
 
 //std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(){
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
 
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms_NDtoND;
 
   // Tranformations that do not depend on the throws:
   // Move vertex to coordinate system origin to apply rotation
-  Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-vertex[0], -vertex[1], -vertex[2])));
+  Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-OnAxisVertex[0], -OnAxisVertex[1], -OnAxisVertex[2])));
   // Move vertex back
-  Eigen::Affine3f tBack_NDtoND(Eigen::Translation3f(Eigen::Vector3f(vertex[0], vertex[1], vertex[2])));
+  Eigen::Affine3f tBack_NDtoND(Eigen::Translation3f(Eigen::Vector3f(OnAxisVertex[0], OnAxisVertex[1], OnAxisVertex[2])));
   // Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
 
 
     // Vertex displacement:
-    Eigen::Affine3f tThrow_NDtoND(Eigen::Translation3f(Eigen::Vector3f(new_vertex[0]-vertex[0],new_vertex[1]-vertex[1],new_vertex[2]-vertex[2])));
+    Eigen::Affine3f tThrow_NDtoND(Eigen::Translation3f(Eigen::Vector3f(new_vertex[0]-OnAxisVertex[0],new_vertex[1]-OnAxisVertex[1],new_vertex[2]-OnAxisVertex[2])));
+
 
 
     // Rotation
@@ -311,7 +321,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       float decayToTranslated[3] = {0};
       float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
       for (int dim = 0; dim < 3; dim++) {
-        decayToVertex[dim] = vertex[dim]-decaypos[dim];
+        decayToVertex[dim] = OnAxisVertex[dim]-decaypos[dim];
         decayToTranslated[dim] = new_vertex[dim]-decaypos[dim];
 
         translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);

@@ -128,7 +128,7 @@ int main(){
   vector<float> HadronHitPoss;
 
   vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec;          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
 
@@ -426,18 +426,19 @@ int main(){
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
     // Put back into beam center(0.0, 0.05387, 6.66) tanslation 1
-    ND_Sim_mu_start_vx_t1=0.0;
-    ND_Sim_mu_start_vy_t1=0.05387*100;
-    ND_Sim_mu_start_vz_t1=6.6*100;
+    double ND_Sim_mu_start_OnAxis_vx=0.0;
+    double ND_Sim_mu_start_OnAxis_vy=0.05387*100;
+    double ND_Sim_mu_start_OnAxis_vz=6.6*100;
+    eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
 
-    // Then the new vertices of mu vx,vy, vz after translation 1: putting back to the center in the ND are:
-    double ND_Sim_mu_start_vx_t1 = ND_Sim_mu_start_vx_t1 + ( ND_Sim_mu_start_vx - ND_Sim_mu_start_vx );
-    double ND_Sim_mu_start_vy_t1 = ND_Sim_mu_start_vx_t1 + ( ND_Sim_mu_start_vy - ND_Sim_mu_start_vx );
-    double ND_Sim_mu_start_vz_t1 = ND_Sim_mu_start_vx_t1 + ( ND_Sim_mu_start_vz - ND_Sim_mu_start_vx );
+    // The difference between two positions are the same.
+    double ND_Sim_mu_end_vx_t1 = ND_Sim_mu_start_OnAxis_vx + (ND_Sim_mu_end_vx - ND_Sim_mu_start_vx);
+    double ND_Sim_mu_end_vy_t1 = ND_Sim_mu_start_OnAxis_vy + (ND_Sim_mu_end_vy - ND_Sim_mu_start_vy);
+    double ND_Sim_mu_end_vz_t1 = ND_Sim_mu_start_OnAxis_vz + (ND_Sim_mu_end_vz - ND_Sim_mu_start_vz);
 
-    ND_Sim_mu_start_vx = ND_Sim_mu_start_vx_t1;
-    ND_Sim_mu_start_vy = ND_Sim_mu_start_vy_t1;
-    ND_Sim_mu_start_vz = ND_Sim_mu_start_vz_t1;
+    ND_Sim_mu_start_vx = ND_Sim_mu_start_OnAxis_vx;
+    ND_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
+    ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
 
 
 
@@ -462,46 +463,26 @@ int main(){
 
       if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
 
-      //
-      // Loop over vtx x: random x or stepwise increased x
-      // Don't put it outside event loop to avoid looping over all events multiple times
-      //
-
-      //int vtx_vx_counter = 0;
-      hadron_throw_result_vec_for_vtx_vx.clear(); // Need to initialize before loop over vtx x vec
-      hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
-
-      //for ( double i_vtx_vx : ND_vtx_vx_vec ) {
-
-        // Skip the stepwise increased option if only want a random evt vtx x to save file size
-        if ( random_vtx_vx && vtx_vx_counter != 0 ) continue;
-
-        vtx_vx_counter++;
-
-        // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
-        if ( ND_off_axis_pos_counter == 1 ) {
-          ND_Sim_mu_start_vx.emplace_back( i_vtx_vx );
-          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
-        }
-
+/*
         // Evt vtx pos in unit: cm
-        eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
+        eff->setVertex( i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
+*/
 
-        ND_Sim_mu_start_vertex.emplace_back(i_vtx_vx);
+        ND_Sim_mu_start_vertex.emplace_back(i_vtx_vx + i_ND_off_axis_pos);
         ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vy);
         ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vz);
 
 
         Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
 
-        Eigen::Matrix3Xf new_vertex = getTransforms_NDtoND[0] * mu_start_vertex_ND;
+        Eigen::Matrix3Xf new_vertex_xyz = getTransforms_NDtoND(OnAxisVertex[3])[0] * mu_start_vertex_ND;
 
-        ND_new_vx=new_vertex.begin();
-        new_vertex.erase(new_vertex.begin());
-        ND_new_vy=new_vertex.begin();
-        new_vertex.erase(new_vertex.begin());
-        ND_new_vz=new_vertex.begin();
-        new_vertex.erase(new_vertex.begin());
+        ND_new_vx=new_vertex_xyz.begin();
+        new_vertex_xyz.erase(new_vertex_xyz.begin());
+        ND_new_vy=new_vertex_xyz.begin();
+        new_vertex_xyz.erase(new_vertex_xyz.begin());
+        ND_new_vz=new_vertex_xyz.begin();
+        new_vertex_xyz.erase(new_vertex_xyz.begin());
 
         HadronHitEdeps.clear();
         HadronHitPoss.clear();

@@ -15,6 +15,7 @@ class geoEff
 
   // Event vertex
   float vertex[3];
+  float OnAxisVertex[3];
   // Vector to store energy deposits corresponding to hit segments
   std::vector<float> hitSegEdeps;
   // Vector to store positions of hit segments
@@ -51,7 +52,6 @@ class geoEff
 
   // Current throws
   std::vector< float > translations[3];
-  std::vector< float > new_vertex[3];
   std::vector< float > rotations;
 
   bool verbosity;
