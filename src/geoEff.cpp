@@ -363,15 +363,6 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
     // returen value: 1D vector
 }
 
-std::vector<float> geoEff::getCurrentThrowTranslationsX_NDtoND(){
-  return new_vertex[0];
-}
-std::vector<float> geoEff::getCurrentThrowTranslationsY_NDtoND(){
-  return new_vertex[1];
-}
-std::vector<float> geoEff::getCurrentThrowTranslationsZ_NDtoND(){
-  return new_vertex[2];
-}
 
 std::vector<float> geoEff::getCurrentThrowTranslationsX(){
   return translations[0];
