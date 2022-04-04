@@ -63,7 +63,7 @@ class geoEff
 
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND();
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND(float* new_vertex);
  public:
   geoEff(int seed, bool verbose = false);
   ~geoEff(){;}
@@ -71,6 +71,7 @@ class geoEff
   void setNthrows(unsigned long n);
 
   void setVertex(float x, float y, float z);
+  void setOnAxisVertex(float x, float y, float z)
   void setHitSegEdeps(std::vector<float> thishitSegEdeps);
   void setHitSegPoss(std::vector<float> thishitSegPoss);
 
