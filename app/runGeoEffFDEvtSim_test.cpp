@@ -85,7 +85,7 @@ int main(){
   //t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
   // For FNAL machine:
   t->Add("/dune/app/users/flynnguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
-  
+
   t->SetBranchAddress("Run",                      &FD_Run);
   t->SetBranchAddress("SubRun",                   &FD_SubRun);
   t->SetBranchAddress("Event",                    &FD_Event);
@@ -132,8 +132,7 @@ int main(){
 
   vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
-  int ND_off_axis_pos_steps = 0;
-  int vtx_vx_steps = 0;
+
 
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E;
@@ -429,16 +428,16 @@ int main(){
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
     // Put back into beam center(0.0, 0.05387, 6.66) tanslation 1
-    double ND_Sim_mu_start_OnAxis_vx=0.0;
-    double ND_Sim_mu_start_OnAxis_vy=0.05387*100;
-    double ND_Sim_mu_start_OnAxis_vz=6.6*100;
+    double ND_Sim_mu_start_OnAxis_vx = 0.0;
+    double ND_Sim_mu_start_OnAxis_vy = 0.05387*100;
+    double ND_Sim_mu_start_OnAxis_vz = 6.6*100;
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
 
-    // The difference between two positions are the same.
+    /*// The difference between two positions are the same.
     double ND_Sim_mu_end_vx_t1 = ND_Sim_mu_start_OnAxis_vx + (ND_Sim_mu_end_vx - ND_Sim_mu_start_vx);
     double ND_Sim_mu_end_vy_t1 = ND_Sim_mu_start_OnAxis_vy + (ND_Sim_mu_end_vy - ND_Sim_mu_start_vy);
     double ND_Sim_mu_end_vz_t1 = ND_Sim_mu_start_OnAxis_vz + (ND_Sim_mu_end_vz - ND_Sim_mu_start_vz);
-
+*/
     ND_Sim_mu_start_vx = ND_Sim_mu_start_OnAxis_vx;
     ND_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
     ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
@@ -475,17 +474,26 @@ int main(){
         ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vy);
         ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vz);
 
+        float new_vertex[3]={i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz};
 
         Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
 
-        Eigen::Matrix3Xf new_vertex_xyz = getTransforms_NDtoND(OnAxisVertex[3])[0] * mu_start_vertex_ND;
+        Eigen::Matrix3Xf new_vertex_xyz = getTransforms_NDtoND(new_vertex[3])[0] * mu_start_vertex_ND;
 
-        ND_new_vx=new_vertex_xyz.begin();
-        new_vertex_xyz.erase(new_vertex_xyz.begin());
+
+
+        ND_new_vx = new_vertex_xyz(0, 0);
+        ND_new_vy = new_vertex_xyz(1, 0);
+        ND_new_vz = new_vertex_xyz(2, 0);
+
+
+        /*ND_new_vx=new_vertex_xyz.begin();
+        new_vertex_xyz.erase(new_svertex_xyz.begin());
         ND_new_vy=new_vertex_xyz.begin();
         new_vertex_xyz.erase(new_vertex_xyz.begin());
         ND_new_vz=new_vertex_xyz.begin();
         new_vertex_xyz.erase(new_vertex_xyz.begin());
+        */
 
         HadronHitEdeps.clear();
         HadronHitPoss.clear();
