@@ -478,7 +478,7 @@ int main(){
 
         Eigen::Map<Eigen::Matrix3Xd,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
 
-        Eigen::Matrix3Xd new_vertex_xyz = eff->getTransforms_NDtoND(new_vertex[3])[0] * mu_start_vertex_ND;
+        Eigen::Matrix3Xd new_vertex_xyz = eff->getTransforms_NDtoND(new_vertex)[0] * mu_start_vertex_ND;
 
 
 
