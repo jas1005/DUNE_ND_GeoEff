@@ -469,10 +469,6 @@ int main(){
     ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
-    // Put back into beam center(0.0, 0.05387, 6.66)
-    ND_Sim_mu_start_vx=0.0;
-    ND_Sim_mu_start_vy=0.05387;
-
 
     //
     // Two options for setting ND off-axis position
