@@ -474,11 +474,11 @@ int main(){
         ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vy);
         ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vz);
 
-        float new_vertex[3]={i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz};
+        double new_vertex[3]={i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz};
 
-        Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
+        Eigen::Map<Eigen::Matrix3Xd,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
 
-        Eigen::Matrix3Xf new_vertex_xyz = getTransforms_NDtoND(new_vertex[3])[0] * mu_start_vertex_ND;
+        Eigen::Matrix3Xd new_vertex_xyz = getTransforms_NDtoND(new_vertex)[0] * mu_start_vertex_ND;
 
 
 
