@@ -140,7 +140,9 @@ int main(){
   double ND_vetoEnergyFD;
   double ND_vetoEnergyFD_new;
 
-  vector<double> ND_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
+  //vector<double> ND_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
+  double ND_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
+
   vector<double> ND_Sim_mu_end_vx;
   double ND_Sim_mu_start_vy;         // Do not use float!
   double ND_Sim_mu_start_vz;
@@ -438,9 +440,6 @@ int main(){
     double ND_Sim_mu_end_vy_t1 = ND_Sim_mu_start_OnAxis_vy + (ND_Sim_mu_end_vy - ND_Sim_mu_start_vy);
     double ND_Sim_mu_end_vz_t1 = ND_Sim_mu_start_OnAxis_vz + (ND_Sim_mu_end_vz - ND_Sim_mu_start_vz);
 */
-    ND_Sim_mu_start_vx = ND_Sim_mu_start_OnAxis_vx;
-    ND_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
-    ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
 
 
 
