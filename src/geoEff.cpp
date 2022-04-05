@@ -295,7 +295,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
 }
 
 //std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float new_vertex[0],float new_vertex[1],float new_vertex[2]){
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float new_vertex[3]){
 
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms_NDtoND;
 
