@@ -23,9 +23,10 @@ if ( ${ROOT_FOUND} )
   include_directories(${ROOT_INCLUDE_DIRS})
   add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
   add_executable(runGeoEffFDEvtSim runGeoEffFDEvtSim.cpp)
+  add_executable(runGeoEffFDEvtSim_test runGeoEffFDEvtSim_test.cpp)
 
   target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})
-  target_link_libraries(runGeoEffFDEvtSim geoEff ${ROOT_LIBRARIES})
+  target_link_libraries(runGeoEffFDEvtSim_test geoEff ${ROOT_LIBRARIES})
 
 else ()
 
