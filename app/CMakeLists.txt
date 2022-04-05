@@ -26,8 +26,8 @@ if ( ${ROOT_FOUND} )
   add_executable(runGeoEffFDEvtSim_test runGeoEffFDEvtSim_test.cpp)
 
   target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})
+  target_link_libraries(runGeoEffFDEvtSim geoEff ${ROOT_LIBRARIES})
   target_link_libraries(runGeoEffFDEvtSim_test geoEff ${ROOT_LIBRARIES})
-
 else ()
 
   Message("Couldn't find either ROOT. Skipping app. Library will still compile."
