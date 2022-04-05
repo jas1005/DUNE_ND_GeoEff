@@ -132,7 +132,7 @@ int main(){
   int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
 
-  /*
+
   // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
   ND_off_axis_pos_vec.emplace_back(-999.);
 
@@ -167,7 +167,7 @@ int main(){
 
   if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
 
-*/
+
 
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E;
