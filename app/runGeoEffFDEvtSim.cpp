@@ -558,12 +558,6 @@ int main(){
         // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
 
-        float ND_Sim_mu_start_v[3]={ND_Sim_mu_start_vx,ND_Sim_mu_start_vy,ND_Sim_mu_start_vz};
-        float ND_aft_rotation[3] = eff->getTransforms_NDtoND(ND_Sim_mu_start_v[3]);
-        ND_Sim_mu_start_vx=ND_aft_rotation[0];
-        ND_Sim_mu_start_vy=ND_aft_rotation[1];
-        ND_Sim_mu_start_vz=ND_aft_rotation[2];
-
 
 
         HadronHitEdeps.clear();
