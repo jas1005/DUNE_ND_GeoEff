@@ -441,7 +441,9 @@ int main(){
     double ND_Sim_mu_end_vz_t1 = ND_Sim_mu_start_OnAxis_vz + (ND_Sim_mu_end_vz - ND_Sim_mu_start_vz);
 */
 
-
+ND_Sim_mu_start_vx = ND_Sim_mu_start_OnAxis_vx;
+ND_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
+ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
 
     int ND_off_axis_pos_counter = 0;
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
