@@ -120,10 +120,10 @@ class geoEff
   std::vector< float > getCurrentThrowDepsY(int i);
   std::vector< float > getCurrentThrowDepsZ(int i);
   // Transforms from On-Axis to Off-Axis
-  std::vector< float > getRotMuEndV(vector<double> RotMuEndV_BF, int dim);
+  std::vector< float > getRotMuEndV(int dim);
   std::vector< float > getRotMuEndV_AF_X();
-  std::vector< float > getRotMuEndV_AF_X();
-  std::vector< float > getRotMuEndV_AF_X();
+  std::vector< float > getRotMuEndV_AF_Y();
+  std::vector< float > getRotMuEndV_AF_Z();
 
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
   std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows();
