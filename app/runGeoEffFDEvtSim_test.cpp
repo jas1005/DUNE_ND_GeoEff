@@ -291,7 +291,7 @@ int main(){
 
   nentries = t->GetEntries();
   std::cout << "Tot evts: " << nentries << std::endl;
-  for ( int ientry = 0; ientry < 3; ientry++ ) {
+  for ( int ientry = 0; ientry < t; ientry++ ) {
 
 /*
     t->GetEntry(ientry);
