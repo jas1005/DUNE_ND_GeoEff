@@ -435,9 +435,6 @@ int main(){
     int ND_off_axis_pos_counter = 0;
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
 
-      // Skip the stepwise increased option if only want a random off axis ND position per event to save file size
-      if ( random_ND_off_axis_pos && ND_off_axis_pos_counter != 0 ) continue;
-
       ND_off_axis_pos_counter++;
 
       // Interpolate event neutrino production point (beam coordinate)
@@ -455,23 +452,21 @@ int main(){
       // Loop over vtx x: random x or stepwise increased x
       // Don't put it outside event loop to avoid looping over all events multiple times
       //
-
       int vtx_vx_counter = 0;
       hadron_throw_result_vec_for_vtx_vx.clear(); // Need to initialize before loop over vtx x vec
       hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
 
-      ND_off_axis_pos_counter++;
       for ( double i_vtx_vx : ND_vtx_vx_vec ) {
 
         // Skip the stepwise increased option if only want a random evt vtx x to save file size
-        if ( random_vtx_vx && vtx_vx_counter != 0 ) continue;
+        if ( vtx_vx_counter != 0 ) continue;
 
         vtx_vx_counter++;
 
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
         if ( ND_off_axis_pos_counter == 1 ) {
-          ND_Sim_mu_start_vx.emplace_back( i_vtx_vx );
-          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
+          ND_Sim_mu_start_vx.emplace_back( i_vtx_vx + i_ND_off_axis_pos );
+          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx + i_ND_off_axis_pos ); // w.r.t. mu start x
         }
 
         // Evt vtx pos in unit: cm
