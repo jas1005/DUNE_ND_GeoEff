@@ -213,9 +213,9 @@ int main(){
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
   effTreeFD->Branch("FD_Sim_mu_start_vy",                        &FD_Sim_mu_start_vy,       "FD_Sim_mu_start_vy/D");
   effTreeFD->Branch("FD_Sim_mu_start_vz",                        &FD_Sim_mu_start_vz,       "FD_Sim_mu_start_vz/D");
-  effTreeFD->Branch("ND_Sim_mu_end_vx_af",                    &ND_Sim_mu_end_vx_af,                "ND_Sim_mu_end_vx_af/D");
-  effTreeFD->Branch("ND_Sim_mu_end_vy_af",                    &ND_Sim_mu_end_vy_af,                "ND_Sim_mu_end_vy_af/D");
-  effTreeFD->Branch("ND_Sim_mu_end_vz_af",                    &ND_Sim_mu_end_vz_af,                "ND_Sim_mu_end_vz_af/D");
+  effTreeFD->Branch("ND_Sim_mu_end_vx_af",                       &ND_Sim_mu_end_vx_af,      "ND_Sim_mu_end_vx_af/F");
+  effTreeFD->Branch("ND_Sim_mu_end_vy_af",                       &ND_Sim_mu_end_vy_af,      "ND_Sim_mu_end_vy_af/F");
+  effTreeFD->Branch("ND_Sim_mu_end_vz_af",                       &ND_Sim_mu_end_vz_af,      "ND_Sim_mu_end_vz_af/F");
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
