@@ -73,8 +73,6 @@ void geoEff::setVertex(float x, float y, float z){
   }
 }
 
-
-
 void geoEff::setHitSegEdeps(std::vector<float> thishitSegEdeps){
   hitSegEdeps = thishitSegEdeps;
   if (verbosity) {
@@ -95,7 +93,6 @@ void geoEff::setHitSegPoss(std::vector<float> thishitSegPoss){
   }
 
 }
-
 
 void geoEff::setRangeX(float xmin, float xmax){
   range[0][0] = xmin;
@@ -206,7 +203,6 @@ void geoEff::throwTransforms(){
 
 }
 
-// Transformations after generating random throws
 std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(unsigned int iStart, int iEnd){
 
   unsigned int thisEnd;
@@ -223,7 +219,6 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   Eigen::Affine3f tThere(Eigen::Translation3f(Eigen::Vector3f(-vertex[0], -vertex[1], -vertex[2])));
   // Move vertex back
   Eigen::Affine3f tBack(Eigen::Translation3f(Eigen::Vector3f(vertex[0], vertex[1], vertex[2])));
-  // Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
 
   for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
     // Vertex displacement:
@@ -276,13 +271,6 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
 
     // Put everything together in single transform and store.
     transforms.emplace_back(tThrow * tBack * rThrow * tThere);
-    /*
-    I want to apply a rotation to an event and then move it to a different place.
-    First I move the event vertex to the origin of the coordinate system with tThere.
-    Then I apply the rotation, rThrow. Since I moved the event vertex to the origin, I know the rotation will not move the vertex, as intended.
-    Then, move the vertex back to its original position, tBack.
-    And finally, move it to the new position with tThrow
-    */
   }
 
   return transforms;
@@ -375,7 +363,6 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   return hadronContainment;
 }
 
-// Set seeds
 void geoEff::setSeed(int seed){
   prnGenerator = std::mt19937_64(seed);
 }
@@ -419,6 +406,7 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
 
   return vetoEnergy < vetoEnergyThreshold;
 }
+
 //
 // #########################################################################
 // #########################################################################
@@ -514,15 +502,17 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
 }
 
 void geoEff::setMuEndV(float x, float y, float z){
-  RotMuEndV_BF = {x,y,z};
+  RotMuEndV_BF.emplace_back(x);
+  RotMuEndV_BF.emplace_back(y);
+  RotMuEndV_BF.emplace_back(z);
 }
 std::vector< float > geoEff::getRotMuEndV(int dim){
 
   // Set the Eigen map
-  Eigen::Map<Eigen::Matrix3Xd,0,Eigen::OuterStride<> > VectorCoordinate(RotMuEndV_BF.data(),3,RotMuEndV_BF.size()/3,Eigen::OuterStride<>(3));
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(RotMuEndV_BF.data(),3,RotMuEndV_BF.size()/3,Eigen::OuterStride<>(3));
   // Get the rotated vector coordinate
-  Eigen::Matrix3Xf RotMuEndV_AF = getTransforms_NDtoND[0] * VectorCoordinate;
-
+  Eigen::Matrix3Xf RotMuEndV_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
+  
   std::vector< float > ret(1);
 
   ret[0] = RotMuEndV_AF(dim, 0);
