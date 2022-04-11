@@ -68,7 +68,7 @@ class geoEff
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
   // Transforms from On-Axis to Off-Axis
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND()
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND();
 
  public:
   geoEff(int seed, bool verbose = false);

@@ -374,6 +374,51 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
 
   return hadronContainment;
 }
+
+// Set seeds
+void geoEff::setSeed(int seed){
+  prnGenerator = std::mt19937_64(seed);
+}
+
+std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
+  // Initialize return vector
+  std::vector< std::vector< bool > > hadronContainment(vetoSize.size(), std::vector< bool >(vetoEnergy.size(), false));
+
+  // Set Eigen Map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
+
+  for (unsigned int i = 0; i < vetoSize.size(); i++){
+    for (unsigned int j = 0; j < vetoEnergy.size(); j++){
+      if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[j])) hadronContainment[i][j] = true;
+    }
+  }
+
+  return hadronContainment;
+}
+
+bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold ){
+
+  float vetoEnergy = 0.;
+
+  for (unsigned int i = 0; i < energyDeposits.size(); i++){
+    for (int dim = 0; dim < 3; dim++){
+      // low
+      if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
+           (hitSegments(dim, i)-offset[dim] > active[dim][0]) ) {
+        vetoEnergy += energyDeposits[i];
+        break; // Only count each energy deposit once
+      }
+      // high
+      if ( (hitSegments(dim, i)-offset[dim] > active[dim][1]-vSize) and
+           (hitSegments(dim, i)-offset[dim] < active[dim][1]) ) {
+        vetoEnergy += energyDeposits[i];
+        break; // Only count each energy deposit once
+      }
+    }
+  }
+
+  return vetoEnergy < vetoEnergyThreshold;
+}
 //
 // #########################################################################
 // #########################################################################
@@ -397,9 +442,6 @@ void geoEff::setNewVertexBF(float x, float y, float z){
   new_vertex_bf[0] = x;
   new_vertex_bf[1] = y;
   new_vertex_bf[2] = z;
-  /*if(verbosity){
-    std::cout << "geoEff set Off-Axis vertex to " << new_vertex_bf[0] << " "<< new_vertex_bf[1] << " "<< new_vertex_bf[2] << std::endl;
-  }*/
 }
 
 //std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
@@ -498,53 +540,4 @@ std::vector< float > geoEff::getRotMuEndV_AF_Y(){
 }
 std::vector< float > geoEff::getRotMuEndV_AF_Z(){
   return getRotMuEndV(2);
-}
-
-
-
-
-
-// Set seeds
-void geoEff::setSeed(int seed){
-  prnGenerator = std::mt19937_64(seed);
-}
-
-std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
-  // Initialize return vector
-  std::vector< std::vector< bool > > hadronContainment(vetoSize.size(), std::vector< bool >(vetoEnergy.size(), false));
-
-  // Set Eigen Map
-  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
-
-  for (unsigned int i = 0; i < vetoSize.size(); i++){
-    for (unsigned int j = 0; j < vetoEnergy.size(); j++){
-      if (isContained(hitSegPosOrig, hitSegEdeps, vetoSize[i], vetoEnergy[j])) hadronContainment[i][j] = true;
-    }
-  }
-
-  return hadronContainment;
-}
-
-bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold ){
-
-  float vetoEnergy = 0.;
-
-  for (unsigned int i = 0; i < energyDeposits.size(); i++){
-    for (int dim = 0; dim < 3; dim++){
-      // low
-      if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
-           (hitSegments(dim, i)-offset[dim] > active[dim][0]) ) {
-        vetoEnergy += energyDeposits[i];
-        break; // Only count each energy deposit once
-      }
-      // high
-      if ( (hitSegments(dim, i)-offset[dim] > active[dim][1]-vSize) and
-           (hitSegments(dim, i)-offset[dim] < active[dim][1]) ) {
-        vetoEnergy += energyDeposits[i];
-        break; // Only count each energy deposit once
-      }
-    }
-  }
-
-  return vetoEnergy < vetoEnergyThreshold;
 }
