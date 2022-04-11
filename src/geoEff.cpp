@@ -472,9 +472,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
 }
 
 void geoEff::setMuEndV(float x, float y, float z){
-  RotMuEndV_BF[0] = x;
-  RotMuEndV_BF[1] = y;
-  RotMuEndV_BF[2] = z;
+  RotMuEndV_BF.emplace_back(x);
+  RotMuEndV_BF.emplace_back(y);
+  RotMuEndV_BF.emplace_back(z);
 }
 std::vector< float > geoEff::getRotMuEndV(int dim){
 
