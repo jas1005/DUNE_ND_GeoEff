@@ -154,9 +154,7 @@ int main(){
   double ND_Sim_mu_end_py;
   double ND_Sim_mu_end_pz;
   double ND_Sim_mu_end_E;
-  double ND_new_vx;
-  double ND_new_vy;
-  double ND_new_vz;
+
   // Tot hadron E dep
   double ND_Sim_hadronic_Edep_a2;
   // Result of hadron containment is stored in nested vectors, need to generate dictionary
@@ -182,9 +180,9 @@ int main(){
   vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx;   // One more vector: randomized/stepwise evt vtx x
   vector<vector<vector<vector<vector<uint64_t> > > > > ND_Sim_hadron_throw_result;   // ................ ................... ND off axis position x
   //
-  double ND_Sim_mu_end_vx_af;
-  double ND_Sim_mu_end_vy_af;
-  double ND_Sim_mu_end_vz_af;
+  float ND_Sim_mu_end_vx_af;
+  float ND_Sim_mu_end_vy_af;
+  float ND_Sim_mu_end_vz_af;
   //
   // A tree to store lepton info (for NN training)
   // and result of hadron containment after applying transformations
