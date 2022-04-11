@@ -476,7 +476,7 @@ void geoEff::setMuEndV(float x, float y, float z){
   RotMuEndV_BF[1].emplace_back(y);
   RotMuEndV_BF[2].emplace_back(z);
 }
-std::vector< float > geoEff::getRotMuEndV(vector<double> RotMuEndV_BF, int dim){
+std::vector< float > geoEff::getRotMuEndV(RotMuEndV_BF, int dim){
 
   // Set the Eigen map
   Eigen::Map<Eigen::Matrix3Xd,0,Eigen::OuterStride<> > VectorCoordinate(RotMuEndV_BF.data(),3,RotMuEndV_BF.size()/3,Eigen::OuterStride<>(3));
