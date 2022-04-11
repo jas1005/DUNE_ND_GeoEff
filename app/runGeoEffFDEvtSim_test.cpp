@@ -461,8 +461,6 @@ int main(){
       hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
 
       ND_off_axis_pos_counter++;
-
-      int vtx_vx_counter = 0;
       for ( double i_vtx_vx : ND_vtx_vx_vec ) {
 
         // Skip the stepwise increased option if only want a random evt vtx x to save file size
