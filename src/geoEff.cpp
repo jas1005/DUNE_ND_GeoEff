@@ -394,9 +394,9 @@ void geoEff::setOnAxisVertex(float x, float y, float z){
 }
 
 void geoEff::setNewVertexBF(float x, float y, float z){
-  new_vertex_bf[0].emplace_back(x);
-  new_vertex_bf[1].emplace_back(y);
-  new_vertex_bf[2].emplace_back(z);
+  new_vertex_bf[0] = x;
+  new_vertex_bf[1] = y;
+  new_vertex_bf[2] = z;
   /*if(verbosity){
     std::cout << "geoEff set Off-Axis vertex to " << new_vertex_bf[0] << " "<< new_vertex_bf[1] << " "<< new_vertex_bf[2] << std::endl;
   }*/
@@ -472,9 +472,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
 }
 
 void geoEff::setMuEndV(float x, float y, float z){
-  RotMuEndV_BF[0].emplace_back(x);
-  RotMuEndV_BF[1].emplace_back(y);
-  RotMuEndV_BF[2].emplace_back(z);
+  RotMuEndV_BF[0] = x;
+  RotMuEndV_BF[1] = y;
+  RotMuEndV_BF[2] = z;
 }
 std::vector< float > geoEff::getRotMuEndV(int dim){
 
