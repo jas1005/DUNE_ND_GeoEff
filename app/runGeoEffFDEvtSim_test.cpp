@@ -181,7 +181,10 @@ int main(){
   vector<vector<vector<uint64_t> > > hadron_throw_result;
   vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx;   // One more vector: randomized/stepwise evt vtx x
   vector<vector<vector<vector<vector<uint64_t> > > > > ND_Sim_hadron_throw_result;   // ................ ................... ND off axis position x
-
+  //
+  double ND_Sim_mu_end_vx_af;
+  double ND_Sim_mu_end_vy_af;
+  double ND_Sim_mu_end_vz_af;
   //
   // A tree to store lepton info (for NN training)
   // and result of hadron containment after applying transformations
@@ -212,9 +215,9 @@ int main(){
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
   effTreeFD->Branch("FD_Sim_mu_start_vy",                        &FD_Sim_mu_start_vy,       "FD_Sim_mu_start_vy/D");
   effTreeFD->Branch("FD_Sim_mu_start_vz",                        &FD_Sim_mu_start_vz,       "FD_Sim_mu_start_vz/D");
-  effTreeFD->Branch("ND_Sim_new_mu_start_vx",                    &ND_new_vx,                "ND_new_vx/D");
-  effTreeFD->Branch("ND_Sim_new_mu_start_vy",                    &ND_new_vy,                "ND_new_vy/D");
-  effTreeFD->Branch("ND_Sim_new_mu_start_vz",                    &ND_new_vz,                "ND_new_vz/D");
+  effTreeFD->Branch("ND_Sim_mu_end_vx_af",                    &ND_Sim_mu_end_vx_af,                "ND_Sim_mu_end_vx_af/D");
+  effTreeFD->Branch("ND_Sim_mu_end_vy_af",                    &ND_Sim_mu_end_vy_af,                "ND_Sim_mu_end_vy_af/D");
+  effTreeFD->Branch("ND_Sim_mu_end_vz_af",                    &ND_Sim_mu_end_vz_af,                "ND_Sim_mu_end_vz_af/D");
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -223,8 +226,6 @@ int main(){
   vector<float> throwVtxY;
   vector<float> throwVtxZ;
   vector<float> throwRot;
-
-  vector<float> ND_Sim_mu_start_vertex;
 
 
 
@@ -291,8 +292,6 @@ int main(){
   //
 
   nentries = t->GetEntries();
-  ND_Sim_mu_start_vertex.clear();
-  ND_Sim_mu_start_vertex.reserve(3*nentries);
   std::cout << "Tot evts: " << nentries << std::endl;
   for ( int ientry = 0; ientry < 3; ientry++ ) {
 
@@ -428,20 +427,13 @@ int main(){
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
     // Put back into beam center(0.0, 0.05387, 6.66) tanslation 1
-    double ND_Sim_mu_start_OnAxis_vx = 0.0;
-    double ND_Sim_mu_start_OnAxis_vy = 0.05387*100;
-    double ND_Sim_mu_start_OnAxis_vz = 6.6*100;
+    float ND_Sim_mu_start_OnAxis_vx = 0.0;
+    float ND_Sim_mu_start_OnAxis_vy = 0.05387*100;
+    float ND_Sim_mu_start_OnAxis_vz = 6.6*100;
+
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
 
-    /*// The difference between two positions are the same.
-    double ND_Sim_mu_end_vx_t1 = ND_Sim_mu_start_OnAxis_vx + (ND_Sim_mu_end_vx - ND_Sim_mu_start_vx);
-    double ND_Sim_mu_end_vy_t1 = ND_Sim_mu_start_OnAxis_vy + (ND_Sim_mu_end_vy - ND_Sim_mu_start_vy);
-    double ND_Sim_mu_end_vz_t1 = ND_Sim_mu_start_OnAxis_vz + (ND_Sim_mu_end_vz - ND_Sim_mu_start_vz);
-*/
 
-
-ND_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
-ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
 
     int ND_off_axis_pos_counter = 0;
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
@@ -464,35 +456,16 @@ ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
 
       if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
 
-/*
+
         // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
-*/
-
-        ND_Sim_mu_start_vertex.emplace_back(i_vtx_vx + i_ND_off_axis_pos);
-        ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vy);
-        ND_Sim_mu_start_vertex.emplace_back(ND_Sim_mu_start_vz);
-
-        float new_vertex[3]={i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz};
-
-        Eigen::Map<Eigen::Matrix3Xd,0,Eigen::OuterStride<> > mu_start_vertex_ND(ND_Sim_mu_start_vertex.data(),3,ND_Sim_mu_start_vertex.size()/3,Eigen::OuterStride<>(3));
-
-        Eigen::Matrix3Xd new_vertex_xyz = eff->getTransforms_NDtoND(new_vertex)[0] * mu_start_vertex_ND;
+        eff->setNewVertexBF(i_vtx_vx + i_ND_off_axis_pos, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
+        eff->setMuEndV(ND_Sim_mu_end_vx,ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
+        ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
+        ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
+        ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
 
 
-
-        ND_new_vx = new_vertex_xyz(0, 0);
-        ND_new_vy = new_vertex_xyz(1, 0);
-        ND_new_vz = new_vertex_xyz(2, 0);
-
-
-        /*ND_new_vx=new_vertex_xyz.begin();
-        new_vertex_xyz.erase(new_svertex_xyz.begin());
-        ND_new_vy=new_vertex_xyz.begin();
-        new_vertex_xyz.erase(new_vertex_xyz.begin());
-        ND_new_vz=new_vertex_xyz.begin();
-        new_vertex_xyz.erase(new_vertex_xyz.begin());
-        */
 
         HadronHitEdeps.clear();
         HadronHitPoss.clear();
@@ -527,7 +500,7 @@ ND_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
         hadron_throw_result = eff->getHadronContainmentThrows(false); // Every 64 throw results stored into a 64 bit unsigned int: 0101101...
         hadron_throw_result_vec_for_vtx_vx.emplace_back(hadron_throw_result);
 
-        if (verbose) std::cout << "                           vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, throw result[0][0][0]: " << hadron_throw_result[0][0][0] << std::endl;
+        if (verbose) std::cout << "vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, throw result[0][0][0]: " << hadron_throw_result[0][0][0] << std::endl;
 
       } // end Loop over ND_vtx_vx_vec
 

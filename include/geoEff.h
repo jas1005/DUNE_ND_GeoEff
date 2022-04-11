@@ -15,7 +15,6 @@ class geoEff
 
   // Event vertex
   float vertex[3];
-  float OnAxisVertex[3];
   // Vector to store energy deposits corresponding to hit segments
   std::vector<float> hitSegEdeps;
   // Vector to store positions of hit segments
@@ -63,7 +62,9 @@ class geoEff
 
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND(float new_vertex[3]);
+  // Transforms from On-Axis to Off-Axis
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND()
+
  public:
   geoEff(int seed, bool verbose = false);
   ~geoEff(){;}
@@ -71,9 +72,13 @@ class geoEff
   void setNthrows(unsigned long n);
 
   void setVertex(float x, float y, float z);
-  void setOnAxisVertex(float x, float y, float z);
   void setHitSegEdeps(std::vector<float> thishitSegEdeps);
   void setHitSegPoss(std::vector<float> thishitSegPoss);
+  // Transforms from On-Axis to Off-Axis
+  void setOnAxisVertex(float x, float y, float z);
+  void setNewVertexBF(float x, float y, float z);
+  void setMuEndV(float x, float y, float z);
+
 
   void setRangeX(float xmin, float xmax);
   void setRangeY(float ymin, float ymax);
@@ -105,16 +110,18 @@ class geoEff
   std::vector< float > getCurrentThrowTranslationsZ();
   std::vector< float > getCurrentThrowRotations();
 
-  std::vector< float > getCurrentThrowTranslationsX_NDtoND();
-  std::vector< float > getCurrentThrowTranslationsY_NDtoND();
-  std::vector< float > getCurrentThrowTranslationsZ_NDtoND();
-
   std::vector< float > getCurrentThrowDeps(int i, int dim);
   std::vector< float > getCurrentThrowDepsX(int i);
   std::vector< float > getCurrentThrowDepsY(int i);
   std::vector< float > getCurrentThrowDepsZ(int i);
+  // Transforms from On-Axis to Off-Axis
+  std::vector< float > getRotMuEndV(vector<double> RotMuEndV_BF, int dim);
+  std::vector< float > getRotMuEndV_AF_X();
+  std::vector< float > getRotMuEndV_AF_X();
+  std::vector< float > getRotMuEndV_AF_X();
+
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
-  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows(bool ignore_uncontained = true);
+  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows();
 
   // Get pass/fail containment criterion for original event
   std::vector< std::vector< bool > > getHadronContainmentOrigin();
