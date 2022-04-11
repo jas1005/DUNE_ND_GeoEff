@@ -291,12 +291,10 @@ int main(){
 
   nentries = t->GetEntries();
   std::cout << "Tot evts: " << nentries << std::endl;
-  for ( int ientry = 0; ientry < t; ientry++ ) {
+  for ( int ientry = 0; ientry < nentries; ientry++ ) {
 
-/*
     t->GetEntry(ientry);
-    if ( ientry%10000 == 0 ) std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << std::endl;
-*/
+
     //
     // Skip events without muon/hadronic deposits
     //
