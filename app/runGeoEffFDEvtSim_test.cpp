@@ -180,9 +180,9 @@ int main(){
   vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx;   // One more vector: randomized/stepwise evt vtx x
   vector<vector<vector<vector<vector<uint64_t> > > > > ND_Sim_hadron_throw_result;   // ................ ................... ND off axis position x
   //
-  float ND_Sim_mu_end_vx_af;
-  float ND_Sim_mu_end_vy_af;
-  float ND_Sim_mu_end_vz_af;
+  vector<float> ND_Sim_mu_end_vx_af;
+  vector<float> ND_Sim_mu_end_vy_af;
+  vector<float> ND_Sim_mu_end_vz_af;
   //
   // A tree to store lepton info (for NN training)
   // and result of hadron containment after applying transformations
