@@ -425,7 +425,7 @@ void geoEff::setOnAxisVertex(float x, float y, float z){
     std::cout << "geoEff set On-Axis vertex to " << OnAxisVertex[0] << " "<< OnAxisVertex[1] << " "<< OnAxisVertex[2] << std::endl;
   }
 }
-
+// Vertex before rotations
 void geoEff::setNewVertexBF(float x, float y, float z){
   new_vertex_bf[0] = x;
   new_vertex_bf[1] = y;
