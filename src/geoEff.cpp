@@ -501,12 +501,14 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
     // returen value: 1D vector
 }
 
+// Set Sim_mu_end_vertex
 void geoEff::setMuEndV(float x, float y, float z){
   RotMuEndV_BF.emplace_back(x);
   RotMuEndV_BF.emplace_back(y);
   RotMuEndV_BF.emplace_back(z);
 }
 
+// Get Sim_mu_end_vertex after rotations
 std::vector< float > geoEff::getRotMuEndV(int dim){
 
   // Set the Eigen map
