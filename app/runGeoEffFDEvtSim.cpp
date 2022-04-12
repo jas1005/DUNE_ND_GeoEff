@@ -518,10 +518,6 @@ int main(){
       //if ( random_ND_off_axis_pos && ND_off_axis_pos_counter != 0 ) continue;
 
       ND_off_axis_pos_counter++;
-
-      int vtx_vx_counter = 0;
-      for ( double i_vtx_vx : ND_vtx_vx_vec ) {
-      // Interpolate event neutrino production point (beam coordinate)
       decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos+i_vtx_vx - detRefBeamCoord[0] );
 
       // Calculate neutrino production point in detector coordinate
@@ -537,9 +533,13 @@ int main(){
       // Don't put it outside event loop to avoid looping over all events multiple times
       //
 
-      //int vtx_vx_counter = 0;
+      int vtx_vx_counter = 0;
       hadron_throw_result_vec_for_vtx_vx.clear(); // Need to initialize before loop over vtx x vec
       hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
+
+      //int vtx_vx_counter = 0;
+      for ( double i_vtx_vx : ND_vtx_vx_vec ) {
+      // Interpolate event neutrino production point (beam coordinate)
 
       //for ( double i_vtx_vx : ND_vtx_vx_vec ) {
 
