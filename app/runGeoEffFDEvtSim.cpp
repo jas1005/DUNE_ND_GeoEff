@@ -518,7 +518,7 @@ int main(){
       //if ( random_ND_off_axis_pos && ND_off_axis_pos_counter != 0 ) continue;
 
       ND_off_axis_pos_counter++;
-      decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos+i_vtx_vx - detRefBeamCoord[0] );
+      decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos - detRefBeamCoord[0] );
 
       // Calculate neutrino production point in detector coordinate
       decayYdetCoord = beamRefDetCoord[1] - detRefBeamCoord[1]*cos(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*sin(beamLineRotation);
