@@ -281,7 +281,7 @@ int main(){
   // Clockwise rotate beamline around ND local x axis
   double beamLineRotation = -0.101;           // unit: rad
   // Coordinate transformation, units: meters
-  double beamRefDetCoord[3] = {0., 0., 15.5}; // (0, 0, 0) is ND detector origin
+  double beamRefDetCoord[3] = {0.0, 0.05387, 6.66}; // (0, 0, 0) is ND detector origin
   double detRefBeamCoord[3] = {0., 0., 574.}; // (0, 0, 0) is beam origin
   // Calculate neutrino production x in detector coordinate, y/z later as they depend on ND off-axis position
   decayXdetCoord = beamRefDetCoord[0] - detRefBeamCoord[0];
@@ -417,7 +417,6 @@ int main(){
       ThrowsFD->Fill();
     }
 
-
     // Local y-z axes in FD and ND are rotated due to Earth curvature, x direction is not change
     // FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
     // Apply an active transformation matrix R_x(theta): rotate each point counterclockwise by theta around x-axis in ND
@@ -467,7 +466,43 @@ int main(){
 
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
 
+    //
+    // Two options for setting ND off-axis position
+    //
+    // Option 1: randomize ND off-axis position once for each event
+    // Option 2: stepwise increments along ND detector hall off axis range
+    //
+    // If only want option 1, set random_ND_off_axis_pos to true in Helpers.h; default is false (use both options)
+    //
 
+    // Initialize random number generator
+    // This needs to be inside the event loop to make sure each event has a different random number
+    TRandom3 *r3_OffAxisPoint = new TRandom3();
+    // Set the seed (required to avoid repeated random numbers in each sequence)
+    r3_OffAxisPoint->SetSeed(0);
+    ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
+
+    if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
+
+    //
+    // Similarly, two options for setting event vtx x position
+    //
+    // Option 1: randomize x once for each event
+    // Option 2: stepwise increments along ND local width in x: -2m to 2m
+    //
+    // If only want option 1, set random_vtx_vx to true in Helpers.h; default is false (use both options)
+    //
+
+    TRandom3 *r3_vtx_x = new TRandom3();
+    r3_vtx_x->SetSeed(0);
+    ND_vtx_vx_vec.at(0) = r3_vtx_x->Uniform(ND_local_x_min, ND_local_x_max);
+
+    if (verbose) std::cout << "random vtx_x [cm]: " << ND_vtx_vx_vec.at(0) << std::endl;
+
+    //
+    // Loop over ND_off_axis_pos_vec: random off_axis_pos or every ND_off_axis_pos_stepsize
+    // Don't put it outside event loop to avoid looping over all events multiple times
+    //
 
     int ND_off_axis_pos_counter = 0;
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
@@ -509,10 +544,10 @@ int main(){
         // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
         eff->setNewVertexBF(i_vtx_vx, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
-        //eff->setMuEndV(ND_Sim_mu_end_vx[ientry],ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
+        eff->setMuEndV(ND_Sim_mu_end_vx[ientry],ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
         //ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
-        //ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
-        //ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
+        ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
+        ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
 
 
 
@@ -566,7 +601,7 @@ int main(){
   std::cout << "Written evts: " << iwritten << std::endl;
 
   // Write trees
-  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff_test.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
   hist_vetoEnergyFD->Write();
