@@ -545,7 +545,7 @@ int main(){
         eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
         eff->setNewVertexBF(i_vtx_vx, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
         eff->setMuEndV(ND_Sim_mu_end_vx[ientry],ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
-        //ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
+        ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
         ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
 
