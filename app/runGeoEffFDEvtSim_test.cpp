@@ -465,6 +465,7 @@ int main(){
     float ND_Sim_mu_start_OnAxis_vz = 6.6*100;
 
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
+    eff->setMuStartP(ND_Sim_mu_start_px,ND_Sim_mu_start_py,ND_Sim_mu_start_pz);
 
     //
     // Two options for setting ND off-axis position
@@ -548,7 +549,9 @@ int main(){
         ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
         ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
-
+        ND_Sim_mu_start_px_af = eff->getRotMuStartP_AF_X();
+        ND_Sim_mu_start_py_af = eff->getRotMuStartP_AF_Y();
+        ND_Sim_mu_start_pz_af = eff->getRotMuStartP_AF_Z();
 
 
         HadronHitEdeps.clear();
