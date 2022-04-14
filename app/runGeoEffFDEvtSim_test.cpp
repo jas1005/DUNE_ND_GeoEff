@@ -220,6 +220,9 @@ int main(){
   vector<float> ND_Sim_mu_end_vx_af;
   vector<float> ND_Sim_mu_end_vy_af;
   vector<float> ND_Sim_mu_end_vz_af;
+  vector<float> ND_Sim_mu_start_px_af;
+  vector<float> ND_Sim_mu_start_py_af;
+  vector<float> ND_Sim_mu_start_pz_af;
   //
   // A tree to store lepton info (for NN training)
   // and result of hadron containment after applying transformations
@@ -253,6 +256,9 @@ int main(){
   effTreeFD->Branch("ND_Sim_mu_end_vx_af",                       &ND_Sim_mu_end_vx_af,      "ND_Sim_mu_end_vx_af/F");
   effTreeFD->Branch("ND_Sim_mu_end_vy_af",                       &ND_Sim_mu_end_vy_af,      "ND_Sim_mu_end_vy_af/F");
   effTreeFD->Branch("ND_Sim_mu_end_vz_af",                       &ND_Sim_mu_end_vz_af,      "ND_Sim_mu_end_vz_af/F");
+  effTreeFD->Branch("ND_Sim_mu_start_px_af",                     &ND_Sim_mu_start_px_af,    "ND_Sim_mu_start_px_af/F");
+  effTreeFD->Branch("ND_Sim_mu_start_py_af",                     &ND_Sim_mu_start_py_af,    "ND_Sim_mu_start_py_af/F");
+  effTreeFD->Branch("ND_Sim_mu_start_pz_af",                     &ND_Sim_mu_start_pz_af,    "ND_Sim_mu_start_pz_af/F");
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
