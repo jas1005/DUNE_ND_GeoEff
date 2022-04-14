@@ -543,26 +543,26 @@ void geoEff::setMuStartP(double x, double y, double z){
 }
 
 // Get Sim_mu_end_vertex after rotations
-std::vector< double > geoEff::getMuStartP(int dim){
+std::vector< float > geoEff::getMuStartP(int dim){
 
   // Set the Eigen map
-  Eigen::Map<Eigen::Matrix3Xd,0,Eigen::OuterStride<> > VectorCoordinate(RotMuStartP_BF.data(),3,RotMuStartP_BF.size()/3,Eigen::OuterStride<>(3));
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(RotMuStartP_BF.data(),3,RotMuStartP_BF.size()/3,Eigen::OuterStride<>(3));
   // Get the rotated vector coordinate
-  Eigen::Matrix3Xd RotMuStartP_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
+  Eigen::Matrix3Xf RotMuStartP_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
 
-  std::vector< double > ret(1);
+  std::vector< float > ret(1);
 
   ret[0] = RotMuStartP_AF(dim, 0);
 
   return ret;
 }
 
-std::vector< double > geoEff::getRotMuStartP_AF_X(){
+std::vector< float > geoEff::getRotMuStartP_AF_X(){
   return getMuStartP(0);
 }
-std::vector< double > geoEff::getRotMuStartP_AF_Y(){
+std::vector< float > geoEff::getRotMuStartP_AF_Y(){
   return getMuStartP(1);
 }
-std::vector< double > geoEff::getRotMuStartP_AF_Z(){
+std::vector< float > geoEff::getRotMuStartP_AF_Z(){
   return getMuStartP(2);
 }

@@ -19,7 +19,7 @@ class geoEff
   float OnAxisVertex[3];
   float new_vertex_bf[3];
   std::vector<float>  RotMuEndV_BF;
-  std::vector<double>  RotMuStartP_BF;
+  std::vector<float>  RotMuStartP_BF;
 
   // Vector to store energy deposits corresponding to hit segments
   std::vector<float> hitSegEdeps;
@@ -125,10 +125,10 @@ class geoEff
   std::vector< float > getRotMuEndV_AF_X();
   std::vector< float > getRotMuEndV_AF_Y();
   std::vector< float > getRotMuEndV_AF_Z();
-  std::vector< double > getMuStartP(int dim);
-  std::vector< double > getRotMuStartP_AF_X();
-  std::vector< double > getRotMuStartP_AF_Y();
-  std::vector< double > getRotMuStartP_AF_Z();
+  std::vector< float > getMuStartP(int dim);
+  std::vector< float > getRotMuStartP_AF_X();
+  std::vector< float > getRotMuStartP_AF_Y();
+  std::vector< float > getRotMuStartP_AF_Z();
 
 
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
