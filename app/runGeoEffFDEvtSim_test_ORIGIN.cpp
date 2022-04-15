@@ -130,47 +130,47 @@ int main(){
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
 
-  vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
-  //vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  //vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
-  // int ND_off_axis_pos_steps = 0;
-  // int vtx_vx_steps = 0;
-  //
-  // // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
-  // ND_off_axis_pos_vec.emplace_back(-999.);
-  //
-  // if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
-  //   ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
-  // }
-  // else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
-  //
-  // if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
-  //
-  // // The rest elements follow fixed increments from min ND local x
-  // for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
-  //   ND_off_axis_pos_vec.emplace_back( i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0] );
-  // }
-  //
-  // if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
-  //
-  // // Initialize first element as -999, to be replaced by a random vtx x in each evt below
-  // ND_vtx_vx_vec.emplace_back(-999.);
-  //
-  // if ( ND_local_x_stepsize > 0 && ND_local_x_stepsize <= ND_local_x_max ) {
-  //   vtx_vx_steps = ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize;
-  // }
-  // else std::cout << "Error: please set the ND_local_x_stepsize above 0 and below ND_local_x_max." << std::endl;
-  //
-  // if (verbose) std::cout << "vtx_vx_steps: " << vtx_vx_steps << std::endl;
-  //
-  // // The rest elements follow fixed increments from min ND local x
-  // for ( int i_vtx_vx_step = 0; i_vtx_vx_step < vtx_vx_steps + 1; i_vtx_vx_step++ ){
-  //   ND_vtx_vx_vec.emplace_back( i_vtx_vx_step*ND_local_x_stepsize + ND_local_x_min );
-  // }
-  //
-  // if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
-  //
+  //vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  //vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  int ND_off_axis_pos_steps = 0;
+  int vtx_vx_steps = 0;
+
+  // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
+  ND_off_axis_pos_vec.emplace_back(-999.);
+
+  if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
+    ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
+  }
+  else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+
+  if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
+
+  // The rest elements follow fixed increments from min ND local x
+  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
+    ND_off_axis_pos_vec.emplace_back( i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0] );
+  }
+
+  if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
+
+  // Initialize first element as -999, to be replaced by a random vtx x in each evt below
+  ND_vtx_vx_vec.emplace_back(-999.);
+
+  if ( ND_local_x_stepsize > 0 && ND_local_x_stepsize <= ND_local_x_max ) {
+    vtx_vx_steps = ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize;
+  }
+  else std::cout << "Error: please set the ND_local_x_stepsize above 0 and below ND_local_x_max." << std::endl;
+
+  if (verbose) std::cout << "vtx_vx_steps: " << vtx_vx_steps << std::endl;
+
+  // The rest elements follow fixed increments from min ND local x
+  for ( int i_vtx_vx_step = 0; i_vtx_vx_step < vtx_vx_steps + 1; i_vtx_vx_step++ ){
+    ND_vtx_vx_vec.emplace_back( i_vtx_vx_step*ND_local_x_stepsize + ND_local_x_min );
+  }
+
+  if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
+
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E;
   // Add veto E with two different restrictions
@@ -470,10 +470,6 @@ int main(){
     float ND_Sim_mu_start_OnAxis_vy = 0.05387*100;
     float ND_Sim_mu_start_OnAxis_vz = 6.6*100;
 
-
-
-
-
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
     eff->setMuStartP(ND_Sim_mu_start_px,ND_Sim_mu_start_py,ND_Sim_mu_start_pz);
 
@@ -488,12 +484,12 @@ int main(){
 
     // Initialize random number generator
     // This needs to be inside the event loop to make sure each event has a different random number
-    // // TRandom3 *r3_OffAxisPoint = new TRandom3();
-    // // // Set the seed (required to avoid repeated random numbers in each sequence)
-    // // r3_OffAxisPoint->SetSeed(0);
-    // // ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
-    //
-    // if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
+    TRandom3 *r3_OffAxisPoint = new TRandom3();
+    // Set the seed (required to avoid repeated random numbers in each sequence)
+    r3_OffAxisPoint->SetSeed(0);
+    ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
+
+    if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
 
     //
     // Similarly, two options for setting event vtx x position
@@ -519,6 +515,18 @@ int main(){
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
 
       ND_off_axis_pos_counter++;
+
+      // Interpolate event neutrino production point (beam coordinate)
+      decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos - detRefBeamCoord[0] );
+
+      // Calculate neutrino production point in detector coordinate
+      decayYdetCoord = beamRefDetCoord[1] - detRefBeamCoord[1]*cos(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*sin(beamLineRotation);
+      decayZdetCoord = beamRefDetCoord[2] + detRefBeamCoord[1]*sin(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*cos(beamLineRotation);
+      // Set production point in unit: cm
+      eff->setDecayPos(decayXdetCoord*100., decayYdetCoord*100., decayZdetCoord*100.);
+
+      if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
+
       //
       // Loop over vtx x: random x or stepwise increased x
       // Don't put it outside event loop to avoid looping over all events multiple times
@@ -530,31 +538,19 @@ int main(){
       for ( double i_vtx_vx : ND_vtx_vx_vec ) {
 
         // Skip the stepwise increased option if only want a random evt vtx x to save file size
-        // if ( vtx_vx_counter != 0 ) continue;
+        if ( vtx_vx_counter != 0 ) continue;
 
         vtx_vx_counter++;
 
-        // Interpolate event neutrino production point (beam coordinate)
-        decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos - detRefBeamCoord[0] );
-
-        // Calculate neutrino production point in detector coordinate
-        decayYdetCoord = beamRefDetCoord[1] - detRefBeamCoord[1]*cos(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*sin(beamLineRotation);
-        decayZdetCoord = beamRefDetCoord[2] + detRefBeamCoord[1]*sin(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*cos(beamLineRotation);
-        // Set production point in unit: cm
-        eff->setDecayPos(decayXdetCoord*100., decayYdetCoord*100., decayZdetCoord*100.);
-
-        if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
-
-
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
         if ( ND_off_axis_pos_counter == 1 ) {
-          ND_Sim_mu_start_vx.emplace_back( i_vtx_vx+i_ND_off_axis_pos );
-          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx+i_ND_off_axis_pos ); // w.r.t. mu start x
+          ND_Sim_mu_start_vx.emplace_back( i_vtx_vx );
+          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
         }
 
         // Evt vtx pos in unit: cm
-        eff->setVertex( i_vtx_vx+i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
-        eff->setNewVertexBF(i_vtx_vx+i_ND_off_axis_pos, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
+        eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
+        eff->setNewVertexBF(i_vtx_vx, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
         eff->setMuEndV(ND_Sim_mu_end_vx[ientry],ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
         ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
