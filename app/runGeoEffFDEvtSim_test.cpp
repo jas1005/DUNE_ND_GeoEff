@@ -547,15 +547,15 @@ int main(){
 
 
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
-        if ( ND_off_axis_pos_counter == 1 ) {
+        // if ( ND_off_axis_pos_counter == 1 ) {
           ND_Sim_mu_start_vx.emplace_back( i_vtx_vx+i_ND_off_axis_pos );
           ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx+i_ND_off_axis_pos ); // w.r.t. mu start x
-        }
+        // }
 
         // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx+i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
         eff->setNewVertexBF(i_vtx_vx+i_ND_off_axis_pos, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
-        eff->setMuEndV(ND_Sim_mu_end_vx[ientry],ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
+        eff->setMuEndV(FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx+i_ND_off_axis_pos,ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
         ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
         ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
