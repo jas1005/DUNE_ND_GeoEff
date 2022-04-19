@@ -40,9 +40,6 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-
-
-
 int main(){
 
   //
@@ -57,7 +54,7 @@ int main(){
   int FD_Sim_nMu;
   int FD_CCNC_truth; // Choose CCNC
   int FD_neuPDG; // neutrino PDG
-  double FD_Sim_mu_start_vx; // unit: cm
+  double FD_Sim_mu_start_vx; // unit: cm?
   double FD_Sim_mu_start_vy;
   double FD_Sim_mu_start_vz;
   double FD_Sim_mu_end_vx;
@@ -81,10 +78,7 @@ int main(){
   // Read ntuple from FD MC
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   // ntuple path on FNAL dunegpvm machine
-  // For Ivy machine:
-  //t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
-  // For FNAL machine:
-  t->Add("/dune/app/users/flynnguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
+  t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
   t->SetBranchAddress("Run",                      &FD_Run);
   t->SetBranchAddress("SubRun",                   &FD_SubRun);
@@ -130,11 +124,10 @@ int main(){
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
 
-  vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec;          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
-
 
   // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
   ND_off_axis_pos_vec.emplace_back(-999.);
@@ -169,8 +162,6 @@ int main(){
   }
 
   if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
-
-
 
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E;
@@ -256,7 +247,6 @@ int main(){
   vector<float> throwVtxY;
   vector<float> throwVtxZ;
   vector<float> throwRot;
-
 
   TTree * ThrowsFD = new TTree("ThrowsFD", "FD Throws");
   ThrowsFD->Branch("throwVtxY", &throwVtxY); // vector<float>: entries = [ (int)(written evts / 100) + 1 ] * N_throws
@@ -415,7 +405,7 @@ int main(){
     //
 
 
-
+    /*
     // Use random y/z for each FD evt in ND volume, it will be randomly translated later anyway
     TRandom3 *r3_mu_start_vy_nd = new TRandom3(); // Initialize random number generator, put inside the event loop so each event is different
     r3_mu_start_vy_nd->SetSeed(0);                // Set the seed (required to avoid repeated random numbers in each sequence)
@@ -427,7 +417,7 @@ int main(){
 
     ND_Sim_mu_end_vy   = FD_Sim_mu_end_vy - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy; // w.r.t. mu start random y in ND
     ND_Sim_mu_end_vz   = FD_Sim_mu_end_vz - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz;
-
+    */
 
 
     // Local y-z axes in FD and ND are rotated due to Earth curvature, x direction is not change
@@ -472,7 +462,6 @@ int main(){
     ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
-
     //
     // Two options for setting ND off-axis position
     //
@@ -515,9 +504,11 @@ int main(){
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec ) {
 
       // Skip the stepwise increased option if only want a random off axis ND position per event to save file size
-      //if ( random_ND_off_axis_pos && ND_off_axis_pos_counter != 0 ) continue;
+      if ( random_ND_off_axis_pos && ND_off_axis_pos_counter != 0 ) continue;
 
       ND_off_axis_pos_counter++;
+
+      // Interpolate event neutrino production point (beam coordinate)
       decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos - detRefBeamCoord[0] );
 
       // Calculate neutrino production point in detector coordinate
@@ -537,11 +528,7 @@ int main(){
       hadron_throw_result_vec_for_vtx_vx.clear(); // Need to initialize before loop over vtx x vec
       hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
 
-      //int vtx_vx_counter = 0;
       for ( double i_vtx_vx : ND_vtx_vx_vec ) {
-      // Interpolate event neutrino production point (beam coordinate)
-
-      //for ( double i_vtx_vx : ND_vtx_vx_vec ) {
 
         // Skip the stepwise increased option if only want a random evt vtx x to save file size
         if ( random_vtx_vx && vtx_vx_counter != 0 ) continue;
@@ -556,8 +543,6 @@ int main(){
 
         // Evt vtx pos in unit: cm
         eff->setVertex( i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
-
-
 
         HadronHitEdeps.clear();
         HadronHitPoss.clear();

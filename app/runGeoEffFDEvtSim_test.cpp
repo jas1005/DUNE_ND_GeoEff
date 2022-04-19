@@ -131,7 +131,7 @@ int main(){
   vector<float> HadronHitPoss;
 
   vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: meters, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: m, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   //vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   //vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   // int ND_off_axis_pos_steps = 0;
@@ -535,7 +535,7 @@ int main(){
         vtx_vx_counter++;
 
         // Interpolate event neutrino production point (beam coordinate)
-        decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos - detRefBeamCoord[0] );
+        decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos + i_vtx_vx - detRefBeamCoord[0] );
 
         // Calculate neutrino production point in detector coordinate
         decayYdetCoord = beamRefDetCoord[1] - detRefBeamCoord[1]*cos(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*sin(beamLineRotation);
@@ -573,7 +573,7 @@ int main(){
         for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
           // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz)
-          HadronHitPoss.emplace_back( FD_Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx ); // w.r.t. mu start x
+          HadronHitPoss.emplace_back( FD_Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx + +i_ND_off_axis_pos); // w.r.t. mu start x
           // Again, need to apply R_x(theta) for hadron y/z, do not affect x
           HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
           HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
