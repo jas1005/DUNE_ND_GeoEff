@@ -24,10 +24,13 @@ if ( ${ROOT_FOUND} )
   add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
   add_executable(runGeoEffFDEvtSim runGeoEffFDEvtSim.cpp)
   add_executable(runGeoEffFDEvtSim_test runGeoEffFDEvtSim_test.cpp)
+  add_executable(runGeoEffFDEvtSim_ivy runGeoEffFDEvtSim_ivy.cpp)
 
   target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})
   target_link_libraries(runGeoEffFDEvtSim geoEff ${ROOT_LIBRARIES})
   target_link_libraries(runGeoEffFDEvtSim_test geoEff ${ROOT_LIBRARIES})
+  target_link_libraries(runGeoEffFDEvtSim_ivy geoEff ${ROOT_LIBRARIES})
+
 else ()
 
   Message("Couldn't find either ROOT. Skipping app. Library will still compile."
