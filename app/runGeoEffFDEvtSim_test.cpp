@@ -130,8 +130,8 @@ int main(){
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
 
-  vector<double> ND_off_axis_pos_vec = {0,700,3000}; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: m, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec={-0.02,0,0.02};          // unit: m, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   //vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   //vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   // int ND_off_axis_pos_steps = 0;
