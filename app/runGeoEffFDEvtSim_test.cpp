@@ -130,7 +130,7 @@ int main(){
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
 
-  vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_off_axis_pos_vec = {0,700,3000}; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   vector<double> ND_vtx_vx_vec={-2,0,2};          // unit: m, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   //vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   //vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
@@ -528,9 +528,6 @@ int main(){
       hadron_contain_result_before_throw_vec_for_vtx_vx.clear();
 
       for ( double i_vtx_vx : ND_vtx_vx_vec ) {
-
-        // Skip the stepwise increased option if only want a random evt vtx x to save file size
-        // if ( vtx_vx_counter != 0 ) continue;
 
         vtx_vx_counter++;
 
