@@ -540,7 +540,10 @@ int main(){
         // Set production point in unit: cm
         eff->setDecayPos(decayXdetCoord*100., decayYdetCoord*100., decayZdetCoord*100.);
 
-        if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
+        //if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
+        std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
+        std::cout << "nd off_axis x in detector #" << vtx_vx_counter << ": " << i_vtx_vx << " m" << std::endl;
+        std::cout << "Event position # : " << i_ND_off_axis_pos + i_vtx_vx << " m" << std::endl;
 
 
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
