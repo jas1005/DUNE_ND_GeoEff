@@ -486,14 +486,14 @@ int main(){
     // If only want option 1, set random_ND_off_axis_pos to true in Helpers.h; default is false (use both options)
     //
 
-    // Initialize random number generator
-    // This needs to be inside the event loop to make sure each event has a different random number
-    // // TRandom3 *r3_OffAxisPoint = new TRandom3();
-    // // // Set the seed (required to avoid repeated random numbers in each sequence)
-    // // r3_OffAxisPoint->SetSeed(0);
-    // // ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
-    //
-    // if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
+    Initialize random number generator
+    This needs to be inside the event loop to make sure each event has a different random number
+    // TRandom3 *r3_OffAxisPoint = new TRandom3();
+    // // Set the seed (required to avoid repeated random numbers in each sequence)
+    // r3_OffAxisPoint->SetSeed(0);
+    // ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
+
+    if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
 
     //
     // Similarly, two options for setting event vtx x position
