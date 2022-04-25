@@ -130,8 +130,8 @@ int main(){
   vector<float> HadronHitEdeps;
   vector<float> HadronHitPoss;
 
-  vector<double> ND_off_axis_pos_vec = {0,7,30}; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec={-0.02,0,0.02};          // unit: m, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  vector<double> ND_off_axis_pos_vec = {0,7*100,30*100}; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec={-200,0,200};          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   //vector<double> ND_off_axis_pos_vec; // unit: meters, ND off-axis choices for each FD evt: 1st element is randomized for each evt
   //vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
   // int ND_off_axis_pos_steps = 0;
@@ -267,10 +267,6 @@ int main(){
   vector<float> throwVtxY;
   vector<float> throwVtxZ;
   vector<float> throwRot;
-
-
-
-
 
   TTree * ThrowsFD = new TTree("ThrowsFD", "FD Throws");
   ThrowsFD->Branch("throwVtxY", &throwVtxY); // vector<float>: entries = [ (int)(written evts / 100) + 1 ] * N_throws
@@ -466,15 +462,25 @@ int main(){
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
     // Put back into beam center(0.0, 0.05387, 6.66) tanslation 1
+    // Units: cm
     float ND_Sim_mu_start_OnAxis_vx = 0.0;
     float ND_Sim_mu_start_OnAxis_vy = 0.05387*100;
     float ND_Sim_mu_start_OnAxis_vz = 6.6*100;
-
-
-
-
-
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
+
+    // Find the new coordinates of each vector
+    // ND_Sim_mu_start_vector
+    vector<double> ND_OnAxis_Sim_mu_start_vx = emplace_back(ND_Sim_mu_start_OnAxis_vx);
+    double ND_OnAxis_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
+    double ND_OnAxis_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
+    // ND_Sim_mu_end_vector
+    vector<double> ND_OnAxis_Sim_mu_end_vx = emplace_back(ND_OnAxis_Sim_mu_start_vx - ( ND_Sim_mu_start_vx - ND_Sim_mu_end_vx));
+    double ND_OnAxis_Sim_mu_end_vy = ND_OnAxis_Sim_mu_start_vy - ( ND_Sim_mu_start_vy - ND_Sim_mu_end_vy);
+    double ND_OnAxis_Sim_mu_end_vz = ND_OnAxis_Sim_mu_start_vz - ( ND_Sim_mu_start_vz - ND_Sim_mu_end_vz);
+    
+
+
+
     eff->setMuStartP(ND_Sim_mu_start_px,ND_Sim_mu_start_py,ND_Sim_mu_start_pz);
 
     //
