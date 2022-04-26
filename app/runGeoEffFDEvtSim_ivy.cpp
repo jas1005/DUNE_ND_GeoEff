@@ -233,6 +233,7 @@ int main(){
   double ND_OnAxis_Sim_hadronic_hit_x;
   double ND_OnAxis_Sim_hadronic_hit_y;
   double ND_OnAxis_Sim_hadronic_hit_z;
+
   vector<float> ND_Sim_mu_end_vx_af;
   vector<float> ND_Sim_mu_end_vy_af;
   vector<float> ND_Sim_mu_end_vz_af;
@@ -281,9 +282,17 @@ int main(){
   effTreeFD->Branch("ND_Sim_hadronic_hit_y",                     &ND_Sim_hadronic_hit_y,    "ND_Sim_hadronic_hit_y/D");
   effTreeFD->Branch("ND_Sim_hadronic_hit_z",                     &ND_Sim_hadronic_hit_z,    "ND_Sim_hadronic_hit_z/D");
 
-  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vx",                 &ND_OnAxis_Sim_mu_start_vx,"ND_OnAxis_Sim_mu_start_vx/D");
-  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vy",                 &ND_OnAxis_Sim_mu_start_vy,"ND_OnAxis_Sim_mu_start_vy/D");
-  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vz",                 &ND_OnAxis_Sim_mu_start_vz,"ND_OnAxis_Sim_mu_start_vz/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vx",                 &ND_OnAxis_Sim_mu_start_vx, "ND_OnAxis_Sim_mu_start_vx/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vy",                 &ND_OnAxis_Sim_mu_start_vy, "ND_OnAxis_Sim_mu_start_vy/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vz",                 &ND_OnAxis_Sim_mu_start_vz, "ND_OnAxis_Sim_mu_start_vz/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_end_vx",                   &ND_OnAxis_Sim_mu_end_vx,  "ND_OnAxis_Sim_mu_end_vx/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_end_vy",                   &ND_OnAxis_Sim_mu_end_vy,  "ND_OnAxis_Sim_mu_end_vy/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_end_vz",                   &ND_OnAxis_Sim_mu_end_vz,  "ND_OnAxis_Sim_mu_end_vz/D");
+
+  effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_x",              &ND_OnAxis_Sim_hadronic_hit_x,  "ND_OnAxis_Sim_hadronic_hit_x/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_y",              &ND_OnAxis_Sim_hadronic_hit_y,  "ND_OnAxis_Sim_hadronic_hit_y/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_z",              &ND_OnAxis_Sim_hadronic_hit_z,  "ND_OnAxis_Sim_hadronic_hit_z/D");
+
 
   //
   // A separate tree to store translations and rotations of throws
@@ -519,9 +528,6 @@ int main(){
     ND_OnAxis_Sim_mu_end_vy = ND_OnAxis_Sim_mu_start_vy - ( ND_Sim_mu_start_vy - ND_Sim_mu_end_vy);
     ND_OnAxis_Sim_mu_end_vz = ND_OnAxis_Sim_mu_start_vz - ( ND_Sim_mu_start_vz - ND_Sim_mu_end_vz);
     // Hardon hit positions
-    ND_OnAxis_Sim_hadronic_hit_x;
-    ND_OnAxis_Sim_hadronic_hit_y;
-    ND_OnAxis_Sim_hadronic_hit_z;
     for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ )
     {
       ND_OnAxis_Sim_hadronic_hit_x = ND_Sim_hadronic_hit_x - ( FD_Sim_mu_start_vx - FD_Sim_mu_end_vx );
