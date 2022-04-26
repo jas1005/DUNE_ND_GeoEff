@@ -322,6 +322,23 @@ int main(){
   TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
   TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
 
+  // Add variables
+  double ND_Sim_hadronic_hit_x;
+  double ND_Sim_hadronic_hit_y;
+  double ND_Sim_hadronic_hit_z;
+
+  vector<double> ND_OnAxis_Sim_mu_start_vx;
+  double ND_OnAxis_Sim_mu_start_vy;
+  double ND_OnAxis_Sim_mu_start_vz;
+
+  vector<double> ND_OnAxis_Sim_mu_end_vx;
+  double ND_OnAxis_Sim_mu_end_vy;
+  double ND_OnAxis_Sim_mu_end_vz;
+
+  double ND_OnAxis_Sim_hadronic_hit_x;
+  double ND_OnAxis_Sim_hadronic_hit_y;
+  double ND_OnAxis_Sim_hadronic_hit_z;
+
 
 
   //
@@ -461,6 +478,19 @@ int main(){
     ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
 
+    // Hardon hit positions
+    HadronHitEdeps.clear();
+    HadronHitPoss.clear();
+    HadronHitEdeps.reserve(FD_Sim_n_hadronic_Edep_a);
+    HadronHitPoss.reserve(FD_Sim_n_hadronic_Edep_a*3);
+
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
+      ND_Sim_hadronic_hit_x = FD_Sim_hadronic_hit_x_a->at(ihadronhit);
+      ND_Sim_hadronic_hit_y = cos( 2*abs(beamLineRotation) )*FD_Sim_hadronic_hit_y_a->at(ihadronhit) - sin( 2*abs(beamLineRotation) )*FD_Sim_hadronic_hit_z_a->at(ihadronhit);
+      ND_Sim_hadronic_hit_z = sin( 2*abs(beamLineRotation) )*FD_Sim_hadronic_hit_y_a->at(ihadronhit) + cos( 2*abs(beamLineRotation) )*FD_Sim_hadronic_hit_z_a->at(ihadronhit);
+    }
+
+
     // Put back into beam center(0.0, 0.05387, 6.66) tanslation 1
     // Units: cm
     float ND_Sim_mu_start_OnAxis_vx = 0.0;
@@ -468,53 +498,29 @@ int main(){
     float ND_Sim_mu_start_OnAxis_vz = 6.6*100;
     eff->setOnAxisVertex(ND_Sim_mu_start_OnAxis_vx,ND_Sim_mu_start_OnAxis_vy,ND_Sim_mu_start_OnAxis_vz);
 
-    // Find the new coordinates of each vector
+    // Find the new coordinates of each vector after putting events back to the OnAxis_vector
     // ND_Sim_mu_start_vector
-    vector<double> ND_OnAxis_Sim_mu_start_vx = emplace_back(ND_Sim_mu_start_OnAxis_vx);
-    double ND_OnAxis_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
-    double ND_OnAxis_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
+    ND_OnAxis_Sim_mu_start_vx.clear();
+    ND_OnAxis_Sim_mu_start_vy = ND_Sim_mu_start_OnAxis_vy;
+    ND_OnAxis_Sim_mu_start_vz = ND_Sim_mu_start_OnAxis_vz;
     // ND_Sim_mu_end_vector
-    vector<double> ND_OnAxis_Sim_mu_end_vx = emplace_back(ND_OnAxis_Sim_mu_start_vx - ( ND_Sim_mu_start_vx - ND_Sim_mu_end_vx));
-    double ND_OnAxis_Sim_mu_end_vy = ND_OnAxis_Sim_mu_start_vy - ( ND_Sim_mu_start_vy - ND_Sim_mu_end_vy);
-    double ND_OnAxis_Sim_mu_end_vz = ND_OnAxis_Sim_mu_start_vz - ( ND_Sim_mu_start_vz - ND_Sim_mu_end_vz);
-    
-
-
-
-    eff->setMuStartP(ND_Sim_mu_start_px,ND_Sim_mu_start_py,ND_Sim_mu_start_pz);
-
-    //
-    // Two options for setting ND off-axis position
-    //
-    // Option 1: randomize ND off-axis position once for each event
-    // Option 2: stepwise increments along ND detector hall off axis range
-    //
-    // If only want option 1, set random_ND_off_axis_pos to true in Helpers.h; default is false (use both options)
-    //
-
-    //Initialize random number generator
-    //This needs to be inside the event loop to make sure each event has a different random number
-    // TRandom3 *r3_OffAxisPoint = new TRandom3();
-    // // Set the seed (required to avoid repeated random numbers in each sequence)
-    // r3_OffAxisPoint->SetSeed(0);
-    // ND_off_axis_pos_vec.at(0) = r3_OffAxisPoint->Uniform(OffAxisPoints[0], OffAxisPoints[13]);
-    //
-    // if (verbose) std::cout << "random OffAxisPoint [meters]: " << ND_off_axis_pos_vec.at(0) << std::endl;
-
-    //
-    // Similarly, two options for setting event vtx x position
-    //
-    // Option 1: randomize x once for each event
-    // Option 2: stepwise increments along ND local width in x: -2m to 2m
-    //
-    // If only want option 1, set random_vtx_vx to true in Helpers.h; default is false (use both options)
-    //
-    //
-    // TRandom3 *r3_vtx_x = new TRandom3();
-    // r3_vtx_x->SetSeed(0);
-    // ND_vtx_vx_vec.at(0) = r3_vtx_x->Uniform(ND_local_x_min, ND_local_x_max);
-    //
-    // if (verbose) std::cout << "random vtx_x [cm]: " << ND_vtx_vx_vec.at(0) << std::endl;
+    ND_OnAxis_Sim_mu_end_vx.clear();
+    ND_OnAxis_Sim_mu_end_vy = ND_OnAxis_Sim_mu_start_vy - ( ND_Sim_mu_start_vy - ND_Sim_mu_end_vy);
+    ND_OnAxis_Sim_mu_end_vz = ND_OnAxis_Sim_mu_start_vz - ( ND_Sim_mu_start_vz - ND_Sim_mu_end_vz);
+    // Hardon hit positions
+    ND_OnAxis_Sim_hadronic_hit_x;
+    ND_OnAxis_Sim_hadronic_hit_y;
+    ND_OnAxis_Sim_hadronic_hit_z;
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ )
+    {
+      ND_OnAxis_Sim_hadronic_hit_x = ND_Sim_hadronic_hit_x - ( ND_Sim_mu_start_vx - ND_Sim_mu_end_vx );
+      HadronHitPoss.emplace_back(ND_OnAxis_Sim_hadronic_hit_x);
+      ND_OnAxis_Sim_hadronic_hit_y = ND_Sim_hadronic_hit_y - ( ND_Sim_mu_start_vy - ND_Sim_mu_end_vy );
+      HadronHitPoss.emplace_back(ND_OnAxis_Sim_hadronic_hit_y);
+      ND_OnAxis_Sim_hadronic_hit_z = ND_Sim_hadronic_hit_z - ( ND_Sim_mu_start_vz - ND_Sim_mu_end_vz );
+      HadronHitPoss.emplace_back(ND_OnAxis_Sim_hadronic_hit_z);
+      HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
+    }
 
     //
     // Loop over ND_off_axis_pos_vec: random off_axis_pos or every ND_off_axis_pos_stepsize
@@ -554,36 +560,32 @@ int main(){
 
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
         // if ( ND_off_axis_pos_counter == 1 ) {
-          ND_Sim_mu_start_vx.emplace_back( i_vtx_vx+i_ND_off_axis_pos );
-          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx+i_ND_off_axis_pos ); // w.r.t. mu start x
+          ND_Sim_mu_start_vx.emplace_back( i_ND_off_axis_pos + i_vtx_vx );
+          ND_Sim_mu_end_vx.emplace_back( ND_OnAxis_Sim_mu_start_vx - ( ND_Sim_mu_start_vx - ND_Sim_mu_end_vx) + i_ND_off_axis_pos + i_vtx_vx ); // w.r.t. mu start x
         // }
 
         // Evt vtx pos in unit: cm
-        eff->setVertex( i_vtx_vx+i_ND_off_axis_pos, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz );
-        eff->setNewVertexBF(i_vtx_vx+i_ND_off_axis_pos, ND_Sim_mu_start_OnAxis_vy, ND_Sim_mu_start_OnAxis_vz);
-        eff->setMuEndV(FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_vtx_vx+i_ND_off_axis_pos,ND_Sim_mu_end_vy,ND_Sim_mu_end_vz);
+        eff->setVertex( i_ND_off_axis_pos + i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz);
+        eff->setNewVertexBF(i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_start_vy, ND_OnAxis_Sim_mu_start_vz);
+        // Find ND_Sim_mu_end_v_af
+        eff->setMuEndV( ND_OnAxis_Sim_mu_start_vx - ( ND_Sim_mu_start_vx - ND_Sim_mu_end_vx) + i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_end_vy, ND_OnAxis_Sim_mu_end_vz);
         ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
         ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
+        // Find ND_Sim_mu_end_p_af
+        eff->setMuStartP(i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_start_vy, ND_OnAxis_Sim_mu_start_vz);
         ND_Sim_mu_start_px_af = eff->getRotMuStartP_AF_X();
         ND_Sim_mu_start_py_af = eff->getRotMuStartP_AF_Y();
         ND_Sim_mu_start_pz_af = eff->getRotMuStartP_AF_Z();
-
-
-        HadronHitEdeps.clear();
-        HadronHitPoss.clear();
-        HadronHitEdeps.reserve(FD_Sim_n_hadronic_Edep_a);
-        HadronHitPoss.reserve(FD_Sim_n_hadronic_Edep_a*3);
 
         // Need to loop deposits many times as the hadron containment below need vtx x first
         for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
 
           // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz)
-          HadronHitPoss.emplace_back( FD_Sim_hadronic_hit_x_a->at(ihadronhit) - FD_Sim_mu_start_vx + i_vtx_vx + +i_ND_off_axis_pos); // w.r.t. mu start x
+          HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_x + i_vtx_vx +i_ND_off_axis_pos); // w.r.t. mu start x
           // Again, need to apply R_x(theta) for hadron y/z, do not affect x
-          HadronHitPoss.emplace_back( cos( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) - sin( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
-          HadronHitPoss.emplace_back( sin( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_y_a->at(ihadronhit) - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy ) + cos( 2*abs(beamLineRotation) )*( FD_Sim_hadronic_hit_z_a->at(ihadronhit) - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz ) );
-
+          HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_y));
+          HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_z);
           HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
 
         } // end for loop
