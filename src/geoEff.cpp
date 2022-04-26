@@ -508,7 +508,7 @@ void geoEff::setMuEndV(float x, float y, float z){
   RotMuEndV_BF.at(2)=z;
 }
 // void geoEff::setMuEndV(float x, float y, float z){
-//   RotMuEndV_BF.emplace_back(x);
+//   RotMuEndV_BF.assign(x);
 //   RotMuEndV_BF.emplace_back(y);
 //   RotMuEndV_BF.emplace_back(z);
 // }
