@@ -18,7 +18,7 @@ class geoEff
   // New vector
   float OnAxisVertex[3];
   float new_vertex_bf[3];
-  std::vector<float>  RotMuEndV_BF(3,0);
+  std::vector<float>  RotMuEndV_BF;
   std::vector<float>  RotMuStartP_BF; // Can only be float instead of double
 
   // Vector to store energy deposits corresponding to hit segments

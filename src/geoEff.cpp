@@ -503,6 +503,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
 
 // Set Sim_mu_end_vertex
 void geoEff::setMuEndV(float x, float y, float z){
+  RotMuEndV_BF.resize(3);
   RotMuEndV_BF.at(0)=x;
   RotMuEndV_BF.at(1)=y;
   RotMuEndV_BF.at(2)=z;
