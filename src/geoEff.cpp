@@ -532,7 +532,7 @@ std::vector< float > geoEff::getRotMuEndV_AF_Y(){
 }
 std::vector< float > geoEff::getRotMuEndV_AF_Z(){
   return getRotMuEndV(2);
-  std::cout<<"getRotMuEndV_AF_Z:"<< RotMuEndV_AF(2, 0)<< "\n"<<std::endl;
+  // std::cout<<"getRotMuEndV_AF_Z:"<< RotMuEndV_AF(2, 0)<< "\n"<<std::endl;
 }
 
 // void geoEff::clearMuEndV(){
