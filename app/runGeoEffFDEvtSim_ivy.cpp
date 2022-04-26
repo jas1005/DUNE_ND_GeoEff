@@ -604,7 +604,7 @@ int main(){
           // Relative to muon start pos in ND coordinate sys: (i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz)
           HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_x + i_vtx_vx +i_ND_off_axis_pos); // w.r.t. mu start x
           // Again, need to apply R_x(theta) for hadron y/z, do not affect x
-          HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_y));
+          HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_y);
           HadronHitPoss.emplace_back( ND_Sim_hadronic_hit_z);
           HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
 
