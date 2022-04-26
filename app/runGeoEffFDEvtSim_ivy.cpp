@@ -217,12 +217,29 @@ int main(){
   vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx;   // One more vector: randomized/stepwise evt vtx x
   vector<vector<vector<vector<vector<uint64_t> > > > > ND_Sim_hadron_throw_result;   // ................ ................... ND off axis position x
   //
+  // Add variables
+  double ND_Sim_hadronic_hit_x;
+  double ND_Sim_hadronic_hit_y;
+  double ND_Sim_hadronic_hit_z;
+
+  vector<double> ND_OnAxis_Sim_mu_start_vx;
+  double ND_OnAxis_Sim_mu_start_vy;
+  double ND_OnAxis_Sim_mu_start_vz;
+
+  vector<double> ND_OnAxis_Sim_mu_end_vx;
+  double ND_OnAxis_Sim_mu_end_vy;
+  double ND_OnAxis_Sim_mu_end_vz;
+
+  double ND_OnAxis_Sim_hadronic_hit_x;
+  double ND_OnAxis_Sim_hadronic_hit_y;
+  double ND_OnAxis_Sim_hadronic_hit_z;
   vector<float> ND_Sim_mu_end_vx_af;
   vector<float> ND_Sim_mu_end_vy_af;
   vector<float> ND_Sim_mu_end_vz_af;
   vector<float> ND_Sim_mu_start_px_af;
   vector<float> ND_Sim_mu_start_py_af;
   vector<float> ND_Sim_mu_start_pz_af;
+
   //
   // A tree to store lepton info (for NN training)
   // and result of hadron containment after applying transformations
@@ -259,6 +276,15 @@ int main(){
   effTreeFD->Branch("ND_Sim_mu_start_px_af",                     &ND_Sim_mu_start_px_af,    "ND_Sim_mu_start_px_af/F");
   effTreeFD->Branch("ND_Sim_mu_start_py_af",                     &ND_Sim_mu_start_py_af,    "ND_Sim_mu_start_py_af/F");
   effTreeFD->Branch("ND_Sim_mu_start_pz_af",                     &ND_Sim_mu_start_pz_af,    "ND_Sim_mu_start_pz_af/F");
+
+  effTreeFD->Branch("ND_Sim_hadronic_hit_x",                     &ND_Sim_hadronic_hit_x,    "ND_Sim_hadronic_hit_x/D");
+  effTreeFD->Branch("ND_Sim_hadronic_hit_y",                     &ND_Sim_hadronic_hit_y,    "ND_Sim_hadronic_hit_y/D");
+  effTreeFD->Branch("ND_Sim_hadronic_hit_z",                     &ND_Sim_hadronic_hit_z,    "ND_Sim_hadronic_hit_z/D");
+
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vx",                 &ND_OnAxis_Sim_mu_start_vx,"ND_OnAxis_Sim_mu_start_vx/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vy",                 &ND_OnAxis_Sim_mu_start_vy,"ND_OnAxis_Sim_mu_start_vy/D");
+  effTreeFD->Branch("ND_OnAxis_Sim_mu_start_vz",                 &ND_OnAxis_Sim_mu_start_vz,"ND_OnAxis_Sim_mu_start_vz/D");
+
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -322,22 +348,7 @@ int main(){
   TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
   TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
 
-  // Add variables
-  double ND_Sim_hadronic_hit_x;
-  double ND_Sim_hadronic_hit_y;
-  double ND_Sim_hadronic_hit_z;
 
-  vector<double> ND_OnAxis_Sim_mu_start_vx;
-  double ND_OnAxis_Sim_mu_start_vy;
-  double ND_OnAxis_Sim_mu_start_vz;
-
-  vector<double> ND_OnAxis_Sim_mu_end_vx;
-  double ND_OnAxis_Sim_mu_end_vy;
-  double ND_OnAxis_Sim_mu_end_vz;
-
-  double ND_OnAxis_Sim_hadronic_hit_x;
-  double ND_OnAxis_Sim_hadronic_hit_y;
-  double ND_OnAxis_Sim_hadronic_hit_z;
 
 
 
@@ -561,14 +572,17 @@ int main(){
         // ND off-axis position does not affect evt vx, so only fill branches below once when loop over ND off-axis vec
         // if ( ND_off_axis_pos_counter == 1 ) {
           ND_Sim_mu_start_vx.emplace_back( i_ND_off_axis_pos + i_vtx_vx );
-          ND_Sim_mu_end_vx.emplace_back( ND_OnAxis_Sim_mu_start_vx - ( FD_Sim_mu_start_vx - FD_Sim_mu_end_vx ) + i_ND_off_axis_pos + i_vtx_vx ); // w.r.t. mu start x
+          ND_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_ND_off_axis_pos + i_vtx_vx ); // w.r.t. mu start x
+
+          ND_OnAxis_Sim_mu_start_vx.emplace_back( i_ND_off_axis_pos + i_vtx_vx );
+          ND_OnAxis_Sim_mu_end_vx.emplace_back( FD_Sim_mu_end_vx - FD_Sim_mu_start_vx + i_ND_off_axis_pos + i_vtx_vx ); // w.r.t. mu start x
         // }
 
         // Evt vtx pos in unit: cm
         eff->setVertex( i_ND_off_axis_pos + i_vtx_vx, ND_Sim_mu_start_vy, ND_Sim_mu_start_vz);
         eff->setNewVertexBF(i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_start_vy, ND_OnAxis_Sim_mu_start_vz);
         // Find ND_Sim_mu_end_v_af
-        eff->setMuEndV( ND_OnAxis_Sim_mu_start_vx - ( FD_Sim_mu_start_vx - FD_Sim_mu_end_vx ) + i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_end_vy, ND_OnAxis_Sim_mu_end_vz);
+        eff->setMuEndV( ND_Sim_mu_start_OnAxis_vx - ( FD_Sim_mu_start_vx - FD_Sim_mu_end_vx ) + i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_end_vy, ND_OnAxis_Sim_mu_end_vz);
         ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
         ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
