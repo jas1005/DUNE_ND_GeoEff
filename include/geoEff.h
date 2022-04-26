@@ -84,7 +84,7 @@ class geoEff
   void setOnAxisVertex(float x, float y, float z);
   void setNewVertexBF(float x, float y, float z);
   void setMuEndV(float x, float y, float z);
-  void clearMuEndV();
+  // void clearMuEndV();
   void setMuStartP(double x, double y, double z);
 
   void setRangeX(float xmin, float xmax);

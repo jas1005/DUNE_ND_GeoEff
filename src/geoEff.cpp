@@ -503,9 +503,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
 
 // Set Sim_mu_end_vertex
 void geoEff::setMuEndV(float x, float y, float z){
-  RotMuEndV_BF.emplace_back(x);
-  RotMuEndV_BF.emplace_back(y);
-  RotMuEndV_BF.emplace_back(z);
+  RotMuEndV_BF = {x,y,z};
 }
 
 // Get Sim_mu_end_vertex after rotations
@@ -534,12 +532,12 @@ std::vector< float > geoEff::getRotMuEndV_AF_Y(){
 }
 std::vector< float > geoEff::getRotMuEndV_AF_Z(){
   return getRotMuEndV(2);
-  // std::cout<<"getRotMuEndV_AF_Z:"<< getRotMuEndV(2)<< "\n"<<std::endl;
+  std::cout<<"getRotMuEndV_AF_Z:"<< RotMuEndV_AF(2, 0)<< "\n"<<std::endl;
 }
 
-void geoEff::clearMuEndV(){
-  RotMuEndV_BF.clear();
-}
+// void geoEff::clearMuEndV(){
+//   RotMuEndV_BF.clear();
+// }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
