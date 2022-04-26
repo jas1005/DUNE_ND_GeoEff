@@ -506,8 +506,12 @@ void geoEff::setMuEndV(float x, float y, float z){
   RotMuEndV_BF.at(0)=x;
   RotMuEndV_BF.at(1)=y;
   RotMuEndV_BF.at(2)=z;
-
 }
+// void geoEff::setMuEndV(float x, float y, float z){
+//   RotMuEndV_BF.emplace_back(x);
+//   RotMuEndV_BF.emplace_back(z);
+//   RotMuEndV_BF.emplace_back(y);
+// }
 
 // Get Sim_mu_end_vertex after rotations
 std::vector< float > geoEff::getRotMuEndV(int dim){
@@ -520,7 +524,7 @@ std::vector< float > geoEff::getRotMuEndV(int dim){
 
   //std::vector< float > ret(1);
 
-  std::vector< float > ret;
+  std::vector< float > ret(1);
 
   ret[0] = RotMuEndV_AF(dim, 0);
 
