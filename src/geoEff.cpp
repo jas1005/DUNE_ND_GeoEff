@@ -520,7 +520,9 @@ std::vector< float > geoEff::getRotMuEndV(int dim){
 
   //std::vector< float > ret(1);
 
-  std::vector< float > ret[0] = RotMuEndV_AF(dim, 0);
+  std::vector< float > ret;
+  
+  ret[0] = RotMuEndV_AF(dim, 0);
 
   return ret;
 }
