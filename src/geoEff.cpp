@@ -518,9 +518,9 @@ std::vector< float > geoEff::getRotMuEndV(int dim){
   std::cout<<"RotMuEnd Matrix:"<< RotMuEndV_AF<< "\n"<<std::endl;
   RotMuEndV_BF.clear();
 
-  std::vector< float > ret(1);
+  //std::vector< float > ret(1);
 
-  ret[0] = RotMuEndV_AF(dim, 0);
+  std::vector< float > ret[0] = RotMuEndV_AF(dim, 0);
 
   return ret;
 }
