@@ -515,7 +515,7 @@ std::vector< float > geoEff::getRotMuEndV(int dim){
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(RotMuEndV_BF.data(),3,RotMuEndV_BF.size()/3,Eigen::OuterStride<>(3));
   // Get the rotated vector coordinate
   Eigen::Matrix3Xf RotMuEndV_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
-  std::cout<<"RotMuEnd Matrix:"<< RotMuEndV_AF<< std::endl;
+  std::cout<<"RotMuEnd Matrix:"<< RotMuEndV_AF<< "\n"<<std::endl;
 
   std::vector< float > ret(1);
 

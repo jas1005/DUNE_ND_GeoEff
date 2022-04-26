@@ -82,7 +82,7 @@ int main(){
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   // ntuple path on FNAL dunegpvm machine
   // For Ivy machine:
-  t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
+  t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple_ivy.root");
   // For FNAL machine:
   // t->Add("/dune/app/users/flynnguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
