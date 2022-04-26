@@ -592,6 +592,7 @@ int main(){
         ND_Sim_mu_end_vx_af = eff->getRotMuEndV_AF_X();
         ND_Sim_mu_end_vy_af = eff->getRotMuEndV_AF_Y();
         ND_Sim_mu_end_vz_af = eff->getRotMuEndV_AF_Z();
+        eff->clearMuEndV();
         // Find ND_Sim_mu_end_p_af
         eff->setMuStartP(i_ND_off_axis_pos + i_vtx_vx, ND_OnAxis_Sim_mu_start_vy, ND_OnAxis_Sim_mu_start_vz);
         ND_Sim_mu_start_px_af = eff->getRotMuStartP_AF_X();

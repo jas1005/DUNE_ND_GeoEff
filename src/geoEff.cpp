@@ -516,12 +516,11 @@ std::vector< float > geoEff::getRotMuEndV(int dim){
   // Get the rotated vector coordinate
   Eigen::Matrix3Xf RotMuEndV_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
   std::cout<<"RotMuEnd Matrix:"<< RotMuEndV_AF<< "\n"<<std::endl;
-  RotMuEndV_BF.clear();
 
   //std::vector< float > ret(1);
 
   std::vector< float > ret;
-  
+
   ret[0] = RotMuEndV_AF(dim, 0);
 
   return ret;
@@ -529,12 +528,19 @@ std::vector< float > geoEff::getRotMuEndV(int dim){
 
 std::vector< float > geoEff::getRotMuEndV_AF_X(){
   return getRotMuEndV(0);
+  std::cout<<"getRotMuEndV_AF_X:"<< getRotMuEndV(0)<< "\n"<<std::endl;
 }
 std::vector< float > geoEff::getRotMuEndV_AF_Y(){
   return getRotMuEndV(1);
+  std::cout<<"getRotMuEndV_AF_Y:"<< getRotMuEndV(1)<< "\n"<<std::endl;
 }
 std::vector< float > geoEff::getRotMuEndV_AF_Z(){
   return getRotMuEndV(2);
+  std::cout<<"getRotMuEndV_AF_Z:"<< getRotMuEndV(2)<< "\n"<<std::endl;
+}
+
+void geoEff::clearMuEndV(){
+  RotMuEndV_BF.clear();
 }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
