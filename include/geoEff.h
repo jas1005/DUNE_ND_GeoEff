@@ -17,9 +17,10 @@ class geoEff
   float vertex[3];
   // New vector
   float OnAxisVertex[3];
-  float new_vertex_bf[3];
-  std::vector<float>  RotMuEndV_BF;
-  std::vector<float>  RotMuStartP_BF; // Can only be float instead of double
+  float OffAxisVertex[3];
+  std::vector<float>  OffAxisMuEndV_BF;
+  std::vector<float>  OffAxisMuStartP_BF; // Can only be float instead of double
+  std::vector<float>  OffAxisHadronHitV_BF;
 
   // Vector to store energy deposits corresponding to hit segments
   std::vector<float> hitSegEdeps;
@@ -68,8 +69,10 @@ class geoEff
 
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
-  // Transforms from On-Axis to Off-Axis
+  // Position transforms from On-Axis to Off-Axis
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND();
+  // Momentum transforms from On-Axis to Off-Axis
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND_P();
 
  public:
   geoEff(int seed, bool verbose = false);
@@ -82,10 +85,10 @@ class geoEff
   void setHitSegPoss(std::vector<float> thishitSegPoss);
   // Transforms from On-Axis to Off-Axis
   void setOnAxisVertex(float x, float y, float z);
-  void setNewVertexBF(float x, float y, float z);
+  void setOffAxisVertex(float x, float y, float z);
   void setMuEndV(float x, float y, float z);
-  // void clearMuEndV();
-  void setMuStartP(double x, double y, double z);
+  void setMuStartP(float x, float y, float z);
+  void setHadronHitV(float x, float y, float z);
 
   void setRangeX(float xmin, float xmax);
   void setRangeY(float ymin, float ymax);
@@ -121,18 +124,11 @@ class geoEff
   std::vector< float > getCurrentThrowDepsX(int i);
   std::vector< float > getCurrentThrowDepsY(int i);
   std::vector< float > getCurrentThrowDepsZ(int i);
+
   // Transforms from On-Axis to Off-Axis
-  std::vector< float > getRotMuEndV(int dim);
-  std::vector< float > getRotMuEndV_AF_X();
-  std::vector< float > getRotMuEndV_AF_Y();
-  std::vector< float > getRotMuEndV_AF_Z();
-
-
-  std::vector< float > getMuStartP(int dim);
-  std::vector< float > getRotMuStartP_AF_X();
-  std::vector< float > getRotMuStartP_AF_Y();
-  std::vector< float > getRotMuStartP_AF_Z();
-
+  float getOffAxisMuEndV(int dim);
+  float getOffAxisMuStartP(int dim);
+  float getOffAxisHadronHitV(int dim);
 
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
   std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows(bool ignore_uncontained);

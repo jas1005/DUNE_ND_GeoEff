@@ -426,28 +426,28 @@ void geoEff::setOnAxisVertex(float x, float y, float z){
   }
 }
 // Vertex before rotations
-void geoEff::setNewVertexBF(float x, float y, float z){
-  new_vertex_bf[0] = x;
-  new_vertex_bf[1] = y;
-  new_vertex_bf[2] = z;
+void geoEff::setOffAxisVertex(float x, float y, float z){
+  OffAxisVertex[0] = x;
+  OffAxisVertex[1] = y;
+  OffAxisVertex[2] = z;
 }
 
-//std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float* new_vertex){
-//std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(float new_vertex[3]){
+
+// Position vector space Eigen transformation
 std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND(){
 
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms_NDtoND;
 
-    // Tranformations that do not depend on the throws:
+  // Tranformations that do not depend on the throws:
   // Move vertex to coordinate system origin to apply rotation
-  Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-OnAxisVertex[0], -OnAxisVertex[1], -OnAxisVertex[2])));
+  Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-OffAxisVertex[0], -OffAxisVertex[1], -OffAxisVertex[2])));
   // Move vertex back
-  Eigen::Affine3f tBack_NDtoND(Eigen::Translation3f(Eigen::Vector3f(OnAxisVertex[0], OnAxisVertex[1], OnAxisVertex[2])));
-  // Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
+  Eigen::Affine3f tBack_NDtoND(Eigen::Translation3f(Eigen::Vector3f(OffAxisVertex[0], OffAxisVertex[1], OffAxisVertex[2])));
+  //Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
 
 
     // Vertex displacement:
-    Eigen::Affine3f tThrow_NDtoND(Eigen::Translation3f(Eigen::Vector3f(new_vertex_bf[0]-OnAxisVertex[0],new_vertex_bf[1]-OnAxisVertex[1],new_vertex_bf[2]-OnAxisVertex[2])));
+    // Eigen::Affine3f tThrow_NDtoND(Eigen::Translation3f(Eigen::Vector3f(OffAxisVertex[0]-OnAxisVertex[0],OffAxisVertex[1]-OnAxisVertex[1],OffAxisVertex[2]-OnAxisVertex[2])));
 
     // Rotation
     Eigen::Affine3f rThrow_NDtoND;
@@ -459,7 +459,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
       for (int dim = 0; dim < 3; dim++) {
         decayToVertex[dim] = OnAxisVertex[dim]-decaypos[dim];
-        decayToTranslated[dim] = new_vertex_bf[dim]-decaypos[dim];
+        decayToTranslated[dim] = OffAxisVertex[dim]-decaypos[dim];
 
         translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
         magDecayToVertex += pow(decayToVertex[dim], 2);
@@ -479,6 +479,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       float magTranslationAxis = 0.;
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
+      // Get rotation axis n_{hat}
       for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
 
       Eigen::Affine3f rTranslation_NDtoND(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
@@ -487,7 +488,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
     }
 
     // Put everything together in single transform and store.
-    transforms_NDtoND.emplace_back(tThrow_NDtoND * tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND);
+    // transforms_NDtoND.emplace_back(tThrow_NDtoND * tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND);
+    transforms_NDtoND.emplace_back(tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND );
+    // transforms_NDtoND.emplace_back(rThrow_NDtoND);
 
     /*
     I want to apply a rotation to an event and then move it to a different place.
@@ -503,80 +506,125 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
 
 // Set Sim_mu_end_vertex
 void geoEff::setMuEndV(float x, float y, float z){
-  RotMuEndV_BF.resize(3);
-  RotMuEndV_BF.at(0)=x;
-  RotMuEndV_BF.at(1)=y;
-  RotMuEndV_BF.at(2)=z;
+  OffAxisMuEndV_BF.resize(3);
+  OffAxisMuEndV_BF.at(0)=x;
+  OffAxisMuEndV_BF.at(1)=y;
+  OffAxisMuEndV_BF.at(2)=z;
 }
-// void geoEff::setMuEndV(float x, float y, float z){
-//   RotMuEndV_BF.assign(x);
-//   RotMuEndV_BF.emplace_back(y);
-//   RotMuEndV_BF.emplace_back(z);
-// }
 
 // Get Sim_mu_end_vertex after rotations
-std::vector< float > geoEff::getRotMuEndV(int dim){
+float geoEff::getOffAxisMuEndV(int dim){
 
   // Set the Eigen map
-  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(RotMuEndV_BF.data(),3,RotMuEndV_BF.size()/3,Eigen::OuterStride<>(3));
-  // Get the rotated vector coordinate
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(OffAxisMuEndV_BF.data(),3,OffAxisMuEndV_BF.size()/3,Eigen::OuterStride<>(3));
+  // Get the rotated vector coordinate, a 3*1 matrix
   Eigen::Matrix3Xf RotMuEndV_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
-  std::cout<<"RotMuEnd Matrix:"<< RotMuEndV_AF<< "\n"<<std::endl;
-
-  //std::vector< float > ret(1);
-
-  std::vector< float > ret(1);
-
-  ret[0] = RotMuEndV_AF(dim, 0);
-
-  return ret;
+  // Return the results for (x,y,z)<->dim=(0,1,2)
+  return RotMuEndV_AF(dim, 0);
 }
 
-std::vector< float > geoEff::getRotMuEndV_AF_X(){
-  return getRotMuEndV(0);
-}
-std::vector< float > geoEff::getRotMuEndV_AF_Y(){
-  return getRotMuEndV(1);
-}
-std::vector< float > geoEff::getRotMuEndV_AF_Z(){
-  return getRotMuEndV(2);
-  // std::cout<<"getRotMuEndV_AF_Z:"<< RotMuEndV_AF(2, 0)<< "\n"<<std::endl;
-}
-
-// void geoEff::clearMuEndV(){
-//   RotMuEndV_BF.clear();
-// }
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-// Set ND_Sim_mu_start_p
-void geoEff::setMuStartP(double x, double y, double z){
-  RotMuStartP_BF.emplace_back(x);
-  RotMuStartP_BF.emplace_back(y);
-  RotMuStartP_BF.emplace_back(z);
+// Set ND_Sim_mu_hadronic_hit
+void geoEff::setHadronHitV(float x, float y, float z){
+  OffAxisHadronHitV_BF.resize(3);
+  OffAxisHadronHitV_BF.at(0)=x;
+  OffAxisHadronHitV_BF.at(1)=y;
+  OffAxisHadronHitV_BF.at(2)=z;
 }
 
 // Get Sim_mu_end_vertex after rotations
-std::vector< float > geoEff::getMuStartP(int dim){
+float geoEff::getOffAxisHadronHitV(int dim){
 
   // Set the Eigen map
-  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(RotMuStartP_BF.data(),3,RotMuStartP_BF.size()/3,Eigen::OuterStride<>(3));
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(OffAxisHadronHitV_BF.data(),3,OffAxisHadronHitV_BF.size()/3,Eigen::OuterStride<>(3));
+  // Get the rotated vector coordinate, a 3*1 matrix
+  Eigen::Matrix3Xf OffAxisHadronHitV_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
+  // Return the results for (x,y,z)<->dim=(0,1,2)
+  return OffAxisHadronHitV_AF(dim, 0);
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Momentum vector space Eigen transformation
+std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDtoND_P(){
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms_NDtoND_P;
+
+    // Rotation
+    Eigen::Affine3f rThrow_NDtoND_P;
+    {
+      // Calculate rotation due to translation
+      // Calculate rotation angle
+      float decayToVertex[3] = {0};
+      float decayToTranslated[3] = {0};
+      float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
+      for (int dim = 0; dim < 3; dim++) {
+        decayToVertex[dim] = OnAxisVertex[dim]-decaypos[dim];
+        decayToTranslated[dim] = OffAxisVertex[dim]-decaypos[dim];
+
+        translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
+        magDecayToVertex += pow(decayToVertex[dim], 2);
+        magDecayToTranslated += pow(decayToTranslated[dim], 2);
+      }
+      magDecayToVertex = sqrt(magDecayToVertex);
+      magDecayToTranslated = sqrt(magDecayToTranslated);
+      translationAngle /= (magDecayToVertex*magDecayToTranslated);
+      translationAngle = acos(translationAngle);
+
+      // Calculate rotation axis
+      // Cross-product
+      float translationAxis[3] = {0};
+      translationAxis[0] = decayToVertex[1]*decayToTranslated[2] - decayToVertex[2]*decayToTranslated[1];
+      translationAxis[1] = decayToVertex[2]*decayToTranslated[0] - decayToVertex[0]*decayToTranslated[2];
+      translationAxis[2] = decayToVertex[0]*decayToTranslated[1] - decayToVertex[1]*decayToTranslated[0];
+      float magTranslationAxis = 0.;
+      for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
+      magTranslationAxis = sqrt(magTranslationAxis);
+      // Get rotation axis n_{hat}
+      for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
+
+      Eigen::Affine3f rTranslation_NDtoND_P(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
+
+      rThrow_NDtoND_P = rTranslation_NDtoND_P;
+    }
+
+    // Put everything together in single transform and store.
+    transforms_NDtoND_P.emplace_back(rThrow_NDtoND_P);
+
+    /*
+    I want to apply a rotation to an event and then move it to a different place.
+    First I move the event vertex to the origin of the coordinate system with tThere.
+    Then I apply the rotation, rThrow. Since I moved the event vertex to the origin, I know the rotation will not move the vertex, as intended.
+    Then, move the vertex back to its original position, tBack.
+    And finally, move it to the new position with tThrow
+    */
+
+    return transforms_NDtoND_P;
+    // returen value: 1D vector
+}
+
+
+// Set ND_Sim_mu_start_p
+void geoEff::setMuStartP(float x, float y, float z){
+  OffAxisMuStartP_BF.resize(3);
+  OffAxisMuStartP_BF.at(0)=x;
+  OffAxisMuStartP_BF.at(1)=y;
+  OffAxisMuStartP_BF.at(2)=z;
+}
+
+// Get Sim_mu_end_vertex after rotations
+float geoEff::getOffAxisMuStartP(int dim){
+
+  // Set the Eigen map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > VectorCoordinate(OffAxisMuStartP_BF.data(),3,OffAxisMuStartP_BF.size()/3,Eigen::OuterStride<>(3));
   // Get the rotated vector coordinate
-  Eigen::Matrix3Xf RotMuStartP_AF = getTransforms_NDtoND()[0] * VectorCoordinate;
+  Eigen::Matrix3Xf RotMuStartP_AF = getTransforms_NDtoND_P()[0] * VectorCoordinate;
 
-  std::vector< float > ret(1);
-
-  ret[0] = RotMuStartP_AF(dim, 0);
-
-  return ret;
-}
-
-std::vector< float > geoEff::getRotMuStartP_AF_X(){
-  return getMuStartP(0);
-}
-std::vector< float > geoEff::getRotMuStartP_AF_Y(){
-  return getMuStartP(1);
-}
-std::vector< float > geoEff::getRotMuStartP_AF_Z(){
-  return getMuStartP(2);
+  return RotMuStartP_AF(dim, 0);
 }
