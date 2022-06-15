@@ -130,6 +130,17 @@ class geoEff
   float getOffAxisMuStartP(int dim);
   float getOffAxisHadronHitV(int dim);
 
+  // Unchanged case
+  double RemainUnchanged(double element);
+  // Total momentum calculations
+  float getTotalMomentum(double momentum[3]);
+  // Distance calculation
+  double getDistance(double v1[3],double v2[3]);
+  // Get earth curvature
+  double getEarthCurvature(double v[3], double BeamAngle, int dim);
+  // Get translations
+  double getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3], int dim);
+
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
   std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows(bool ignore_uncontained);
 

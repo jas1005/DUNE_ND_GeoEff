@@ -480,8 +480,8 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
       // Get rotation axis n_{hat}
-      for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
-
+      if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
+      else{for (int dim = 0; dim < 3; dim++) translationAxis[dim] = 0.;}
       Eigen::Affine3f rTranslation_NDtoND(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
       rThrow_NDtoND = rTranslation_NDtoND;
@@ -587,7 +587,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
       // Get rotation axis n_{hat}
-      for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
+      if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
+      else{for (int dim = 0; dim < 3; dim++) translationAxis[dim] = 0.;}
+
 
       Eigen::Affine3f rTranslation_NDtoND_P(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
@@ -595,15 +597,8 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
     }
 
     // Put everything together in single transform and store.
+    // Momentum space is different to the position space, it is not relevant to the position of a vector, so we just need rThrow.
     transforms_NDtoND_P.emplace_back(rThrow_NDtoND_P);
-
-    /*
-    I want to apply a rotation to an event and then move it to a different place.
-    First I move the event vertex to the origin of the coordinate system with tThere.
-    Then I apply the rotation, rThrow. Since I moved the event vertex to the origin, I know the rotation will not move the vertex, as intended.
-    Then, move the vertex back to its original position, tBack.
-    And finally, move it to the new position with tThrow
-    */
 
     return transforms_NDtoND_P;
     // returen value: 1D vector
@@ -627,4 +622,68 @@ float geoEff::getOffAxisMuStartP(int dim){
   Eigen::Matrix3Xf RotMuStartP_AF = getTransforms_NDtoND_P()[0] * VectorCoordinate;
 
   return RotMuStartP_AF(dim, 0);
+}
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Vector doesn't change
+double geoEff::RemainUnchanged(double element)
+{
+  return element;
+}
+// Momentum calculations
+float geoEff::getTotalMomentum(double momentum[3])
+{
+  float TotalP = sqrt(pow(momentum[0],2)+pow(momentum[1],2)+pow(momentum[2],2));
+  return TotalP;
+}
+double geoEff::getDistance(double v1[3],double v2[3])
+{
+  double distance = sqrt(pow(v1[0]-v2[0],2)+pow(v1[1]-v2[1],2)+pow(v1[2]-v2[2],2));
+  return distance;
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Earth curvature rotations
+// Local y-z axes in FD and ND are rotated due to Earth curvature, x direction is not change
+// FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
+// Apply an active transformation matrix R_x(theta): rotate each point counterclockwise by theta around x-axis in ND
+// theta is 2*|beamLineRotation|
+// Transform FD relative coordinate, x coordinate unchanged
+//
+//              [ 1          0             0
+// R_x(theta) =   0      cos(theta)   -sin(theta)
+//                0      sin(theta)    cos(theta) ]
+
+double geoEff::getEarthCurvature(double v[3], double BeamAngle, int dim)
+{
+  double Vector_af[3];
+  Vector_af[0]=v[0];
+  Vector_af[1]=cos( 2*abs(BeamAngle) )*v[1] - sin( 2*abs(BeamAngle) )*v[2];
+  Vector_af[2]=sin( 2*abs(BeamAngle) )*v[1] + cos( 2*abs(BeamAngle) )*v[2];
+  return Vector_af[dim];
+}
+// Put events back to beam center
+double geoEff::getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3], int dim)
+{
+  double Vector_af[3];
+  for(int i=0; i<3; i++)
+  {
+    Vector_af[i] = v_bf[i] + (vtx_af[i]-vtx_bf[i]);
+  }
+  return Vector_af[dim];
 }
