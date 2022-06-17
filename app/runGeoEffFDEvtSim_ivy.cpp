@@ -58,7 +58,7 @@ int main()
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   // Ntuple path on FNAL dunegpvm machine
   // For Ivy machine:
-  t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple_ivy.root");
+  t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
   // For FNAL machine:
   // t->Add("/dune/app/users/flynnguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
@@ -237,6 +237,8 @@ int main()
   double ND_OffAxis_Sim_mu_start_v[3]; // Position of the muon trajectory at start point [cm]
   double ND_OffAxis_Sim_mu_end_v[3]; // Position of the muon trajectory at end point [cm]
   double ND_OffAxis_Sim_mu_start_p[3]; // Momentum of the muon trajectory at start point on the x-axis [GeV]
+  double ND_OffAxis_Sim_mu_start_E; // Energy of the muon trajectory [GeV]
+
   // Hadron info
   vector<vector<float>> ND_OffAxis_Sim_hadronic_hit; // Position of each energy deposit [cm]
   vector<float> ND_OffAxis_Sim_hadronic_hit_xyz;
@@ -275,6 +277,7 @@ int main()
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_v",               ND_OffAxis_Sim_mu_start_v,       "ND_OffAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
+  effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,       "ND_OffAxis_Sim_mu_start_E/D");
   effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
   effTreeFD->Branch("ND_Sim_hadron_throw_result",              &ND_Sim_hadron_throw_result);
@@ -664,6 +667,8 @@ int main()
         myfile << "ND_OffAxis_Sim_mu_start_py[cm]: " << ND_OffAxis_Sim_mu_start_p[1] << "\n";
         myfile << "ND_OffAxis_Sim_mu_start_pz[cm]: " << ND_OffAxis_Sim_mu_start_p[2] << "\n";
         myfile << "ND_OffAxis_Sim_mu_start_p_total[GeV]: " << ND_OffAxis_Sim_mu_start_p_total << "\n\n";
+        // ND_OffAxis_Sim_mu_start_E
+        ND_OffAxis_Sim_mu_start_E = FD_Sim_mu_start_E; // Energy of leading mu at start point [GeV]
         // ND_OffAxis_Sim_hadronic_hit
         for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
           eff->setHadronHitV(ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][0],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][1],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][2]);
