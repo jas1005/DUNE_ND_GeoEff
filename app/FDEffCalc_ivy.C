@@ -27,6 +27,7 @@
 #include "TSystem.h"
 #include "TROOT.h"
 
+
 // C++ includes
 #include <iostream>
 #include <iomanip>
@@ -36,6 +37,9 @@ using namespace std;
 #include <stdlib.h>
 #include <math.h>
 #include <vector>
+
+// Library methods
+#include "geoEff.h"
 
 // Include customized functions and constants
 #include "Helpers.h"
@@ -66,11 +70,13 @@ void FDEffCalc_ivy() {
 
   // Initialize
   double ND_Gen_numu_E;
-  vector<double> *ND_off_axis_pos_vec = 0; // unit: m, need initialize 0 here to avoid error
-  vector<vector<vector<vector<vector<uint64_t> > > > > *ND_Sim_hadron_throw_result   = 0; // ...... ....... .. ... .... ........ .. ... ... .. ......... .........., 64-throw-result chunks
-
+  vector<double> *ND_vtx_vx_vec=0;
+  vector<double> *ND_off_axis_pos_vec=0;
+  vector<vector<vector<vector<vector<uint64_t> > > > > *ND_Sim_hadron_throw_result=0; // ...... ....... .. ... .... ........ .. ... ... .. ......... .........., 64-throw-result chunks
+  vector<vector<vector<uint64_t> > > *hadron_throw_result=0;
   // array: (x,y,z)<->dim=(0,1,2)
   double ND_OffAxis_Sim_mu_start_v[3]; // Position of the muon trajectory at start point [cm]
+  double ND_OnAxis_Sim_mu_start_v[3]; // Position of the muon trajectory at start point [cm]
   double ND_OffAxis_Sim_mu_start_p[3]; // Momentum of the muon trajectory at start point on the x-axis [GeV]
   double ND_OffAxis_Sim_mu_start_E;
   double ND_Sim_hadronic_Edep_a2; // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
@@ -79,67 +85,69 @@ void FDEffCalc_ivy() {
   vector<float> *throwVtxY = 0; // unit: cm
   vector<float> *throwVtxZ = 0;
 
-  // Read hadron throw result
+  // Read ND info
   TChain *myhadronchain = new TChain("effTreeFD");
   myhadronchain->Add( FileIn.Data() );
   myhadronchain->SetBranchAddress("ND_Gen_numu_E",                          &ND_Gen_numu_E);
-  myhadronchain->SetBranchAddress("ND_off_axis_pos_vec",                    &ND_off_axis_pos_vec);     // vector<double>: entries = written evts * ND_off_axis_pos_steps
-  myhadronchain->SetBranchAddress("ND_Sim_hadron_throw_result",             &ND_Sim_hadron_throw_result);
+  myhadronchain->SetBranchAddress("ND_off_axis_pos_vec",                    &ND_off_axis_pos_vec);
+  myhadronchain->SetBranchAddress("ND_vtx_vx_vec",                          &ND_vtx_vx_vec);
+  // myhadronchain->SetBranchAddress("ND_Sim_hadron_throw_result",             &ND_Sim_hadron_throw_result);
   myhadronchain->SetBranchAddress("ND_OffAxis_Sim_mu_start_v",              &ND_OffAxis_Sim_mu_start_v);
+  myhadronchain->SetBranchAddress("ND_OnAxis_Sim_mu_start_v",               &ND_OnAxis_Sim_mu_start_v);
   myhadronchain->SetBranchAddress("ND_OffAxis_Sim_mu_start_p",              &ND_OffAxis_Sim_mu_start_p);
   myhadronchain->SetBranchAddress("ND_OffAxis_Sim_mu_start_E",              &ND_OffAxis_Sim_mu_start_E);
   myhadronchain->SetBranchAddress("ND_Sim_hadronic_Edep_a2",                &ND_Sim_hadronic_Edep_a2);    // tot hadron deposited E in the evt
+  myhadronchain->SetBranchAddress("hadron_throw_result",                     &hadron_throw_result);
+  // Read hadron throw result
+  TChain *myhadronthrowchain = new TChain("effThrow");
+  myhadronthrowchain->Add( FileIn.Data() );
+  myhadronthrowchain->SetBranchAddress("ND_Sim_hadron_throw_result",             &ND_Sim_hadron_throw_result);
 
   // Read random throws each FD evt
   TChain *mythrowchain = new TChain("ThrowsFD");
   mythrowchain->Add( FileIn.Data() );
   mythrowchain->SetBranchAddress("throwVtxY", &throwVtxY); // vector<float>: entries = [ (int)(written evts / 100) + 1 ] * N_throws
   mythrowchain->SetBranchAddress("throwVtxZ", &throwVtxZ);
-
+  //
+  // geoEff * eff = new geoEff(314, false); // set verbose to true for debug
   // Add output txt file
   ofstream myfile;
    myfile.open ("Output_GeoEff_ivy.txt");
-
+   bool verbose = true;
   //
   // Loop over written events
   //
   nentries = myhadronchain->GetEntries();
 
   if ( debug ) std::cout << "Tot written evts: " << nentries << std::endl;
+  myfile << "Tot written evts: " << nentries << '\n';
   for ( int iwritten = 0; iwritten < nentries; iwritten++ ) {
 
-    myhadronchain->GetEntry(iwritten);
 
-    if ( iwritten%10000 == 0 ) std::cout << "Looking at iwritten " << iwritten << std::endl;
+    myhadronchain->GetEntry(iwritten);
+    if ( verbose ) myfile << "Looking at iwritten " << iwritten << '\n';
+    cout << " Looking at iwritten " << iwritten<< endl;
+    int ND_off_axis_pos_vec_counter = iwritten%(ND_off_axis_pos_vec->size());
+    int ND_vtx_vx_vec_counter = iwritten%(ND_vtx_vx_vec->size());
 
     if ( debug ) std::cout << "N_throws set #" << iwritten/100 << std::endl;
+
     mythrowchain->GetEntry(iwritten/100);
     if ( debug ) std::cout << "throwVtxY size: " << throwVtxY->size() << std::endl; // this should be N_throws set by user
-
     // First loop over ND off_axis vector
     //   then loop over evt vtx x
     //     then [0][0][k-th chunk]
     //     or [i][j][k-th chunk], i for vetoSize, j for vetoEnergy
 
-    if ( debug ) std::cout << "ND off axis size: " << ND_Sim_hadron_throw_result->size() << std::endl;
-
+    myhadronthrowchain->GetEntry(iwritten/9);
+    std::cout << "ND off axis size: " << ND_Sim_hadron_throw_result->size() << std::endl;
+    if ( verbose ) myfile << "ND off axis size: " << ND_Sim_hadron_throw_result->size() << '\n';
+    // cout << "hadron_throw_result->size(): " << hadron_throw_result->size() << endl;
     int counter1 = 0;
-
-    for ( vector<vector<vector<vector<vector<uint64_t> > > > >::iterator it_nd_off_axis_pos = ND_Sim_hadron_throw_result->begin(); it_nd_off_axis_pos != ND_Sim_hadron_throw_result->end(); ++it_nd_off_axis_pos ) {
-
-      counter1++;
-      if ( debug ) std::cout << "  #" << counter1 << ", evt vtx x size: " << it_nd_off_axis_pos->size() << std::endl;
-
-      int counter2 = 0;
-
-      for ( vector<vector<vector<vector<uint64_t> > > >::iterator it_evt_vtx_x = it_nd_off_axis_pos->begin(); it_evt_vtx_x != it_nd_off_axis_pos->end(); ++it_evt_vtx_x ) {
-
-        counter2++;
-        if ( debug ) std::cout << "    #" << counter2 << ", vetoSize size: " << it_evt_vtx_x->size() << std::endl;
 
         int counter3 = 0;
 
-        for ( vector<vector<vector<uint64_t> > >::iterator it_veto_size = it_evt_vtx_x->begin(); it_veto_size != it_evt_vtx_x->end(); ++it_veto_size ) {
+        for ( vector<vector<vector<uint64_t> > >::iterator it_veto_size = hadron_throw_result->begin(); it_veto_size != hadron_throw_result->end(); ++it_veto_size ) {
 
           counter3++;
           if ( debug ) std::cout << "      #" << counter3 << ", vetoEnergy size: " << it_veto_size->size() << std::endl;
@@ -154,7 +162,6 @@ void FDEffCalc_ivy() {
             // current test case: each evt has 128 throws, so 2 chunks
             if ( debug ) std::cout << "        #" << counter4 << ", 64-throw size (chunks): " << it_veto_energy->size() << std::endl;
 
-            bool contain_result_before_throw = false; // hadron ND-containment result of FD evt before throws
             int counter5    = 0;
             int validthrows = 0; // count no. of throws that meet ND FV cut for this evt
             int hadronpass  = 0; // count no. of throws that meet hadron containment cut
@@ -167,12 +174,13 @@ void FDEffCalc_ivy() {
               if ( debug ) std::cout << "                    throws passed ND FV cut" << std::endl;
 
               for ( unsigned int ithrow = 0; ithrow < 64; ithrow++ ) {
+                // myfile << "IsInNDFV: " << ND_vtx_vx_vec->at( counter2 - 1 ) << ", "<< throwVtxY->at( (counter5-1)*64 + ithrow )-5.5 << ", "<< throwVtxZ->at( (counter5-1)*64 + ithrow )-411 << '\n';
 
                 // For the numerator, only consider throws where throwed FD evt vtx x/y/z is in ND FV, same as what is done for ND evts
                 // For now, we use mu start pos as evt vtx pos, random throws for y/z are stored in the ThrowsFD tree
-                if ( FDEffCalc_cfg::IsInNDFV( ND_OffAxis_Sim_mu_start_v[0], throwVtxY->at( (counter5-1)*64 + ithrow ), throwVtxZ->at( (counter5-1)*64 + ithrow ) ) ) {
-
-                  validthrows++;
+                if ( FDEffCalc_cfg::IsInNDFV(ND_vtx_vx_vec->at(ND_vtx_vx_vec_counter), throwVtxY->at( (counter5-1)*64 + ithrow )-geoEff::getCurrentOffset(1), throwVtxZ->at( (counter5-1)*64 + ithrow )-geoEff::getCurrentOffset(2)) ) {
+                  // if ( FDEffCalc_cfg::IsInNDFV(ND_vtx_vx_vec->at(ND_vtx_vx_vec_counter), throwVtxY->at( (counter5-1)*64 + ithrow )-5.5, throwVtxZ->at( (counter5-1)*64 + ithrow )-411. )) {
+                    validthrows++;
 
                   // Access per throw result for the evt
                   // Example (in ROOT):
@@ -198,8 +206,11 @@ void FDEffCalc_ivy() {
               }   // end loop over 64 throws in a chunk
 
             }     // end loop over 64-throw chunks
-
-
+            // cout << "counter1: " << counter1 << endl;
+            // cout << "counter2: " << counter2 << endl;
+            // cout << "counter3: " << counter3 << endl;
+            // cout << "counter4: " << counter4 << endl;
+            // cout << "counter5: " << counter5 << endl;
             //
             // Calculate per-event hadron containment efficiency from throws
             //
@@ -213,14 +224,14 @@ void FDEffCalc_ivy() {
             // But for the ND FV cut, we could probably factorize it analytically instead of using these random throws to evaluate
             // therefore we exclude such throws from the denominator as well
             if ( validthrows > 0 ) hadron_contain_eff = hadronpass*1.0/validthrows;
-            myfile << "iwritten: " << iwritten << '\n';
-            myfile << "hadron_contain_eff: " << hadron_contain_eff << '\n';
-            if ( debug ) std::cout << "        Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << hadron_contain_eff << ", evt vtx x [cm]: " << ND_OffAxis_Sim_mu_start_v[0] << ", nd off-axis pos [m]: " << ND_off_axis_pos_vec->at( counter1 -1 ) << std::endl;
+            // myfile << "iwritten: " << iwritten << '\n';
+            // myfile << "hadron_contain_eff: " << hadron_contain_eff << '\n';
+            if ( debug ) std::cout << "        Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << hadron_contain_eff << ", nd off-axis pos (evt vtx x) [cm]: " << ND_OffAxis_Sim_mu_start_v[0] << std::endl;
+            myfile << "        Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << hadron_contain_eff << ", evt vtx x [cm]: " << ND_vtx_vx_vec->at(ND_vtx_vx_vec_counter)<< ", nd off-axis pos [m]: " << ND_off_axis_pos_vec->at(ND_off_axis_pos_vec_counter)<< "\n";
 
           }     // end loop over veto energy
         }       // end loop over veto size
-      }         // end loop over evt vtx x
-    }           // end loop over ND off axis pos
+
   }             // end loop over events
 
 
