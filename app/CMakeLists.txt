@@ -4,6 +4,7 @@ if ( ${ROOT_FOUND} )
 
    set(EDEPSIM_ROOT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/EDepSimForMakeProject_20200424.root)
    set(EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/makeEDepSimProject.C)
+   set(EDEPSIM_ROOT_MAKE_PROJECT_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/FDEffCalc_ivy.C)
 
   # Use example EDepSim file to produce libraries and header files
   add_custom_command(OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libEDepSimEvents.so
