@@ -1,12 +1,39 @@
 #include "geoEff.h"
-
+// C++ includes
 #include <iostream>
 #include <vector>
 #include <random>
 #include <math.h>
+using namespace std;
 
+// Eigen Library
 #include <Eigen/Dense>
 
+// ROOT includes
+#include <TFile.h>
+#include <TTree.h>
+#include <TString.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TF1.h>
+#include <TH3.h>
+#include <TCut.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TLegend.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <TPaveStats.h>
+#include <THStack.h>
+#include <TFitResultPtr.h>
+#include <TChain.h>
+#include <TChainElement.h>
+#include <TEfficiency.h>
+#include <TMath.h>
+#include "TLorentzVector.h"
+#include <TRandom3.h>
+#include "TSystem.h"
+#include "TROOT.h"
 geoEff::geoEff(int seed, bool verbose){
 
   verbosity = verbose;
@@ -20,6 +47,7 @@ geoEff::geoEff(int seed, bool verbose){
   }
 
   N_THROWS = 64*64;
+
   if (verbosity){
     std::cout << "Number of throws set to " << N_THROWS << std::endl;
   }
@@ -43,8 +71,9 @@ geoEff::geoEff(int seed, bool verbose){
     std::cout << "geoEff allocated memory for transformation vectors" << std::endl;
   }
 
-  vetoSize = std::vector<float>(1,30.);
-  vetoEnergy = std::vector<float>(1,30.);
+  vetoSize = std::vector<float>(1,30.); // {30} cm
+  vetoEnergy = std::vector<float>(1,30.); // 30 {MeV}
+
   if (verbosity){
     std::cout << "geoEff set veto size to 30 cm and energy threshold to 30 MeV" << std::endl;
   }
@@ -142,6 +171,10 @@ void geoEff::setOffsetY(float y){
 
 void geoEff::setOffsetZ(float z){
   offset[2] = z;
+}
+
+float geoEff::getCurrentOffset(int i){
+  return offset[i];
 }
 
 void geoEff::setBeamDir(float xdir, float ydir, float zdir){
@@ -289,6 +322,8 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
 
+
+// Get the coordinates of hadron hits after eigen transformation, i is the # of throw
 std::vector< float > geoEff::getCurrentThrowDeps(int i, int dim){
 
   // Set the Eigen map
@@ -687,3 +722,15 @@ double geoEff::getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3
   }
   return Vector_af[dim];
 }
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//
+// Draw 2d graph for geoEff, x axis: ND_LAr_pos, y axis: ND_OffAxis_pos, z axis(colz): ND_OffAxis_eff

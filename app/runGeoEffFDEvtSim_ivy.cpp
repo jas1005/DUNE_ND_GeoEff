@@ -47,6 +47,7 @@ using namespace std;
 // 3. ND to ND: translate from OnAxis to OffAxis
 // 4. ND: get after eigen rotated vectors for step 3
 // 5. ND: generate random throws
+// 6. Calculate Geo Eff
 int main()
 {
   //------------------------------------------------------------------------------
@@ -138,9 +139,49 @@ int main()
   vector<float> HadronHitEdeps; // Hadron hit segment energy deposits [MeV]
   vector<float> HadronHitPoss;  // Hadron hit segment energy deposits position [cm]
 
-  vector<double> ND_off_axis_pos_vec = {0,-7*100,-30*100}; // ND off-axis positions' choices for each FD evt [cm]
-  vector<double> ND_vtx_vx_vec={-200,0,200};          // Vtx x choices for each FD evt in ND volume [cm]
+  //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
   //
+  // Choose Off-Axis and ND_Lar positions
+  vector<double> ND_off_axis_pos_vec; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
+  vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
+  int ND_off_axis_pos_steps = 0;
+  int vtx_vx_steps = 0;
+
+  // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
+  ND_off_axis_pos_vec.clear();
+
+  if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
+    ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
+  }
+  else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+
+  // if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
+
+  // The rest elements follow fixed increments from min ND local x
+  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0])*100. );
+  }
+
+  if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
+
+  // Initialize first element as -999, to be replaced by a random vtx x in each evt below
+  ND_vtx_vx_vec.clear();
+
+  if ( ND_local_x_stepsize > 0 && ND_local_x_stepsize <= ND_local_x_max ) {
+    vtx_vx_steps = ( ND_local_x_max - ND_local_x_min ) / ND_local_x_stepsize;
+  }
+  else std::cout << "Error: please set the ND_local_x_stepsize above 0 and below ND_local_x_max." << std::endl;
+
+  // if (verbose) std::cout << "vtx_vx_steps: " << vtx_vx_steps << std::endl;
+
+  // The rest elements follow fixed increments from min ND local x
+  for ( int i_vtx_vx_step = 0; i_vtx_vx_step < vtx_vx_steps + 1; i_vtx_vx_step++ ){
+    ND_vtx_vx_vec.emplace_back( i_vtx_vx_step*ND_local_x_stepsize + ND_local_x_min );
+  }
+
+  if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;//
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -163,8 +204,6 @@ int main()
   gInterpreter->GenerateDictionary("vector<vector<vector<vector<vector<uint64_t> > > > >", "vector");
   // Nested vector (vetoSize > vetoEnergy > 64_bit_throw_result) returned from function getHadronContainmentThrows
   vector<vector<vector<uint64_t> > > hadron_throw_result;
-  vector<vector<vector<vector<uint64_t> > > > hadron_throw_result_vec_for_vtx_vx;   // One more vector: randomized/stepwise evt vtx x
-  vector<vector<vector<vector<vector<uint64_t> > > > > ND_Sim_hadron_throw_result;   // ................ ................... ND off axis position x
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -180,13 +219,10 @@ int main()
   double ND_RandomVtx_Sim_mu_end_v[3]; // Position of the muon trajectory at end point [cm]
   double ND_RandomVtx_Sim_mu_start_p[3]; // Momentum of the muon trajectory at start point on the x-axis [GeV]
   // double ND_RandomVtx_Sim_mu_start_E; // Energy of leading mu at start point [GeV]
-  // double ND_RandomVtx_Sim_mu_end_E; // Energy of leading mu at end point [GeV]
   // Hadron info
   double ND_Sim_hadronic_Edep_a2; // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
   vector<vector<float>> ND_RandomVtx_Sim_hadronic_hit; // Position of each energy deposit [cm]
   vector<float> ND_RandomVtx_Sim_hadronic_hit_xyz; // Position of each energy deposit [cm]
-  // Add veto E with two different restrictions
-  double ND_vetoEnergyFD; // Total hadron deposited energy in FD veto region
   // Momentum conservation check
   float ND_RandomVtx_Sim_mu_start_p_total; // Total momentum of ND_OnAxis_Sim_mu_start_p_total
 
@@ -250,9 +286,8 @@ int main()
   //------------------------------------------------------------------------------
   //
   // Store variables into a tree
-  TTree * effTreeFD = new TTree("effTreeFD", "FD eff Tree");
+  TTree *effTreeFD = new TTree("effTreeFD", "FD eff Tree");
   effTreeFD->Branch("ND_Gen_numu_E",                             &ND_Gen_numu_E,            "ND_Gen_numu_E/D");
-  effTreeFD->Branch("ND_vetoEnergyFD",                           &ND_vetoEnergyFD,          "ND_vetoEnergyFD/D");
   effTreeFD->Branch("ND_Sim_n_hadronic_Edep_a",                  &FD_Sim_n_hadronic_Edep_a,            "FD_Sim_n_hadronic_Edep_a/I");
   // 1. FD to ND: after earth curvature rotation
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_start_v",               ND_RandomVtx_Sim_mu_start_v,       "ND_RandomVtx_Sim_mu_start_v[3]/D");   // entries = written evts*3
@@ -260,7 +295,6 @@ int main()
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_start_p",               ND_RandomVtx_Sim_mu_start_p,       "ND_RandomVtx_Sim_mu_start_p[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,          "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
   effTreeFD->Branch("ND_RandomVtx_Sim_hadronic_hit_xyz",         &ND_RandomVtx_Sim_hadronic_hit);
-
   // 2. ND: move back to the beam center
   effTreeFD->Branch("ND_OnAxis_Sim_mu_start_v",               ND_OnAxis_Sim_mu_start_v,       "ND_OnAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OnAxis_Sim_mu_end_v",                 ND_OnAxis_Sim_mu_end_v,         "ND_OnAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
@@ -277,10 +311,28 @@ int main()
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_v",               ND_OffAxis_Sim_mu_start_v,       "ND_OffAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
-  effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,       "ND_OffAxis_Sim_mu_start_E/D");
+  effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,      "ND_OffAxis_Sim_mu_start_E/D");
   effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
-  effTreeFD->Branch("ND_Sim_hadron_throw_result",              &ND_Sim_hadron_throw_result);
+  effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
+  // 6. Calculate Geo Eff
+  double ND_OffAxis_pos;
+  double ND_LAr_pos;
+  double ND_OffAxis_eff;
+
+  TTree *effValues = new TTree("effValues", "ND eff Tree");
+  effValues->Branch("iwritten",                     &iwritten,             "iwritten/I");
+  effValues->Branch("ND_OffAxis_pos",               &ND_OffAxis_pos,       "ND_OffAxis_pos/D");
+  effValues->Branch("ND_LAr_pos",                   &ND_LAr_pos,           "ND_LAr_pos/D");
+  effValues->Branch("ND_OffAxis_eff",               &ND_OffAxis_eff,       "ND_OffAxis_eff/D");
+  // Store ND_off_axis_pos_vec and ND_vtx_vx_vec
+  vector<Int_t> iwritten_vec;
+  TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
+  PosVec->Branch("iwritten_vec",                             &iwritten_vec);
+  PosVec->Branch("ND_OffAxis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+  PosVec->Branch("ND_LAr_pos_vec",                           &ND_vtx_vx_vec);
+
+
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -346,15 +398,21 @@ int main()
   eff->setRangeZ(NDActiveVol_min[2], NDActiveVol_max[2]);
 
   // Set offset between MC coordinate system and det volumes
-  eff->setOffsetX(offset[0]);
-  eff->setOffsetY(offset[1]);
-  eff->setOffsetZ(offset[2]);
+  eff->setOffsetX(NDLAr_OnAxis_offset[0]);
+  eff->setOffsetY(NDLAr_OnAxis_offset[1]);
+  eff->setOffsetZ(NDLAr_OnAxis_offset[2]);
 
-  // Set On-Axis vertex where center beam cross
-  eff->setOnAxisVertex(ND_OnAxis_Sim_mu_start_v[0],ND_OnAxis_Sim_mu_start_v[1],ND_OnAxis_Sim_mu_start_v[2]);
 
+  //
+  //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
+  //
   // Add hist of veto E
   TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
+  // Add 2d graph for geoEff, x axis: ND_LAr_pos, y axis: ND_OffAxis_pos, z axis(colz): ND_OffAxis_eff
+
+
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -363,27 +421,34 @@ int main()
   // Add output txt file
   ofstream myfile;
    myfile.open ("Output_FDGeoEff_DataCheck_ivy.txt");
+  bool myfileVerbose = false;
+  bool throwfileVerbose = true;
   //
   //
   // Loop over FD events
   //
   nentries = t->GetEntries();
   std::cout << "Tot evts: " << nentries << std::endl;
-  myfile << "Tot evts: " << nentries << "\n";
-  for ( int ientry = 0; ientry < nentries; ientry++ )
+  if (myfileVerbose) myfile << "Tot evts: " << nentries << "\n";
+  if (throwfileVerbose) myfile << "Tot evts: " << nentries << "\n";
+  for ( int ientry = 0; ientry < 7; ientry++ )
   {
     t->GetEntry(ientry);
     if ( ientry%10000 == 0 )
     {
       std::cout << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << std::endl;
-      myfile << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << "\n\n\n";
+      if (myfileVerbose) myfile << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << "\n\n\n";
+      if (throwfileVerbose) myfile << "Looking at entry " << ientry << ", FD_run: " << FD_Run << ", FD_subrun: " << FD_SubRun << ", FD_event: " << FD_Event << "\n\n\n";
     }
-    myfile << "\n ientry: " << ientry <<"\n\n";
+    if (myfileVerbose) myfile << "\n ientry: " << ientry <<"\n\n";
+    if (throwfileVerbose) myfile << "\n ientry: " << ientry <<"\n\n";
+
     //
     // Skip events without muon/hadronic deposits
     //
     if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_a == 0 ) continue;
-    myfile << "FD_Sim_n_hadronic_Edep_a: " << FD_Sim_n_hadronic_Edep_a <<"\n";
+    if (myfileVerbose) myfile << "FD_Sim_n_hadronic_Edep_a: " << FD_Sim_n_hadronic_Edep_a <<"\n";
+    if (throwfileVerbose) myfile << "FD_Sim_n_hadronic_Edep_a: " << FD_Sim_n_hadronic_Edep_a <<"\n";
     if ( FD_CCNC_truth == 1) continue;   // only use CC events
     if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
     //
@@ -405,13 +470,13 @@ int main()
       } // end if hadron deposit in FD veto region
 
     } // end loop over hadron E deposits
-    ND_vetoEnergyFD = vetoEnergyFD;
     //add a vetoEnergyFD histogram in the root file
 
     hist_vetoEnergyFD->Fill(vetoEnergyFD);
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
     //
+    if (throwfileVerbose) myfile << "vetoEnergyFD[MeV]: " << vetoEnergyFD <<"\n\n";
     if ( vetoEnergyFD > 30 ) continue; // 30 MeV
     //
     // Renew throws every 100th written event to save file size, i.e., if N = 128,
@@ -433,6 +498,7 @@ int main()
       throwRot  = eff->getCurrentThrowRotations();
       ThrowsFD->Fill();
     }
+
     //
     //------------------------------------------------------------------------------
     //------------------------------------------------------------------------------
@@ -446,28 +512,35 @@ int main()
     {
       ND_RandomVtx_Sim_mu_start_v[i] = eff->getEarthCurvature(FD_Sim_mu_start_v, beamLineRotation, i);
     }
-    myfile << "FD_Sim_mu_start_vx[cm]: " << FD_Sim_mu_start_vx << "\n";
-    myfile << "FD_Sim_mu_start_vy[cm]: " << FD_Sim_mu_start_vy << "\n";
-    myfile << "FD_Sim_mu_start_vz[cm]: " << FD_Sim_mu_start_vz << "\n\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_vx[cm]: " << ND_RandomVtx_Sim_mu_start_v[0] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_vy[cm]: " << ND_RandomVtx_Sim_mu_start_v[1] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_vz[cm]: " << ND_RandomVtx_Sim_mu_start_v[2] << "\n\n";
+    if (myfileVerbose) {
+      myfile << "FD_Sim_mu_start_vx[cm]: " << FD_Sim_mu_start_vx << "\n";
+      myfile << "FD_Sim_mu_start_vy[cm]: " << FD_Sim_mu_start_vy << "\n";
+      myfile << "FD_Sim_mu_start_vz[cm]: " << FD_Sim_mu_start_vz << "\n\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_vx[cm]: " << ND_RandomVtx_Sim_mu_start_v[0] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_vy[cm]: " << ND_RandomVtx_Sim_mu_start_v[1] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_vz[cm]: " << ND_RandomVtx_Sim_mu_start_v[2] << "\n\n";
+
+    }
     // Mu_end_v
     double FD_Sim_mu_end_v[3] = {FD_Sim_mu_end_vx, FD_Sim_mu_end_vy, FD_Sim_mu_end_vz};
     for(int i=0; i<3; i++)
     {
       ND_RandomVtx_Sim_mu_end_v[i] = eff->getEarthCurvature(FD_Sim_mu_end_v, beamLineRotation, i);
     }
-    myfile << "FD_Sim_mu_end_vx[cm]: " << FD_Sim_mu_end_vx << "\n";
-    myfile << "FD_Sim_mu_end_vy[cm]: " << FD_Sim_mu_end_vy << "\n";
-    myfile << "FD_Sim_mu_end_vz[cm]: " << FD_Sim_mu_end_vz << "\n";
     double FD_Sim_mu_v_end_start = eff->getDistance(FD_Sim_mu_start_v,FD_Sim_mu_end_v);
-    myfile << "Distance between FD_Sim_mu_v_end_start[cm]: " << FD_Sim_mu_v_end_start << "\n\n";
-    myfile << "ND_RandomVtx_Sim_mu_end_vx[cm]: " << ND_RandomVtx_Sim_mu_end_v[0] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_end_vy[cm]: " << ND_RandomVtx_Sim_mu_end_v[1] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_end_vz[cm]: " << ND_RandomVtx_Sim_mu_end_v[2] << "\n";
     double ND_RandomVtx_Sim_mu_v_end_start = eff->getDistance(ND_RandomVtx_Sim_mu_start_v,ND_RandomVtx_Sim_mu_end_v);
-    myfile << "Distance between ND_RandomVtx_Sim_mu_v_end_start[cm]: " << ND_RandomVtx_Sim_mu_v_end_start << "\n\n";
+    if (myfileVerbose)
+    {
+      myfile << "FD_Sim_mu_end_vx[cm]: " << FD_Sim_mu_end_vx << "\n";
+      myfile << "FD_Sim_mu_end_vy[cm]: " << FD_Sim_mu_end_vy << "\n";
+      myfile << "FD_Sim_mu_end_vz[cm]: " << FD_Sim_mu_end_vz << "\n";
+      myfile << "Distance between FD_Sim_mu_v_end_start[cm]: " << FD_Sim_mu_v_end_start << "\n\n";
+      myfile << "ND_RandomVtx_Sim_mu_end_vx[cm]: " << ND_RandomVtx_Sim_mu_end_v[0] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_end_vy[cm]: " << ND_RandomVtx_Sim_mu_end_v[1] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_end_vz[cm]: " << ND_RandomVtx_Sim_mu_end_v[2] << "\n";
+      myfile << "Distance between ND_RandomVtx_Sim_mu_v_end_start[cm]: " << ND_RandomVtx_Sim_mu_v_end_start << "\n\n";
+    }
+
 
     // Mu_start_p
     double FD_Sim_mu_start_p[3] = {FD_Sim_mu_start_px, FD_Sim_mu_start_py, FD_Sim_mu_start_pz};
@@ -477,17 +550,18 @@ int main()
     }
     ND_RandomVtx_Sim_mu_start_p_total = eff->getTotalMomentum(ND_RandomVtx_Sim_mu_start_p);
     double FD_Sim_mu_start_p_total = eff->getTotalMomentum(FD_Sim_mu_start_p);
-    myfile << "FD_Sim_mu_start_px[cm]: " << FD_Sim_mu_start_px << "\n";
-    myfile << "FD_Sim_mu_start_py[cm]: " << FD_Sim_mu_start_py << "\n";
-    myfile << "FD_Sim_mu_start_pz[cm]: " << FD_Sim_mu_start_pz << "\n";
-    myfile << "FD_Sim_mu_start_p_total[GeV]: " << FD_Sim_mu_start_p_total << "\n\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_px[GeV]: " << ND_RandomVtx_Sim_mu_start_p[0] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_py[GeV]: " << ND_RandomVtx_Sim_mu_start_p[1] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_pz[GeV]: " << ND_RandomVtx_Sim_mu_start_p[2] << "\n";
-    myfile << "ND_RandomVtx_Sim_mu_start_p_total[GeV]: " << ND_RandomVtx_Sim_mu_start_p_total << "\n\n";
+    if (myfileVerbose) {
+      myfile << "FD_Sim_mu_start_px[cm]: " << FD_Sim_mu_start_px << "\n";
+      myfile << "FD_Sim_mu_start_py[cm]: " << FD_Sim_mu_start_py << "\n";
+      myfile << "FD_Sim_mu_start_pz[cm]: " << FD_Sim_mu_start_pz << "\n";
+      myfile << "FD_Sim_mu_start_p_total[GeV]: " << FD_Sim_mu_start_p_total << "\n\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_px[GeV]: " << ND_RandomVtx_Sim_mu_start_p[0] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_py[GeV]: " << ND_RandomVtx_Sim_mu_start_p[1] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_pz[GeV]: " << ND_RandomVtx_Sim_mu_start_p[2] << "\n";
+      myfile << "ND_RandomVtx_Sim_mu_start_p_total[GeV]: " << ND_RandomVtx_Sim_mu_start_p_total << "\n\n";
+    }
 
-    // Initialize for the event
-    ND_Sim_hadron_throw_result.clear();
+
     // Branches that are not affected by ND off axis position and vtx x (loops below)
     ND_Gen_numu_E      = FD_Gen_numu_E;
     ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
@@ -514,24 +588,33 @@ int main()
     {
       ND_OnAxis_Sim_mu_end_v[i] = eff->getTranslations(ND_RandomVtx_Sim_mu_end_v, ND_RandomVtx_Sim_mu_start_v, ND_OnAxis_Sim_mu_start_v, i);
     }
-    myfile << "ND_OnAxis_Sim_mu_start_vx[cm]: " << ND_OnAxis_Sim_mu_start_v[0] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_start_vy[cm]: " << ND_OnAxis_Sim_mu_start_v[1] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_start_vz[cm]: " << ND_OnAxis_Sim_mu_start_v[2] << "\n\n";
-    myfile << "ND_OnAxis_Sim_mu_end_vx[cm]: " << ND_OnAxis_Sim_mu_end_v[0] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_end_vy[cm]: " << ND_OnAxis_Sim_mu_end_v[1] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_end_vz[cm]: " << ND_OnAxis_Sim_mu_end_v[2] << "\n";
     double ND_OnAxis_Sim_mu_v_end_start = eff->getDistance(ND_OnAxis_Sim_mu_start_v,ND_OnAxis_Sim_mu_end_v);
-    myfile << "Distance between ND_OnAxis_Sim_mu_v_end_start[cm]: " << ND_OnAxis_Sim_mu_v_end_start << "\n\n";
+
+    if (myfileVerbose)
+    {
+      myfile << "ND_OnAxis_Sim_mu_start_vx[cm]: " << ND_OnAxis_Sim_mu_start_v[0] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_start_vy[cm]: " << ND_OnAxis_Sim_mu_start_v[1] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_start_vz[cm]: " << ND_OnAxis_Sim_mu_start_v[2] << "\n\n";
+      myfile << "ND_OnAxis_Sim_mu_end_vx[cm]: " << ND_OnAxis_Sim_mu_end_v[0] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_end_vy[cm]: " << ND_OnAxis_Sim_mu_end_v[1] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_end_vz[cm]: " << ND_OnAxis_Sim_mu_end_v[2] << "\n";
+      myfile << "Distance between ND_OnAxis_Sim_mu_v_end_start[cm]: " << ND_OnAxis_Sim_mu_v_end_start << "\n\n";
+
+    }
     // ND_OnAxis_Sim_mu_start_p
     for(int i=0; i<3; i++)
     {
       ND_OnAxis_Sim_mu_start_p[i] = eff->RemainUnchanged(ND_RandomVtx_Sim_mu_start_p[i]);
     }
     ND_OnAxis_Sim_mu_start_p_total = eff->getTotalMomentum(ND_OnAxis_Sim_mu_start_p);
-    myfile << "ND_OnAxis_Sim_mu_start_px[cm]: " << ND_OnAxis_Sim_mu_start_p[0] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_start_py[cm]: " << ND_OnAxis_Sim_mu_start_p[1] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_start_pz[cm]: " << ND_OnAxis_Sim_mu_start_p[2] << "\n";
-    myfile << "ND_OnAxis_Sim_mu_start_p_total[GeV]: " << ND_OnAxis_Sim_mu_start_p_total << "\n\n";
+    if (myfileVerbose)
+    {
+      myfile << "ND_OnAxis_Sim_mu_start_px[cm]: " << ND_OnAxis_Sim_mu_start_p[0] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_start_py[cm]: " << ND_OnAxis_Sim_mu_start_p[1] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_start_pz[cm]: " << ND_OnAxis_Sim_mu_start_p[2] << "\n";
+      myfile << "ND_OnAxis_Sim_mu_start_p_total[GeV]: " << ND_OnAxis_Sim_mu_start_p_total << "\n\n";
+    }
+
     // ND_OnAxis_Sim_hadronic_hit
     for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
       double ND_RandomVtx_Sim_hadronic_hit_array[3] = {ND_RandomVtx_Sim_hadronic_hit[ihadronhit][0],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][1],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][2]};
@@ -542,6 +625,9 @@ int main()
       ND_OnAxis_Sim_hadronic_hit.emplace_back(ND_OnAxis_Sim_hadronic_hit_xyz);
       ND_OnAxis_Sim_hadronic_hit_xyz.clear();
     }
+
+    // Set On-Axis vertex where center beam cross
+    eff->setOnAxisVertex(ND_OnAxis_Sim_mu_start_v[0],ND_OnAxis_Sim_mu_start_v[1],ND_OnAxis_Sim_mu_start_v[2]);
     //
     //------------------------------------------------------------------------------
     //------------------------------------------------------------------------------
@@ -551,17 +637,17 @@ int main()
     // Don't put it outside event loop to avoid looping over all events multiple times
     //
 
+
     int ND_off_axis_pos_counter = 0;
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec )
     {
+      eff->setOffsetX(NDLAr_OnAxis_offset[0]-i_ND_off_axis_pos);
       ND_off_axis_pos_counter++;
       //
       // Loop over vtx x: random x or stepwise increased x
       // Don't put it outside event loop to avoid looping over all events multiple times
       //
       int vtx_vx_counter = 0;
-      hadron_throw_result_vec_for_vtx_vx.clear(); // Need to initialize before loop over vtx x vec
-      //
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
@@ -579,11 +665,13 @@ int main()
         decayZdetCoord = beamRefDetCoord[2] + detRefBeamCoord[1]*sin(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*cos(beamLineRotation);
         // Set production point in unit: cm
         eff->setDecayPos(decayXdetCoord*100., decayYdetCoord*100., decayZdetCoord*100.);
+        if (myfileVerbose)
+        {
+          myfile << "Nd Off-Axis x #" << ND_off_axis_pos_counter << "[cm]: " << i_ND_off_axis_pos << "\n";
+          myfile << "Nd Off-Axis x in detector #" << vtx_vx_counter << "[cm]: " << i_vtx_vx << "\n";
+          myfile << "Event position #" << vtx_vx_counter << "[cm]: " << i_ND_off_axis_pos + i_vtx_vx << "\n\n";
+        }
 
-        if (verbose) std::cout << "nd off_axis x #" << ND_off_axis_pos_counter << ": " << i_ND_off_axis_pos << " m" << std::endl;
-        myfile << "Nd Off-Axis x #" << ND_off_axis_pos_counter << "[cm]: " << i_ND_off_axis_pos << "\n";
-        myfile << "Nd Off-Axis x in detector #" << vtx_vx_counter << "[cm]: " << i_vtx_vx << "\n";
-        myfile << "Event position #" << vtx_vx_counter << "[cm]: " << i_ND_off_axis_pos + i_vtx_vx << "\n\n";
 
         //
         //------------------------------------------------------------------------------
@@ -596,30 +684,40 @@ int main()
         ND_OffAxis_Unrotated_Sim_mu_start_v[0] = ND_OnAxis_Sim_mu_start_v[0] + i_ND_off_axis_pos + i_vtx_vx;
         ND_OffAxis_Unrotated_Sim_mu_start_v[1] = eff->RemainUnchanged(ND_OnAxis_Sim_mu_start_v[1]);
         ND_OffAxis_Unrotated_Sim_mu_start_v[2] = eff->RemainUnchanged(ND_OnAxis_Sim_mu_start_v[2]);
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_vx[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_v[0] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_vy[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_v[1] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_vz[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_v[2] << "\n\n";
+        if (myfileVerbose)
+        {
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_vx[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_v[0] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_vy[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_v[1] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_vz[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_v[2] << "\n\n";
+        }
+
         // ND_OffAxis_Unrotated_Sim_mu_end_v
         // double geoEff::getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3], int dim)
         for(int i=0; i<3; i++)
         {
           ND_OffAxis_Unrotated_Sim_mu_end_v[i] = eff->getTranslations(ND_OnAxis_Sim_mu_end_v, ND_OnAxis_Sim_mu_start_v, ND_OffAxis_Unrotated_Sim_mu_start_v, i);
         }
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_end_vx[cm]: " << ND_OffAxis_Unrotated_Sim_mu_end_v[0] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_end_vy[cm]: " << ND_OffAxis_Unrotated_Sim_mu_end_v[1] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_end_vz[cm]: " << ND_OffAxis_Unrotated_Sim_mu_end_v[2] << "\n";
         double ND_OffAxis_Unrotated_Sim_mu_v_end_start = eff->getDistance(ND_OffAxis_Unrotated_Sim_mu_end_v,ND_OffAxis_Unrotated_Sim_mu_start_v);
-        myfile << "Distance between ND_OffAxis_Unrotated_Sim_mu_v_end_start[cm]: " << ND_OffAxis_Unrotated_Sim_mu_v_end_start << "\n\n";
+        if (myfileVerbose)
+        {
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_end_vx[cm]: " << ND_OffAxis_Unrotated_Sim_mu_end_v[0] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_end_vy[cm]: " << ND_OffAxis_Unrotated_Sim_mu_end_v[1] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_end_vz[cm]: " << ND_OffAxis_Unrotated_Sim_mu_end_v[2] << "\n";
+          myfile << "Distance between ND_OffAxis_Unrotated_Sim_mu_v_end_start[cm]: " << ND_OffAxis_Unrotated_Sim_mu_v_end_start << "\n\n";
+        }
         // ND_OffAxis_Unrotated_Sim_mu_start_p
         for(int i=0; i<3; i++)
         {
           ND_OffAxis_Unrotated_Sim_mu_start_p[i] = eff->RemainUnchanged(ND_OnAxis_Sim_mu_start_p[i]);
         }
         ND_OffAxis_Unrotated_Sim_mu_start_p_total = eff->getTotalMomentum(ND_OffAxis_Unrotated_Sim_mu_start_p);
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_px[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_p[0] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_py[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_p[1] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_pz[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_p[2] << "\n";
-        myfile << "ND_OffAxis_Unrotated_Sim_mu_start_p_total[GeV]: " << ND_OffAxis_Unrotated_Sim_mu_start_p_total << "\n\n";
+        if (myfileVerbose)
+        {
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_px[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_p[0] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_py[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_p[1] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_pz[cm]: " << ND_OffAxis_Unrotated_Sim_mu_start_p[2] << "\n";
+          myfile << "ND_OffAxis_Unrotated_Sim_mu_start_p_total[GeV]: " << ND_OffAxis_Unrotated_Sim_mu_start_p_total << "\n\n";
+        }
         // ND_OffAxis_Unrotated_Sim_hadronic_hit
         for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
           double ND_OnAxis_Sim_hadronic_hit_array[3] = {ND_OnAxis_Sim_hadronic_hit[ihadronhit][0],ND_OnAxis_Sim_hadronic_hit[ihadronhit][1],ND_OnAxis_Sim_hadronic_hit[ihadronhit][2]};
@@ -640,9 +738,13 @@ int main()
         ND_OffAxis_Sim_mu_start_v[0] = eff->RemainUnchanged(ND_OffAxis_Unrotated_Sim_mu_start_v[0]);
         ND_OffAxis_Sim_mu_start_v[1] = eff->RemainUnchanged(ND_OffAxis_Unrotated_Sim_mu_start_v[1]);
         ND_OffAxis_Sim_mu_start_v[2] = eff->RemainUnchanged(ND_OffAxis_Unrotated_Sim_mu_start_v[2]);
-        myfile << "ND_OffAxis_Sim_mu_start_v[cm]: " << ND_OffAxis_Sim_mu_start_v[0] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_start_v[cm]: " << ND_OffAxis_Sim_mu_start_v[1] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_start_v[cm]: " << ND_OffAxis_Sim_mu_start_v[2] << "\n\n";
+        if (myfileVerbose)
+        {
+          myfile << "ND_OffAxis_Sim_mu_start_v[cm]: " << ND_OffAxis_Sim_mu_start_v[0] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_start_v[cm]: " << ND_OffAxis_Sim_mu_start_v[1] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_start_v[cm]: " << ND_OffAxis_Sim_mu_start_v[2] << "\n\n";
+        }
+
         // setVertex
         eff->setOffAxisVertex(ND_OffAxis_Sim_mu_start_v[0], ND_OffAxis_Sim_mu_start_v[1], ND_OffAxis_Sim_mu_start_v[2]);
         // ND_OffAxis_Sim_mu_end_v
@@ -651,11 +753,15 @@ int main()
         {
           ND_OffAxis_Sim_mu_end_v[i] = eff->getOffAxisMuEndV(i);
         }
-        myfile << "ND_OffAxis_Sim_mu_end_v[cm]: " << ND_OffAxis_Sim_mu_end_v[0] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_end_v[cm]: " << ND_OffAxis_Sim_mu_end_v[1] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_end_v[cm]: " << ND_OffAxis_Sim_mu_end_v[2] << "\n";
         double ND_OffAxis_Sim_mu_v_end_start = eff->getDistance(ND_OffAxis_Sim_mu_end_v,ND_OffAxis_Sim_mu_start_v);
-        myfile << "Distance between ND_OffAxis_Sim_mu_v_end_start[cm]: " << ND_OffAxis_Sim_mu_v_end_start << "\n\n";
+        if (myfileVerbose)
+        {
+          myfile << "ND_OffAxis_Sim_mu_end_v[cm]: " << ND_OffAxis_Sim_mu_end_v[0] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_end_v[cm]: " << ND_OffAxis_Sim_mu_end_v[1] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_end_v[cm]: " << ND_OffAxis_Sim_mu_end_v[2] << "\n";
+          myfile << "Distance between ND_OffAxis_Sim_mu_v_end_start[cm]: " << ND_OffAxis_Sim_mu_v_end_start << "\n\n";
+        }
+
         // ND_OffAxis_Sim_mu_start_p
         eff->setMuStartP(ND_OffAxis_Unrotated_Sim_mu_start_p[0],ND_OffAxis_Unrotated_Sim_mu_start_p[1],ND_OffAxis_Unrotated_Sim_mu_start_p[2]);
         for(int i=0; i<3; i++)
@@ -663,10 +769,14 @@ int main()
           ND_OffAxis_Sim_mu_start_p[i] = eff->getOffAxisMuStartP(i);
         }
         ND_OffAxis_Sim_mu_start_p_total = eff->getTotalMomentum(ND_OffAxis_Sim_mu_start_p);
-        myfile << "ND_OffAxis_Sim_mu_start_px[cm]: " << ND_OffAxis_Sim_mu_start_p[0] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_start_py[cm]: " << ND_OffAxis_Sim_mu_start_p[1] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_start_pz[cm]: " << ND_OffAxis_Sim_mu_start_p[2] << "\n";
-        myfile << "ND_OffAxis_Sim_mu_start_p_total[GeV]: " << ND_OffAxis_Sim_mu_start_p_total << "\n\n";
+        if (myfileVerbose)
+        {
+          myfile << "ND_OffAxis_Sim_mu_start_px[cm]: " << ND_OffAxis_Sim_mu_start_p[0] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_start_py[cm]: " << ND_OffAxis_Sim_mu_start_p[1] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_start_pz[cm]: " << ND_OffAxis_Sim_mu_start_p[2] << "\n";
+          myfile << "ND_OffAxis_Sim_mu_start_p_total[GeV]: " << ND_OffAxis_Sim_mu_start_p_total << "\n\n";
+        }
+
         // ND_OffAxis_Sim_mu_start_E
         ND_OffAxis_Sim_mu_start_E = FD_Sim_mu_start_E; // Energy of leading mu at start point [GeV]
         // ND_OffAxis_Sim_hadronic_hit
@@ -680,47 +790,50 @@ int main()
           ND_OffAxis_Sim_hadronic_hit_xyz.clear();
         }
 
-        // Add output
-        for (int ihadronhit = FD_Sim_n_hadronic_Edep_a-2; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++) {
-          myfile << "Hit #" << ihadronhit <<"/" << FD_Sim_n_hadronic_Edep_a << "\n";
-          myfile<<"FD_Sim_hadronic_hit_x[cm]: "<<FD_Sim_hadronic_hit_x_a->at(ihadronhit)<<"\n";
-          myfile<<"FD_Sim_hadronic_hit_y[cm]: "<<FD_Sim_hadronic_hit_y_a->at(ihadronhit)<<"\n";
-          myfile<<"FD_Sim_hadronic_hit_z[cm]: "<<FD_Sim_hadronic_hit_z_a->at(ihadronhit)<<"\n";
-          double FD_Sim_hadronic_hit[3] = {FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_y_a->at(ihadronhit), FD_Sim_hadronic_hit_z_a->at(ihadronhit)};
-          double FD_Sim_hadronic_hit_end_start = eff->getDistance(FD_Sim_hadronic_hit,FD_Sim_mu_start_v);
-          myfile << "Distance between FD_Sim_hadronic_hit_end_start[cm]:" << FD_Sim_hadronic_hit_end_start <<"\n\n";
+        // Add hadron hits output
+        if (myfileVerbose)
+        {
+          for (int ihadronhit = FD_Sim_n_hadronic_Edep_a-2; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++) {
+            myfile << "Hit #" << ihadronhit <<"/" << FD_Sim_n_hadronic_Edep_a << "\n";
+            myfile<<"FD_Sim_hadronic_hit_x[cm]: "<<FD_Sim_hadronic_hit_x_a->at(ihadronhit)<<"\n";
+            myfile<<"FD_Sim_hadronic_hit_y[cm]: "<<FD_Sim_hadronic_hit_y_a->at(ihadronhit)<<"\n";
+            myfile<<"FD_Sim_hadronic_hit_z[cm]: "<<FD_Sim_hadronic_hit_z_a->at(ihadronhit)<<"\n";
+            double FD_Sim_hadronic_hit[3] = {FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_y_a->at(ihadronhit), FD_Sim_hadronic_hit_z_a->at(ihadronhit)};
+            double FD_Sim_hadronic_hit_end_start = eff->getDistance(FD_Sim_hadronic_hit,FD_Sim_mu_start_v);
+            myfile << "Distance between FD_Sim_hadronic_hit_end_start[cm]:" << FD_Sim_hadronic_hit_end_start <<"\n\n";
 
-          for (int j = 0; j < 3; j++)
-          {
-            myfile << "ND_RandomVtx_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_RandomVtx_Sim_hadronic_hit[ihadronhit][j] << "\n";
-          }
-          double ND_RandomVtx_Sim_hadronic_hit_array[3] = {ND_RandomVtx_Sim_hadronic_hit[ihadronhit][0],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][1],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][2]};
-          double ND_RandomVtx_Sim_hadronic_hit_end_start = eff->getDistance(ND_RandomVtx_Sim_hadronic_hit_array,ND_RandomVtx_Sim_mu_start_v);
-          myfile << "Distance between ND_RandomVtx_Sim_hadronic_hit_end_start[cm]:" << ND_RandomVtx_Sim_hadronic_hit_end_start <<"\n\n";
+            for (int j = 0; j < 3; j++)
+            {
+              myfile << "ND_RandomVtx_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_RandomVtx_Sim_hadronic_hit[ihadronhit][j] << "\n";
+            }
+            double ND_RandomVtx_Sim_hadronic_hit_array[3] = {ND_RandomVtx_Sim_hadronic_hit[ihadronhit][0],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][1],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][2]};
+            double ND_RandomVtx_Sim_hadronic_hit_end_start = eff->getDistance(ND_RandomVtx_Sim_hadronic_hit_array,ND_RandomVtx_Sim_mu_start_v);
+            myfile << "Distance between ND_RandomVtx_Sim_hadronic_hit_end_start[cm]:" << ND_RandomVtx_Sim_hadronic_hit_end_start <<"\n\n";
 
-          for (int j = 0; j < 3; j++)
-          {
-            myfile << "ND_OnAxis_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_OnAxis_Sim_hadronic_hit[ihadronhit][j] << "\n";
-          }
-          double ND_OnAxis_Sim_hadronic_hit_array[3] = {ND_OnAxis_Sim_hadronic_hit[ihadronhit][0],ND_OnAxis_Sim_hadronic_hit[ihadronhit][1],ND_OnAxis_Sim_hadronic_hit[ihadronhit][2]};
-          double ND_OnAxis_Sim_hadronic_hit_end_start = eff->getDistance(ND_OnAxis_Sim_hadronic_hit_array,ND_OnAxis_Sim_mu_start_v);
-          myfile << "Distance between ND_OnAxis_Sim_hadronic_hit_end_start[cm]:" << ND_OnAxis_Sim_hadronic_hit_end_start <<"\n\n";
+            for (int j = 0; j < 3; j++)
+            {
+              myfile << "ND_OnAxis_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_OnAxis_Sim_hadronic_hit[ihadronhit][j] << "\n";
+            }
+            double ND_OnAxis_Sim_hadronic_hit_array[3] = {ND_OnAxis_Sim_hadronic_hit[ihadronhit][0],ND_OnAxis_Sim_hadronic_hit[ihadronhit][1],ND_OnAxis_Sim_hadronic_hit[ihadronhit][2]};
+            double ND_OnAxis_Sim_hadronic_hit_end_start = eff->getDistance(ND_OnAxis_Sim_hadronic_hit_array,ND_OnAxis_Sim_mu_start_v);
+            myfile << "Distance between ND_OnAxis_Sim_hadronic_hit_end_start[cm]:" << ND_OnAxis_Sim_hadronic_hit_end_start <<"\n\n";
 
-          for (int j = 0; j < 3; j++)
-          {
-            myfile << "ND_OffAxis_Unrotated_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][j] << "\n";
-          }
-          double ND_OffAxis_Unrotated_Sim_hadronic_hit_array[3] = {ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][0],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][1],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][2]};
-          double ND_OffAxis_Unrotated_Sim_hadronic_hit_end_start = eff->getDistance(ND_OffAxis_Unrotated_Sim_hadronic_hit_array,ND_OffAxis_Unrotated_Sim_mu_start_v);
-          myfile << "Distance between ND_OffAxis_Unrotated_Sim_hadronic_hit_end_start[cm]:" << ND_OffAxis_Unrotated_Sim_hadronic_hit_end_start <<"\n\n";
+            for (int j = 0; j < 3; j++)
+            {
+              myfile << "ND_OffAxis_Unrotated_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][j] << "\n";
+            }
+            double ND_OffAxis_Unrotated_Sim_hadronic_hit_array[3] = {ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][0],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][1],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][2]};
+            double ND_OffAxis_Unrotated_Sim_hadronic_hit_end_start = eff->getDistance(ND_OffAxis_Unrotated_Sim_hadronic_hit_array,ND_OffAxis_Unrotated_Sim_mu_start_v);
+            myfile << "Distance between ND_OffAxis_Unrotated_Sim_hadronic_hit_end_start[cm]:" << ND_OffAxis_Unrotated_Sim_hadronic_hit_end_start <<"\n\n";
 
-          for (int j = 0; j < 3; j++)
-          {
-            myfile << "ND_OffAxis_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_OffAxis_Sim_hadronic_hit[ihadronhit][j] << "\n";
+            for (int j = 0; j < 3; j++)
+            {
+              myfile << "ND_OffAxis_Sim_hadronic_hit_["<<j<<"][cm]: "<< ND_OffAxis_Sim_hadronic_hit[ihadronhit][j] << "\n";
+            }
+            double ND_OffAxis_Sim_hadronic_hit_array[3] = {ND_OffAxis_Sim_hadronic_hit[ihadronhit][0],ND_OffAxis_Sim_hadronic_hit[ihadronhit][1],ND_OffAxis_Sim_hadronic_hit[ihadronhit][2]};
+            double ND_OffAxis_Sim_hadronic_hit_end_start = eff->getDistance(ND_OffAxis_Sim_hadronic_hit_array,ND_OffAxis_Sim_mu_start_v);
+            myfile << "Distance between ND_OffAxis_Sim_hadronic_hit_end_start[cm]:" << ND_OffAxis_Sim_hadronic_hit_end_start <<"\n\n";
           }
-          double ND_OffAxis_Sim_hadronic_hit_array[3] = {ND_OffAxis_Sim_hadronic_hit[ihadronhit][0],ND_OffAxis_Sim_hadronic_hit[ihadronhit][1],ND_OffAxis_Sim_hadronic_hit[ihadronhit][2]};
-          double ND_OffAxis_Sim_hadronic_hit_end_start = eff->getDistance(ND_OffAxis_Sim_hadronic_hit_array,ND_OffAxis_Sim_mu_start_v);
-          myfile << "Distance between ND_OffAxis_Sim_hadronic_hit_end_start[cm]:" << ND_OffAxis_Sim_hadronic_hit_end_start <<"\n\n";
         }
         //
         //------------------------------------------------------------------------------
@@ -740,6 +853,7 @@ int main()
             HadronHitPoss.emplace_back(ND_OffAxis_Sim_hadronic_hit[ihadronhit][i]);
           }
           HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
+          // if (throwfileVerbose) myfile << "HadronHitEdeps: " << FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) << "\n";
         }
 
         eff->setVertex(ND_OffAxis_Sim_mu_start_v[0], ND_OffAxis_Sim_mu_start_v[1], ND_OffAxis_Sim_mu_start_v[2]);
@@ -749,9 +863,86 @@ int main()
         // Get hadron containment result after everything is set to ND coordinate sys
         // Do random throws regardless whether FD evt is contained in ND volume by setting a false flag
         hadron_throw_result = eff->getHadronContainmentThrows(false); // Every 64 throw results stored into a 64 bit unsigned int: 0101101...
-        hadron_throw_result_vec_for_vtx_vx.emplace_back(hadron_throw_result);
 
-        if (verbose) std::cout << "vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, throw result[0][0][0]: " << hadron_throw_result[0][0][0] << std::endl;
+        if (throwfileVerbose) myfile << "i_ND_off_axis_pos: " << i_ND_off_axis_pos << " cm, vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, throw result[0][0][0]: " << hadron_throw_result[0][0][0] << "\n";
+
+        //------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
+        //------------------------------------------------------------------------------
+        //
+        // 6. Calculate Geo Eff
+
+        for ( vector<vector<vector<uint64_t> > >::iterator it_veto_size = hadron_throw_result.begin(); it_veto_size != hadron_throw_result.end(); ++it_veto_size )
+        {
+          for ( vector<vector<uint64_t> >::iterator it_veto_energy = it_veto_size->begin(); it_veto_energy != it_veto_size->end(); ++it_veto_energy )
+          {
+
+            // Every 64 throw result is a chunk
+            // current test case: each evt has 128 throws, so 2 chunks
+
+            int counter5    = 0;
+            int validthrows = 0; // count no. of throws that meet ND FV cut for this evt
+            int hadronpass  = 0; // count no. of throws that meet hadron containment cut
+            double hadron_contain_eff = 0.; // initialize eff to zero
+
+            for ( vector<uint64_t>::iterator it_chunk = it_veto_energy->begin(); it_chunk != it_veto_energy->end(); ++it_chunk )
+            {
+              counter5++;
+              // cout << "i_ND_off_axis_pos: " << i_ND_off_axis_pos << " cm, vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, it_chunk " << counter5<< endl;
+              if (verbose) std::cout << "          chunk #" << counter5 << ": " << *it_chunk << std::endl;
+
+              for ( unsigned int ithrow = 0; ithrow < 64; ithrow++ )
+              {
+                // For the numerator, only consider throws where throwed FD evt vtx x/y/z is in ND FV, same as what is done for ND evts
+                // For now, we use mu start pos as evt vtx pos, random throws for y/z are stored in the ThrowsFD tree
+                if ( FDEffCalc_cfg::IsInNDFV(i_vtx_vx, throwVtxY.at( (counter5-1)*64 + ithrow ) - eff->getCurrentOffset(1), throwVtxZ.at( (counter5-1)*64 + ithrow ) - eff->getCurrentOffset(2)))
+                {
+                    validthrows++;
+                    // cout << "validthrows: " << validthrows <<endl;
+                      // Access per throw result for the evt
+                      // Example (in ROOT):
+                      //   In:  uint64_t number = 18446744073709551615 (this is 2^64-1, the max value for uint64_t)
+                      //   In:  number & ((uint64_t)1) << 0
+                      //   Out: (unsigned long long) 1
+                      //   In:  number & ((uint64_t)1) << 1
+                      //   Out: (unsigned long long) 2
+                      //   ...
+                      //   In:  number & ((uint64_t)1) << 63
+                      //   Out: (unsigned long long) 9223372036854775808
+                      // A non-zero result indicates the throw result is true, zero indicates the throw result is false
+
+                    uint64_t throw_result = (*it_chunk) & ( ((uint64_t)1)<<(ithrow%64) );
+                    if (verbose) std::cout << "                    throw #" << ithrow+1 << ": " << throw_result << std::endl;
+                    // Count no. of throws passed hadron containment requirement
+                    if ( throw_result != 0 ) hadronpass++;
+
+                } // end if FD event passed ND FV cut
+
+              }   // end loop over 64 throws in a chunk
+
+            }     // end loop over 64-throw chunks
+
+                //
+                // Calculate per-event hadron containment efficiency from throws
+                //
+
+                // If a throwed evt vtx is in ND dead region, it is not going to be detected by ND, but probably will be detected in FD (assume)
+                // In principle, we should NOT exclude such throws in the denominator
+                // hadron_contain_eff = hadronpass*1.0/N_throws; // N_throws also equals 64 * counter5
+                //if ( debug ) std::cout << "        Passed throws: " << hadronpass << ", eff: " << hadron_contain_eff << ", evt vtx x [cm]: " << ND_OffAxis_Sim_mu_start_v[0]->at( counter2 - 1 ) << ", nd off-axis pos [m]: " << ND_off_axis_pos_vec->at( counter1 -1 ) << std::endl;
+
+                // But for the ND FV cut, we could probably factorize it analytically instead of using these random throws to evaluate
+                // therefore we exclude such throws from the denominator as well
+                if ( validthrows > 0 ) hadron_contain_eff = hadronpass*1.0/validthrows;
+                ND_OffAxis_eff = hadron_contain_eff;
+                ND_LAr_pos = i_vtx_vx;
+                ND_OffAxis_pos = i_ND_off_axis_pos;
+
+                if (throwfileVerbose) myfile << "        Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << hadron_contain_eff << ", ND_LAr_pos [cm]: " <<  ND_LAr_pos << ", ND_OffAxis_pos [cm]: " << ND_OffAxis_pos<< "\n\n";
+                effValues->Fill();
+
+          }     // end loop over veto energy
+        }       // end loop over veto size
         //------------------------------------------------------------------------------
         //------------------------------------------------------------------------------
         //------------------------------------------------------------------------------
@@ -760,17 +951,19 @@ int main()
         ND_OffAxis_Unrotated_Sim_hadronic_hit.clear();
         ND_OffAxis_Sim_hadronic_hit.clear();
      } // end Loop over ND_vtx_vx_vec
+   }   // end Loop over ND_off_axis_pos_vec
 
-      ND_Sim_hadron_throw_result.emplace_back(hadron_throw_result_vec_for_vtx_vx);
 
-    }   // end Loop over ND_off_axis_pos_vec
-    iwritten++;
     ND_RandomVtx_Sim_hadronic_hit.clear();
     ND_OnAxis_Sim_hadronic_hit.clear();
 
+    iwritten_vec.emplace_back(iwritten);
+    iwritten++;
+
   } // end loop over events entries
   std::cout << "Written evts: " << iwritten << std::endl;
-  myfile << "Written evts: " << iwritten << "\n";
+  if (myfileVerbose) myfile << "Written evts: " << iwritten << "\n";
+  if (throwfileVerbose) myfile << "Written evts: " << iwritten << "\n";
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -780,6 +973,9 @@ int main()
   TFile * outFile = new TFile("Output_FDGeoEff_ivy.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
+  effValues->Write();
+  PosVec->Fill();
+  PosVec->Write();
   hist_vetoEnergyFD->Write();
 
   myfile.close();
