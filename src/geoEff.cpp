@@ -189,6 +189,11 @@ void geoEff::setDecayPos(float x, float y, float z){
   decaypos[2] = z;
 }
 
+float geoEff::getDecayPos(int dim)
+{
+  return decaypos[dim];
+}
+
 void geoEff::setUseFixedBeamDir(bool use){
   useFixedBeamDir = use;
 }
@@ -218,9 +223,11 @@ void geoEff::throwTransforms(){
   translations[2].clear();
   rotations.clear();
 
+
+  // dim from 0 to 2, corresponding to x, y and z
   for (int dim = 0; dim < 3; dim++){
     if (not randomizeVertex[dim]){
-      translations[dim].resize(0, 0);
+      translations[dim].resize(0,0);
     } else {
       translations[dim].clear();
       for (unsigned int i = 0; i < N_THROWS; i++){
@@ -254,6 +261,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   Eigen::Affine3f tBack(Eigen::Translation3f(Eigen::Vector3f(vertex[0], vertex[1], vertex[2])));
 
   for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
+
     // Vertex displacement:
     Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertex[0] ? translations[0][iThrow]-vertex[0] : 0.,
 								randomizeVertex[1] ? translations[1][iThrow]-vertex[1] : 0.,
@@ -266,12 +274,12 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
     } else {
       // Calculate rotation due to translation
       // Calculate rotation angle
-      float decayToVertex[3] = {0};
-      float decayToTranslated[3] = {0};
-      float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
+      double decayToVertex[3] = {0};
+      double decayToTranslated[3] = {0};
+      double translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
       for (int dim = 0; dim < 3; dim++) {
         decayToVertex[dim] = vertex[dim]-decaypos[dim];
-        decayToTranslated[dim] = translations[dim][iThrow]-decaypos[dim];
+        decayToTranslated[dim] = randomizeVertex[dim] ? translations[dim][iThrow]-decaypos[dim] : vertex[dim]-decaypos[dim];
 
         translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
         magDecayToVertex += pow(decayToVertex[dim], 2);
@@ -292,7 +300,6 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
       for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
-
       Eigen::Affine3f rTranslation(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
       // Calculate rotation due to thrown angle
@@ -442,6 +449,54 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
   return vetoEnergy < vetoEnergyThreshold;
 }
 
+// Get veto E
+float geoEff::getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize ){
+
+  float vetoEnergy = 0.;
+
+  for (unsigned int i = 0; i < energyDeposits.size(); i++){
+    for (int dim = 0; dim < 3; dim++){
+      // low
+      if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
+           (hitSegments(dim, i)-offset[dim] > active[dim][0]) ) {
+        vetoEnergy += energyDeposits[i];
+        break; // Only count each energy deposit once
+      }
+      // high
+      if ( (hitSegments(dim, i)-offset[dim] > active[dim][1]-vSize) and
+           (hitSegments(dim, i)-offset[dim] < active[dim][1]) ) {
+        vetoEnergy += energyDeposits[i];
+        break; // Only count each energy deposit once
+      }
+    }
+  }
+  return vetoEnergy ;
+}
+// Get current throw veto E, t is the # of throw
+float geoEff::getCurrentThrowsVeto(int t){
+
+  // Set the Eigen map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms = getTransforms();
+  // Else, loop through set of rotation translations
+
+    // Apply transformation to energy deposit positions
+    Eigen::Matrix3Xf transformedEdeps = transforms[t] * hitSegPosOrig;
+    float vetoE =0;
+    // Loop through conditions
+    for (unsigned int i = 0; i < vetoSize.size(); i++)
+    {
+      for (unsigned int j = 0; j < vetoEnergy.size(); j++)
+      {
+        vetoE = getVetoE(transformedEdeps, hitSegEdeps, vetoSize[i]);
+      }
+    }
+  return vetoE;
+}
+
+
+
 //
 // #########################################################################
 // #########################################################################
@@ -478,8 +533,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
   Eigen::Affine3f tThere_NDtoND(Eigen::Translation3f(Eigen::Vector3f(-OffAxisVertex[0], -OffAxisVertex[1], -OffAxisVertex[2])));
   // Move vertex back
   Eigen::Affine3f tBack_NDtoND(Eigen::Translation3f(Eigen::Vector3f(OffAxisVertex[0], OffAxisVertex[1], OffAxisVertex[2])));
-  //Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
-
+  // Eigen::Affine3f is a typedef of Eigen::Transform<float, 3, Eigen::Affine>
 
     // Vertex displacement:
     // Eigen::Affine3f tThrow_NDtoND(Eigen::Translation3f(Eigen::Vector3f(OffAxisVertex[0]-OnAxisVertex[0],OffAxisVertex[1]-OnAxisVertex[1],OffAxisVertex[2]-OnAxisVertex[2])));
@@ -489,9 +543,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
     {
       // Calculate rotation due to translation
       // Calculate rotation angle
-      float decayToVertex[3] = {0};
-      float decayToTranslated[3] = {0};
-      float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
+      double decayToVertex[3] = {0};
+      double decayToTranslated[3] = {0};
+      double translationAngle = 0., magDecayToVertex = 0., magDecayToTranslated = 0.; // Use double in case translationAngle is so tiny then gives nan results
       for (int dim = 0; dim < 3; dim++) {
         decayToVertex[dim] = OnAxisVertex[dim]-decaypos[dim];
         decayToTranslated[dim] = OffAxisVertex[dim]-decaypos[dim];
@@ -520,6 +574,12 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       Eigen::Affine3f rTranslation_NDtoND(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
       rThrow_NDtoND = rTranslation_NDtoND;
+
+      if(verbosity)
+      {
+        std::cout << "translationAngle: " << translationAngle << std::endl;
+        std::cout << "translationAxis: " << translationAxis[0] << ", " << translationAxis[1] << ", " << translationAxis[2] << "\n";
+      }
     }
 
     // Put everything together in single transform and store.
@@ -596,9 +656,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
     {
       // Calculate rotation due to translation
       // Calculate rotation angle
-      float decayToVertex[3] = {0};
-      float decayToTranslated[3] = {0};
-      float translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
+      double decayToVertex[3] = {0};
+      double decayToTranslated[3] = {0};
+      double translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
       for (int dim = 0; dim < 3; dim++) {
         decayToVertex[dim] = OnAxisVertex[dim]-decaypos[dim];
         decayToTranslated[dim] = OffAxisVertex[dim]-decaypos[dim];
