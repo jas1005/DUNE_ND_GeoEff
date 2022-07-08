@@ -299,7 +299,9 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       float magTranslationAxis = 0.;
       for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
       magTranslationAxis = sqrt(magTranslationAxis);
-      for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;
+
+      if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
+      else{for (int dim = 0; dim < 3; dim++) translationAxis[dim] = 0.;}
       Eigen::Affine3f rTranslation(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
       // Calculate rotation due to thrown angle
