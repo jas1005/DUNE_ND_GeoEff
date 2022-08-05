@@ -64,6 +64,7 @@ class geoEff
 
   // Detector coordinates offset:
   float offset[3];
+  float OffAxisOffset[3];
 
   // Beam direction:
   float beamdir[3];
@@ -92,6 +93,8 @@ class geoEff
   std::uniform_real_distribution<> uniform;
 
   bool isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold );
+  float getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize);
+  float getTotE( std::vector<float> energyDeposits );
 
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
@@ -131,10 +134,13 @@ class geoEff
   void setOffsetX(float x);
   void setOffsetY(float y);
   void setOffsetZ(float z);
-  float getCurrentOffset(int i);
+  void setOffAxisOffsetX(float x);
+  void setOffAxisOffsetY(float y);
+  void setOffAxisOffsetZ(float z);
 
   void setBeamDir(float xdir, float ydir, float zdir);
   void setDecayPos(float x, float y, float z);
+  float getDecayPos(int dim);
   void setUseFixedBeamDir(bool use);
 
   void setVetoSizes(std::vector< float > vSizes);
@@ -176,8 +182,10 @@ class geoEff
 
   void setSeed(int seed);
 
-  // Drawing functions
-  
+  // get vetoEnergy
+  float getCurrentThrowsVetoE(int t);
+  float getCurrentThrowsTotE();
+
 
 };
 

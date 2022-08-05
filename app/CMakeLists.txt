@@ -28,7 +28,6 @@ if ( ${ROOT_FOUND} )
 
   target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})
   target_link_libraries(runGeoEffFDEvtSim geoEff ${ROOT_LIBRARIES})
-  target_link_libraries(runGeoEffFDEvtSim_ivy geoEff ${ROOT_LIBRARIES})
 
 else ()
 

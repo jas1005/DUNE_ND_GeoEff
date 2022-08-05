@@ -6,8 +6,11 @@
 #include "TSystemDirectory.h"
 
 bool verbose = false; // default to false, true for debugging, a lot of printouts
+bool myfileVerbose = false;
+bool throwfileVerbose = false;
+bool hadronhitVerbose = false;
 
-unsigned long N_throws = 4096; // Use multiple of 64
+unsigned long N_throws = 64*64; // Use multiple of 64
 
 // Active volume for FD: based on ntuple hadron hit x/y/z histogram
 float FDActiveVol_min[] = {-370., -600.,    0.};
@@ -17,6 +20,16 @@ float FDActiveVol_max[] = {370.,   600., 1400.};
 float NDActiveVol_min[] = {-350., -150.,   0.};
 float NDActiveVol_max[] = { 350.,  150., 500.};
 float NDLAr_OnAxis_offset[]    = { 0.,     5.5, 411.0}; // this offset is only for ND MC when On-Axis, use 0 for FD MC
+
+// Fiducial volume for ND
+float ND_FV_min[] = {-300., -100., 50.};
+float ND_FV_max[] = { 300.,  100., 350.};
+
+// // Fiducial volume for FD ( minus the same amount from FDActiveVol)
+// float FD_FV_min[] = {-30., -300., 50.};
+// float FD_FV_max[] = { 30.,  300., 1244.};
+
+
 
 bool random_ND_off_axis_pos     = false; // Set to true will only use a random ND off axis position per event in runGeoEffFDEvtSim
 double ND_off_axis_pos_stepsize = 2.5;   // unit meters
@@ -66,7 +79,7 @@ namespace FDEffCalc_cfg {
       if (pos_z_cm > module_boundary - 1.7 && pos_z_cm < module_boundary + 1.7)
         inDeadRegion = true;
     }
-
+    // return fiducial volume
     return (abs(pos_x_cm) < 300 && abs(pos_y_cm) < 100 && pos_z_cm > 50 &&
             pos_z_cm < 350 && !inDeadRegion);
   } // end ND FV cut

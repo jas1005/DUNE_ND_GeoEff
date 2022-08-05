@@ -173,9 +173,7 @@ void geoEff::setOffsetZ(float z){
   offset[2] = z;
 }
 
-float geoEff::getCurrentOffset(int i){
-  return offset[i];
-}
+
 
 void geoEff::setBeamDir(float xdir, float ydir, float zdir){
   beamdir[0] = xdir;
@@ -301,7 +299,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
       magTranslationAxis = sqrt(magTranslationAxis);
 
       if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
-      else{for (int dim = 0; dim < 3; dim++) translationAxis[dim] = 0.;}
+      else{for (int dim = 0; dim < 3; dim++) {translationAxis[dim] = 0.;translationAngle =0.;}}
       Eigen::Affine3f rTranslation(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
       // Calculate rotation due to thrown angle
@@ -397,15 +395,17 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
     for (unsigned int i = 0; i < vetoSize.size(); i++){
       for (unsigned int j = 0; j < vetoEnergy.size(); j++){
         // Check containment and set bit
-        if (isContained(transformedEdeps, hitSegEdeps, vetoSize[i], vetoEnergy[j])) {
-	  hadronContainment[i][j][t/64] |= ((uint64_t)1)<<(t%64);
-	}
+        if (isContained(transformedEdeps, hitSegEdeps, vetoSize[i], vetoEnergy[j]))
+        {
+	         hadronContainment[i][j][t/64] |= ((uint64_t)1)<<(t%64);
+	      }
       }
     }
   }
 
   return hadronContainment;
 }
+
 
 void geoEff::setSeed(int seed){
   prnGenerator = std::mt19937_64(seed);
@@ -427,6 +427,18 @@ std::vector< std::vector< bool > > geoEff::getHadronContainmentOrigin(){
   return hadronContainment;
 }
 
+void geoEff::setOffAxisOffsetX(float x){
+  OffAxisOffset[0] = x;
+}
+
+void geoEff::setOffAxisOffsetY(float y){
+  OffAxisOffset[1] = y;
+}
+
+void geoEff::setOffAxisOffsetZ(float z){
+  OffAxisOffset[2] = z;
+}
+
 bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold ){
 
   float vetoEnergy = 0.;
@@ -434,14 +446,14 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
   for (unsigned int i = 0; i < energyDeposits.size(); i++){
     for (int dim = 0; dim < 3; dim++){
       // low
-      if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
-           (hitSegments(dim, i)-offset[dim] > active[dim][0]) ) {
+      if ( (hitSegments(dim, i)-OffAxisOffset[dim] < active[dim][0]+vSize) and
+           (hitSegments(dim, i)-OffAxisOffset[dim] > active[dim][0]) ) {
         vetoEnergy += energyDeposits[i];
         break; // Only count each energy deposit once
       }
       // high
-      if ( (hitSegments(dim, i)-offset[dim] > active[dim][1]-vSize) and
-           (hitSegments(dim, i)-offset[dim] < active[dim][1]) ) {
+      if ( (hitSegments(dim, i)-OffAxisOffset[dim] > active[dim][1]-vSize) and
+           (hitSegments(dim, i)-OffAxisOffset[dim] < active[dim][1]) ) {
         vetoEnergy += energyDeposits[i];
         break; // Only count each energy deposit once
       }
@@ -459,14 +471,14 @@ float geoEff::getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyD
   for (unsigned int i = 0; i < energyDeposits.size(); i++){
     for (int dim = 0; dim < 3; dim++){
       // low
-      if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
-           (hitSegments(dim, i)-offset[dim] > active[dim][0]) ) {
+      if ( (hitSegments(dim, i)-OffAxisOffset[dim] < active[dim][0]+vSize) and
+           (hitSegments(dim, i)-OffAxisOffset[dim] > active[dim][0]) ) {
         vetoEnergy += energyDeposits[i];
         break; // Only count each energy deposit once
       }
       // high
-      if ( (hitSegments(dim, i)-offset[dim] > active[dim][1]-vSize) and
-           (hitSegments(dim, i)-offset[dim] < active[dim][1]) ) {
+      if ( (hitSegments(dim, i)-OffAxisOffset[dim] > active[dim][1]-vSize) and
+           (hitSegments(dim, i)-OffAxisOffset[dim] < active[dim][1]) ) {
         vetoEnergy += energyDeposits[i];
         break; // Only count each energy deposit once
       }
@@ -475,7 +487,7 @@ float geoEff::getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyD
   return vetoEnergy ;
 }
 // Get current throw veto E, t is the # of throw
-float geoEff::getCurrentThrowsVeto(int t){
+float geoEff::getCurrentThrowsVetoE(int t){
 
   // Set the Eigen map
   Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
@@ -496,7 +508,22 @@ float geoEff::getCurrentThrowsVeto(int t){
     }
   return vetoE;
 }
+// Get TOTAL E
+float geoEff::getTotE(std::vector<float> energyDeposits){
 
+  float totEnergy = 0.;
+
+  for (unsigned int i = 0; i < energyDeposits.size(); i++){
+    totEnergy += energyDeposits[i];
+  }
+  return totEnergy ;
+}
+// Get current throw veto E, t is the # of throw
+float geoEff::getCurrentThrowsTotE(){
+  float totEnergy = 0.;
+  totEnergy = getTotE(hitSegEdeps);
+  return totEnergy;
+}
 
 
 //
@@ -572,7 +599,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       magTranslationAxis = sqrt(magTranslationAxis);
       // Get rotation axis n_{hat}
       if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
-      else{for (int dim = 0; dim < 3; dim++) translationAxis[dim] = 0.;}
+      else{for (int dim = 0; dim < 3; dim++) {translationAxis[dim] = 0.;translationAngle =0.;}}
       Eigen::Affine3f rTranslation_NDtoND(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
       rThrow_NDtoND = rTranslation_NDtoND;
@@ -685,7 +712,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       magTranslationAxis = sqrt(magTranslationAxis);
       // Get rotation axis n_{hat}
       if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
-      else{for (int dim = 0; dim < 3; dim++) translationAxis[dim] = 0.;}
+      else{for (int dim = 0; dim < 3; dim++) {translationAxis[dim] = 0.;translationAngle =0.;}}
 
 
       Eigen::Affine3f rTranslation_NDtoND_P(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));

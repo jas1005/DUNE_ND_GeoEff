@@ -37,22 +37,14 @@ using namespace std;
 #include <math.h>
 #include <vector> // Need this for generate dictionary for nested vectors
 using namespace std;
-void set_plot_style()
-{
-  const Int_t NRGBs = 5;
-  const Int_t NCont = 255;
 
-  Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
-  Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
-  Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
-  Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
-  TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
-  gStyle->SetNumberContours(NCont);
-}
+// Include customized functions and constants
+#include "Helpers.h"
 
 void ReadEffNtuple_ivy()
 {
   gROOT->Reset();
+
   // Input FDroot file
   TString FileIn = "/home/fyguo/NDEff/DUNE_ND_GeoEff/bin/Output_FDGeoEff_ivy.root";
   //
@@ -69,6 +61,7 @@ void ReadEffNtuple_ivy()
   t_effValues->SetBranchAddress("ND_OffAxis_pos",   &ND_OffAxis_pos);
   t_effValues->SetBranchAddress("ND_LAr_pos",       &ND_LAr_pos);
   t_effValues->SetBranchAddress("ND_OffAxis_eff",   &ND_OffAxis_eff);
+
   // Read PosVec
   TChain *t_PosVec = new TChain("PosVec");
   t_PosVec->Add(FileIn.Data());
@@ -82,6 +75,8 @@ void ReadEffNtuple_ivy()
   t_PosVec->SetBranchAddress("ND_LAr_pos_vec",             &ND_LAr_pos_vec,      &b_ND_LAr_pos_vec);
   t_PosVec->SetBranchAddress("iwritten_vec",               &iwritten_vec,        &b_iwritten_vec);
 
+
+
   Long64_t tentry = t_PosVec->LoadTree(0);
   b_ND_OffAxis_pos_vec->GetEntry(tentry);
   b_ND_LAr_pos_vec->GetEntry(tentry);
@@ -91,6 +86,7 @@ void ReadEffNtuple_ivy()
   Int_t ND_LAr_pos_vec_size = ND_LAr_pos_vec->size();
   Int_t iwritten_vec_size = iwritten_vec->size();
   Int_t tot_size = ND_OffAxis_pos_vec_size*ND_LAr_pos_vec_size;
+  Int_t hadronhit_n_plots = tot_size * N_throws;
 
   Int_t nentries = t_effValues->GetEntries();
 
@@ -99,7 +95,6 @@ void ReadEffNtuple_ivy()
   TDirectory *IP2d =(TDirectory*)outFile->mkdir("2dGeoEff");//create a new folder in the root file
   TDirectory *IP1d =(TDirectory*)outFile->mkdir("1dGeoEff");//create a new folder in the root file
 
-
   // Canvas
   TCanvas** c_2dGeoEff = new TCanvas*[iwritten_vec_size];
   TProfile2D** h_2dGeoEff = new TProfile2D*[iwritten_vec_size];
@@ -107,13 +102,55 @@ void ReadEffNtuple_ivy()
   TCanvas** c_1dGeoEff = new TCanvas*[iwritten_vec_size];
   TGraph** h_1dGeoEff = new TGraph*[ND_OffAxis_pos_vec_size];
 
+  TH1F *h_eff = new TH1F("h_eff", "h_eff", 12, 0, 1.2);
+
   // Set Palette
   gStyle->SetPalette(1);
+  Int_t iwritten_effcounter = 1;
+  Int_t iwrittennum = 0;
+
+  Double_t TotMeanEff = 0.;
 
   // Loop all events
   for (Int_t i_iwritten : *iwritten_vec)
   {
     cout << "i_iwritten: " << i_iwritten << "\n";
+    Int_t i_entry = tot_size * i_iwritten;
+    Int_t OnAxisEff_counter = 0;
+    Double_t OnAxisEff = 0.;
+    Double_t MeanOnAxisEff = 0.;
+    Double_t Leff = 0.;
+    Double_t Reff = 0.;
+    Int_t Leff_counter = 0;
+    Int_t Reff_counter = 0;
+
+
+    for (i_entry ; i_entry < tot_size * (i_iwritten+1); i_entry++ )
+    {
+      t_effValues->GetEntry(i_entry);
+      if (ND_OffAxis_pos == -50)
+      {
+        if(verbose) cout << "ND_LAr_pos: " << ND_LAr_pos << endl;
+        if(ND_LAr_pos<-250)
+        {Leff += ND_OffAxis_eff;Leff_counter++;}
+        else if(ND_LAr_pos>250)
+        {Reff += ND_OffAxis_eff;Reff_counter++;}
+        else
+        {OnAxisEff += ND_OffAxis_eff;OnAxisEff_counter++;}
+      }
+    }
+    if(verbose) cout << "OnAxisEff: " << OnAxisEff << endl;
+    if(verbose) cout << "OnAxisEff_counter: " << OnAxisEff_counter << endl;
+    if(verbose) cout << "Leff: " << Leff*1.0/Leff_counter << endl;
+    if(verbose) cout << "Reff: " << Reff*1.0/Reff_counter << endl;
+
+
+    MeanOnAxisEff = (Leff*1.0/Leff_counter+OnAxisEff*1.0+Reff*1.0/Reff_counter)/(OnAxisEff_counter+2);
+    h_eff->Fill(MeanOnAxisEff);
+    cout << "MeanOnAxisEff: " << MeanOnAxisEff << endl;
+    TotMeanEff += MeanOnAxisEff;
+    if(verbose) cout << "TotMeanEff: " << TotMeanEff << endl;
+
     //
     //------------------------------------------------------------------------------
     //------------------------------------------------------------------------------
@@ -134,24 +171,15 @@ void ReadEffNtuple_ivy()
     h_2dGeoEff[i_iwritten]->GetYaxis()->SetTitle("ND_OffAxis_pos [cm]");
     h_2dGeoEff[i_iwritten]->GetXaxis()->SetTitle("ND_LAr_pos [cm]");
     h_2dGeoEff[i_iwritten]->GetZaxis()->SetTitle("ND_OffAxis_eff");
-    //
     //------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------
-    //
     // Loop entries matching current iwritten
-    Int_t i_entry = tot_size * i_iwritten;
+
     for (i_entry ; i_entry < tot_size * (i_iwritten+1); i_entry++ )
     {
       t_effValues->GetEntry(i_entry);
       // Fill 2D
       h_2dGeoEff[i_iwritten]->Fill(ND_LAr_pos,ND_OffAxis_pos,ND_OffAxis_eff);
     } // end i_entry
-
-
-
-    //------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------
     //------------------------------------------------------------------------------
     // Save canvas for 2d GeoEff
     c_2dGeoEff[i_iwritten]->cd();
@@ -160,6 +188,7 @@ void ReadEffNtuple_ivy()
     // ex1->Draw();
     outFile->cd("2dGeoEff");
     c_2dGeoEff[i_iwritten]->Write();
+    c_2dGeoEff[i_iwritten]->SaveAs( TString::Format("Plots/2D_GeoEff_event_%d.pdf",iwritten ) );
 
     gPad->Update();
     gPad->Modified();
@@ -184,6 +213,9 @@ void ReadEffNtuple_ivy()
 
     // Fill 1D
     Int_t ND_OffAxis_pos_counter = 0;
+    Int_t ND_OffAxis_effcounter = 0;
+    Int_t ND_Lar_effcounter = 0;
+
 
     for (Int_t i_ND_OffAxis_pos: *ND_OffAxis_pos_vec)
     {
@@ -198,9 +230,12 @@ void ReadEffNtuple_ivy()
         {
           x_ND_Lar_pos[m] = ND_LAr_pos;
           y_geoeff[m] = ND_OffAxis_eff;
+          if(ND_OffAxis_eff == 1 ) ND_Lar_effcounter++;
           m++;
         }
       }
+      if(ND_Lar_effcounter>=8) ND_OffAxis_effcounter++;
+
       TString h_1dGeoEff_name = Form("ND_OffAxis_pos_%d [cm]", i_ND_OffAxis_pos);
       h_1dGeoEff[ND_OffAxis_pos_counter] = new TGraph(ND_LAr_pos_vec_size, x_ND_Lar_pos, y_geoeff);
       h_1dGeoEff[ND_OffAxis_pos_counter]->SetMinimum(0);
@@ -212,22 +247,37 @@ void ReadEffNtuple_ivy()
 
       ND_OffAxis_pos_counter++;
     }
-    //------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------
+
+    if(ND_OffAxis_effcounter>=10) iwritten_effcounter++;
+    cout << "iwritten_effcounter: " << iwritten_effcounter << endl;
+
     //------------------------------------------------------------------------------
     // Save canvas for 1d GeoEff
     c_1dGeoEff[i_iwritten]->cd();
     mg->Draw("apl");
     mg->GetXaxis()->SetTitle("ND_LAr_pos [cm]");
     mg->GetYaxis()->SetTitle("GeoEff");
+    mg->GetYaxis()->SetRangeUser(0,1.05);
     leg->Draw();
     outFile->cd("1dGeoEff");
     c_1dGeoEff[i_iwritten]->Write();
+    c_1dGeoEff[i_iwritten]->SaveAs( TString::Format("Plots/1D_GeoEff_event_%d.pdf",iwritten ) );
     gPad->Update();
     gPad->Modified();
     gSystem->ProcessEvents();
     c_1dGeoEff[i_iwritten]->Close();
+    iwrittennum++;
+
   } // end iwritten_vec
+
+  double percent = iwritten_effcounter*1.0/iwrittennum;
+  cout << "eff == 1: " << percent << endl;
+
+  Double_t meanEff = TotMeanEff*1.0/iwrittennum;
+  cout << "ND_OffAxis_pos == -50 (~ On Axis) meanEff: " << meanEff << endl;
+  h_eff->GetXaxis()->SetTitle("GeoEff");
+  h_eff->Write();
+
 
   delete[] h_2dGeoEff;
   delete[] c_2dGeoEff;
