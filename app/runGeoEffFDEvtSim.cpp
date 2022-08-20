@@ -78,7 +78,7 @@ int main(){
   // Read ntuple from FD MC
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   // ntuple path on FNAL dunegpvm machine
-  t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
+  t->Add("/dune/app/users/weishi/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
 
   t->SetBranchAddress("Run",                      &FD_Run);
   t->SetBranchAddress("SubRun",                   &FD_SubRun);
@@ -168,7 +168,7 @@ int main(){
   // Add veto E with two different restrictions
   double ND_vetoEnergyFD;
   double ND_vetoEnergyFD_new;
-  
+
   vector<double> ND_Sim_mu_start_vx; // Vector corresponds to randomized/stepwise vtx x
   vector<double> ND_Sim_mu_end_vx;
   double ND_Sim_mu_start_vy;         // Do not use float!
@@ -217,7 +217,7 @@ int main(){
   effTreeFD->Branch("ND_Gen_numu_E",                             &ND_Gen_numu_E,            "ND_Gen_numu_E/D");
   // Add two vetoE branches
   effTreeFD->Branch("ND_vetoEnergyFD",                           &ND_vetoEnergyFD,          "ND_vetoEnergyFD/D");
-  effTreeFD->Branch("ND_vetoEnergyFD_new",                       &ND_vetoEnergyFD_new,      "ND_vetoEnergyFD_new/D");  
+  effTreeFD->Branch("ND_vetoEnergyFD_new",                       &ND_vetoEnergyFD_new,      "ND_vetoEnergyFD_new/D");
   effTreeFD->Branch("ND_off_axis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
   effTreeFD->Branch("ND_Sim_mu_start_vx",                        &ND_Sim_mu_start_vx);                              // ............... entries = written evts * vtx_vx_steps, equivalent to ND_vtx_vx_vec
   effTreeFD->Branch("ND_Sim_mu_start_vy",                        &ND_Sim_mu_start_vy,       "ND_Sim_mu_start_vy/D");   // entries = written evts
@@ -238,7 +238,7 @@ int main(){
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,  "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
   effTreeFD->Branch("FD_Sim_mu_start_vy",                        &FD_Sim_mu_start_vy,       "FD_Sim_mu_start_vy/D");
   effTreeFD->Branch("FD_Sim_mu_start_vz",                        &FD_Sim_mu_start_vz,       "FD_Sim_mu_start_vz/D");
-  
+
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -297,12 +297,12 @@ int main(){
   eff->setOffsetX(offset[0]);
   eff->setOffsetY(offset[1]);
   eff->setOffsetZ(offset[2]);
-  
+
   //Add hist of veto E
   TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
   TH1F *hist_vetoEnergyFD_new = new TH1F("hist_vetoEnergyFD_new", "hist_vetoEnergyFD_new", 1500, 0, 1500);
-  
-  
+
+
   //
   // Loop over FD events
   //
@@ -319,8 +319,8 @@ int main(){
     //
 
     if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_a == 0 ) continue;
-    if ( FD_CCNC_truth == 1) continue;   // only use CC events
-    if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
+    //if ( FD_CCNC_truth == 1) continue;   // only use CC events
+    //if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
 
     //
     // Calculate total hadron E in FD veto region
@@ -344,11 +344,11 @@ int main(){
     } // end loop over hadron E deposits
     ND_vetoEnergyFD = vetoEnergyFD;
     //add a vetoEnergyFD histogram in the root file
-    
+
     hist_vetoEnergyFD->Fill(vetoEnergyFD);
 
-    
-    
+
+
     // New veto region restriction
     vetoEnergyFD_new = 0.;
     // Loop over hadron E deposits
@@ -369,11 +369,11 @@ int main(){
     ND_vetoEnergyFD_new = vetoEnergyFD_new;
     //add a vetoEnergyFD histogram in the root file
     hist_vetoEnergyFD_new->Fill(vetoEnergyFD_new);
-    
-    /*// Add vetoEnergyFD ntuple before threshold 
-    ND_vetoEnergyFD = vetoEnergyFD; 
+
+    /*// Add vetoEnergyFD ntuple before threshold
+    ND_vetoEnergyFD = vetoEnergyFD;
     vetoE->Fill();*/
-    
+
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
     //
@@ -403,8 +403,8 @@ int main(){
     // Set muon start pos in ND to (random x/stepwise increased x, random y, random z),
     // eventually should set this for actual event vtx, not mu start pos
     //
-    
-    
+
+
     /*
     // Use random y/z for each FD evt in ND volume, it will be randomly translated later anyway
     TRandom3 *r3_mu_start_vy_nd = new TRandom3(); // Initialize random number generator, put inside the event loop so each event is different
@@ -418,8 +418,8 @@ int main(){
     ND_Sim_mu_end_vy   = FD_Sim_mu_end_vy - FD_Sim_mu_start_vy + ND_Sim_mu_start_vy; // w.r.t. mu start random y in ND
     ND_Sim_mu_end_vz   = FD_Sim_mu_end_vz - FD_Sim_mu_start_vz + ND_Sim_mu_start_vz;
     */
-    
-    
+
+
     // Local y-z axes in FD and ND are rotated due to Earth curvature, x direction is not change
     // FD event coordinates, if unchanged, would represent different event in ND coordinate sys.
     // Apply an active transformation matrix R_x(theta): rotate each point counterclockwise by theta around x-axis in ND
@@ -443,20 +443,20 @@ int main(){
     ND_Sim_mu_end_vx.clear();
     ND_Sim_hadron_contain_result_before_throw.clear();
     ND_Sim_hadron_throw_result.clear();
-    
+
     // Branches that are not affected by ND off axis position and vtx x (loops below)
     ND_Gen_numu_E      = FD_Gen_numu_E;
-    
+
     // X momentum is not affected by coordinate rotation
-    ND_Sim_mu_start_px = FD_Sim_mu_start_px;                                     
+    ND_Sim_mu_start_px = FD_Sim_mu_start_px;
     ND_Sim_mu_end_px   = FD_Sim_mu_end_px;
-    
+
     // Rotation affects mu start/end momentum vector in Y and Z axes, using the same rotation matrix below.
     ND_Sim_mu_start_py = cos( 2*abs(beamLineRotation) )*FD_Sim_mu_start_py - sin( 2*abs(beamLineRotation) )*FD_Sim_mu_start_pz;
     ND_Sim_mu_start_pz = sin( 2*abs(beamLineRotation) )*FD_Sim_mu_start_py + cos( 2*abs(beamLineRotation) )*FD_Sim_mu_start_pz;
     ND_Sim_mu_end_py   = cos( 2*abs(beamLineRotation) )*FD_Sim_mu_end_py - sin( 2*abs(beamLineRotation) )*FD_Sim_mu_end_pz;
     ND_Sim_mu_end_pz   = sin( 2*abs(beamLineRotation) )*FD_Sim_mu_end_py + cos( 2*abs(beamLineRotation) )*FD_Sim_mu_end_pz;
-    
+
     // Energy is a scalar, doesn't change
     ND_Sim_mu_start_E  = FD_Sim_mu_start_E;
     ND_Sim_mu_end_E    = FD_Sim_mu_end_E;
@@ -597,9 +597,9 @@ int main(){
   TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
-  hist_vetoEnergyFD->Write(); 
+  hist_vetoEnergyFD->Write();
   hist_vetoEnergyFD_new->Write();
-  
+
   outFile->Close();
 
 } // end main
