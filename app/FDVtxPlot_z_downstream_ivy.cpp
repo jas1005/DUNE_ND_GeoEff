@@ -39,7 +39,7 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-void FDVtxPlot_z_ivy()
+void FDVtxPlot_z_downstream_ivy()
 {
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ void FDVtxPlot_z_ivy()
 
   Dtransverse_z.clear();
 
-  Dtrans_steps_z = 300 / Dtrans_stepsize_z; // 30 is the veto size
+  Dtrans_steps_z = 600 / Dtrans_stepsize_z; // 30 is the veto size
   for ( int i_Dtrans_step = 0; i_Dtrans_step < Dtrans_steps_z + 1; i_Dtrans_step++ ){
     Dtransverse_z.emplace_back( i_Dtrans_step*Dtrans_stepsize_z );
     cout<< "Dtransverse_z: " << i_Dtrans_step*Dtrans_stepsize_z << endl;
@@ -187,7 +187,9 @@ void FDVtxPlot_z_ivy()
     y_list.clear();
     Int_t Dtransverse_counter = 0;
 
-
+    Double_t Eff_FD_HV = 0.; // Hardonic veto eff in FD
+    Int_t Eff_FD_HV_nm = 0;
+    Int_t Eff_FD_HV_dnm = 0;
 
     for (Double_t i_Dtransverse : Dtransverse)
     {
@@ -197,7 +199,6 @@ void FDVtxPlot_z_ivy()
       int nentries = 0; // Total input events
       float vetoEnergyFD; // Total hadron deposited energy in FD veto region
       int iwritten = 0; // Output event counter
-
       //
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
@@ -207,8 +208,8 @@ void FDVtxPlot_z_ivy()
       Int_t Eff_FD_HV_nm = 0;
       Int_t Eff_FD_HV_dnm = 0;
 
-      Double_t FD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, FDActiveVol_min[2]+30+i_Dtransverse_z};
-      Double_t FD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, 1244.};
+      Double_t FD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, 100.};
+      Double_t FD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, FDActiveVol_max[2]-30-i_Dtransverse_z};
 
       //------------------------------------------------------------------------------
       // Loop over FD events
@@ -285,13 +286,13 @@ void FDVtxPlot_z_ivy()
     } // end i_Dtransverse
 
     g_dtransverse[z_counter] = new TGraph(Dtransverse_size,&x_list[0],&y_list[0]);
-    g_dtransverse[z_counter]->SetMinimum(0.95);
+    g_dtransverse[z_counter]->SetMinimum(0.94);
     g_dtransverse[z_counter]->SetMaximum(1.0);
     g_dtransverse[z_counter]->SetMarkerStyle(20);
     g_dtransverse[z_counter]->SetMarkerColor(2);
     g_dtransverse[z_counter]->SetMarkerSize(2);
     g_dtransverse[z_counter]->Draw("AC*");
-    TString d_transverse_z_name = Form("Eff vs Dtransverse, d_transverse_z=%.2f_cm, upstream_z=%.2f_cm", i_Dtransverse_z, i_Dtransverse_z+30);
+    TString d_transverse_z_name = Form("Eff vs Dtransverse, d_transverse_z=%.2f_cm, downstream=%.2f_cm", i_Dtransverse_z, FDActiveVol_max[2]-30-i_Dtransverse_z);
     g_dtransverse[z_counter]->SetTitle(d_transverse_z_name);
     g_dtransverse[z_counter]->GetXaxis()->SetTitle("d_transverse [cm]");
     g_dtransverse[z_counter]->GetYaxis()->SetTitle("Eff_{FD}^{FV}");

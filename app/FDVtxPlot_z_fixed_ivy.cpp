@@ -39,7 +39,7 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-void FDVtxPlot_z_ivy()
+void FDVtxPlot_z_fixed_ivy()
 {
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -178,9 +178,7 @@ void FDVtxPlot_z_ivy()
   TGraph** g_dtransverse = new TGraph*[Dtransverse_z_size];
 
 
-  Int_t z_counter = 0;
-  for (Double_t i_Dtransverse_z : Dtransverse_z )
-  {
+    Int_t z_counter = 0;
     vector<double> x_list;
     vector<double> y_list;
     x_list.clear();
@@ -207,7 +205,7 @@ void FDVtxPlot_z_ivy()
       Int_t Eff_FD_HV_nm = 0;
       Int_t Eff_FD_HV_dnm = 0;
 
-      Double_t FD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, FDActiveVol_min[2]+30+i_Dtransverse_z};
+      Double_t FD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, 100.};
       Double_t FD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, 1244.};
 
       //------------------------------------------------------------------------------
@@ -267,7 +265,6 @@ void FDVtxPlot_z_ivy()
 
       std::cout << "Tot entries: " << nentries << std::endl;
       std::cout << "Num of chosen events: " << iwritten << std::endl;
-      std::cout << "Dtransverse: " << i_Dtransverse << ", Dtransverse_z: " << i_Dtransverse_z << endl;
       cout << "FD_FV_x: " << FD_FV_min[0] << " - " << FD_FV_max[0] << ", FD_FV_y: " << FD_FV_min[1] << " - " << FD_FV_max[1] << ", FD_FV_z: " << FD_FV_min[2] << " - " << FD_FV_max[2] << endl;
 
       // Calculate Eff_FD_HV
@@ -291,13 +288,11 @@ void FDVtxPlot_z_ivy()
     g_dtransverse[z_counter]->SetMarkerColor(2);
     g_dtransverse[z_counter]->SetMarkerSize(2);
     g_dtransverse[z_counter]->Draw("AC*");
-    TString d_transverse_z_name = Form("Eff vs Dtransverse, d_transverse_z=%.2f_cm, upstream_z=%.2f_cm", i_Dtransverse_z, i_Dtransverse_z+30);
-    g_dtransverse[z_counter]->SetTitle(d_transverse_z_name);
     g_dtransverse[z_counter]->GetXaxis()->SetTitle("d_transverse [cm]");
     g_dtransverse[z_counter]->GetYaxis()->SetTitle("Eff_{FD}^{FV}");
     g_dtransverse[z_counter]->Write();
     z_counter++;
-  } // end i_Dtransverse_z
+
 
   delete[] g_dtransverse;
 
