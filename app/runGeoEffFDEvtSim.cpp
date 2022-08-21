@@ -40,7 +40,15 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-int main(){
+int main(int argc, char** argv){
+
+  string inFname;
+  if ( (argc > 2) or (argc == 1) ){
+    cout << "Usage: ./runGeoEffFDEvtSim inputFDntuple" << endl;
+    exit(-1);
+  } else {
+    inFname = string(argv[1]);
+  }
 
   //
   // Branches to be read from n-tuple produced from FD MC
@@ -77,8 +85,7 @@ int main(){
 
   // Read ntuple from FD MC
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
-  // ntuple path on FNAL dunegpvm machine
-  t->Add("/dune/app/users/weishi/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
+  t->Add(inFname.c_str());
 
   t->SetBranchAddress("Run",                      &FD_Run);
   t->SetBranchAddress("SubRun",                   &FD_SubRun);
