@@ -77,13 +77,14 @@ cd /dune/app/users/weishi
 wget https://raw.githubusercontent.com/weishi10141993/NeutrinoPhysics/main/setupNDEff-grid.sh --no-check-certificate
 ```
 
-Suppose the input FD ntuples are in this directory,
+Suppose the input FD ntuples are in this ```pnfs``` directory,
 ```
 /pnfs/dune/persistent/users/weishi/myFDntuples
 ```
-use this to get the list in txt file,
+write the list to txt file,
 ```
-ls -d "/pnfs/dune/persistent/users/weishi/myFDntuples"/* > myFDntuples.txt
+ls -d "/pnfs/dune/persistent/users/weishi/myFDntuples"/* | sed "s\/pnfs\root://fndca1.fnal.gov:1094/pnfs/fnal.gov/usr\g" > myFDntuples.txt
+# it also changes pnfs to xrootd so that worker node can access
 ```
 which is going to be sent to the grid in a tarball below.
 
