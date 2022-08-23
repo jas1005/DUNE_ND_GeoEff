@@ -25,9 +25,9 @@ float NDLAr_OnAxis_offset[]    = { 0.,     5.5, 411.0}; // this offset is only f
 float ND_FV_min[] = {-300., -100., 50.};
 float ND_FV_max[] = { 300.,  100., 350.};
 
-// // Fiducial volume for FD ( minus the same amount from FDActiveVol)
-// float FD_FV_min[] = {-30., -300., 50.};
-// float FD_FV_max[] = { 30.,  300., 1244.};
+// Fiducial volume for FD ( minus the same amount from FDActiveVol)
+float FD_FV_min[] = {-240., -470., 130.};
+float FD_FV_max[] = { 240.,  470., 1170.};
 
 
 

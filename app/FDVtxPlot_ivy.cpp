@@ -205,8 +205,8 @@ void FDVtxPlot_ivy()
       int FD_vetocut_counter = 0;
       int FD_FV_counter = 0;
 
-      Double_t FD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, i_Dtransverse_z};
-      Double_t FD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, 1244.};
+      Double_t setFD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, i_Dtransverse_z};
+      Double_t setFD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, 1244.};
       //
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
@@ -272,8 +272,8 @@ void FDVtxPlot_ivy()
         h_2dplot_zy[Dtransverse_counter]->Fill(FD_Sim_mu_start_vz,FD_Sim_mu_start_vy);
         h_3dplot[Dtransverse_counter]->Fill(FD_Sim_mu_start_vx,FD_Sim_mu_start_vy,FD_Sim_mu_start_vz);
         // Only pick the events' vertex inside the FD FV
-        // if(FD_Sim_mu_start_vx > FD_FV_max[0] || FD_Sim_mu_start_vx < FD_FV_min[0] || FD_Sim_mu_start_vy > FD_FV_max[1] || FD_Sim_mu_start_vy < FD_FV_min[1] || FD_Sim_mu_start_vz > FD_FV_max[2] || FD_Sim_mu_start_vz < FD_FV_min[2]) continue;
-        if(FD_Sim_mu_start_vx < FD_FV_max[0] && FD_Sim_mu_start_vx > FD_FV_min[0] && FD_Sim_mu_start_vy < FD_FV_max[1] && FD_Sim_mu_start_vy > FD_FV_min[1] && FD_Sim_mu_start_vz < FD_FV_max[2] && FD_Sim_mu_start_vz > FD_FV_min[2])
+        // if(FD_Sim_mu_start_vx > setFD_FV_max[0] || FD_Sim_mu_start_vx < setFD_FV_min[0] || FD_Sim_mu_start_vy > setFD_FV_max[1] || FD_Sim_mu_start_vy < setFD_FV_min[1] || FD_Sim_mu_start_vz > setFD_FV_max[2] || FD_Sim_mu_start_vz < setFD_FV_min[2]) continue;
+        if(FD_Sim_mu_start_vx < setFD_FV_max[0] && FD_Sim_mu_start_vx > setFD_FV_min[0] && FD_Sim_mu_start_vy < setFD_FV_max[1] && FD_Sim_mu_start_vy > setFD_FV_min[1] && FD_Sim_mu_start_vz < setFD_FV_max[2] && FD_Sim_mu_start_vz > setFD_FV_min[2])
         {
           FD_FV_counter++;
           Eff_FD_HV_dnm++;
@@ -305,7 +305,7 @@ void FDVtxPlot_ivy()
         if (verbose) cout << "\n ientry: " << ientry << ", iwritten: " << iwritten << ", VetoEnergyFD[MeV]: " << vetoEnergyFD <<"\n\n";
         if ( vetoEnergyFD > 30 ) continue; // 30 MeV
         FD_vetocut_counter++;
-        if(FD_Sim_mu_start_vx < FD_FV_max[0] && FD_Sim_mu_start_vx > FD_FV_min[0] && FD_Sim_mu_start_vy < FD_FV_max[1] && FD_Sim_mu_start_vy > FD_FV_min[1] && FD_Sim_mu_start_vz < FD_FV_max[2] && FD_Sim_mu_start_vz > FD_FV_min[2])
+        if(FD_Sim_mu_start_vx < setFD_FV_max[0] && FD_Sim_mu_start_vx > setFD_FV_min[0] && FD_Sim_mu_start_vy < setFD_FV_max[1] && FD_Sim_mu_start_vy > setFD_FV_min[1] && FD_Sim_mu_start_vz < setFD_FV_max[2] && FD_Sim_mu_start_vz > setFD_FV_min[2])
         {
           Eff_FD_HV_nm++;
         }
@@ -346,7 +346,7 @@ void FDVtxPlot_ivy()
       xy_box1->SetLineWidth(2);
       xy_box1->SetFillStyle(0);
       xy_box1->Draw();
-      auto *xy_box2 = new TBox(FD_FV_min[0],FD_FV_min[1],FD_FV_max[0],FD_FV_max[1]);
+      auto *xy_box2 = new TBox(setFD_FV_min[0],setFD_FV_min[1],setFD_FV_max[0],setFD_FV_max[1]);
       xy_box2->SetLineColor(kRed);
       xy_box2->SetLineWidth(2);
       xy_box2->SetFillStyle(0);
@@ -368,7 +368,7 @@ void FDVtxPlot_ivy()
       zx_box1->SetFillStyle(0);
       zx_box1->Draw();
       // ND fiducial volume
-      auto *zx_box2 = new TBox(FD_FV_min[2],FD_FV_min[0],FD_FV_max[2],FD_FV_max[0]);
+      auto *zx_box2 = new TBox(setFD_FV_min[2],setFD_FV_min[0],setFD_FV_max[2],setFD_FV_max[0]);
       zx_box2->SetLineColor(kRed);
       zx_box2->SetLineWidth(2);
       zx_box2->SetFillStyle(0);
@@ -387,7 +387,7 @@ void FDVtxPlot_ivy()
       yz_box1->SetLineWidth(2);
       yz_box1->SetFillStyle(0);
       yz_box1->Draw();
-      auto *yz_box2 = new TBox(FD_FV_min[2],FD_FV_min[1],FD_FV_max[2],FD_FV_max[1]);
+      auto *yz_box2 = new TBox(setFD_FV_min[2],setFD_FV_min[1],setFD_FV_max[2],setFD_FV_max[1]);
       yz_box2->SetLineColor(kRed);
       yz_box2->SetLineWidth(2);
       yz_box2->SetFillStyle(0);
@@ -405,7 +405,7 @@ void FDVtxPlot_ivy()
       box_2->SetLineWidth(2);
       box_2->SetFillStyle(0);
       box_2->Draw();
-      auto *box_3 = new	TMarker3DBox((FD_FV_min[0]+FD_FV_max[0])/2, (FD_FV_min[1]+FD_FV_max[1])/2, (FD_FV_min[2]+FD_FV_max[2])/2,(FD_FV_max[0]-FD_FV_min[0])/2, (FD_FV_max[1]-FD_FV_min[1])/2, (FD_FV_max[2]-FD_FV_min[2])/2,0,0);
+      auto *box_3 = new	TMarker3DBox((setFD_FV_min[0]+setFD_FV_max[0])/2, (setFD_FV_min[1]+setFD_FV_max[1])/2, (setFD_FV_min[2]+setFD_FV_max[2])/2,(setFD_FV_max[0]-setFD_FV_min[0])/2, (setFD_FV_max[1]-setFD_FV_min[1])/2, (setFD_FV_max[2]-setFD_FV_min[2])/2,0,0);
       box_3->SetLineColor(kRed);
       box_3->SetLineWidth(2);
       box_3->SetFillStyle(0);

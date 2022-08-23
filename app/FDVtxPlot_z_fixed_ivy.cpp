@@ -205,8 +205,8 @@ void FDVtxPlot_z_fixed_ivy()
       Int_t Eff_FD_HV_nm = 0;
       Int_t Eff_FD_HV_dnm = 0;
 
-      Double_t FD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, 100.};
-      Double_t FD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, 1244.};
+      Double_t setFD_FV_min[] = { FDActiveVol_min[0]+30+i_Dtransverse, FDActiveVol_min[1]+30+i_Dtransverse, 100.};
+      Double_t setFD_FV_max[] = { FDActiveVol_max[0]-30-i_Dtransverse, FDActiveVol_max[1]-30-i_Dtransverse, 1244.};
 
       //------------------------------------------------------------------------------
       // Loop over FD events
@@ -230,7 +230,7 @@ void FDVtxPlot_z_fixed_ivy()
         if ( FD_CCNC_truth == 1) continue;   // only use CC events
         if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
         iwritten++;
-        if(FD_Sim_mu_start_vx < FD_FV_max[0] && FD_Sim_mu_start_vx > FD_FV_min[0] && FD_Sim_mu_start_vy < FD_FV_max[1] && FD_Sim_mu_start_vy > FD_FV_min[1] && FD_Sim_mu_start_vz < FD_FV_max[2] && FD_Sim_mu_start_vz > FD_FV_min[2])
+        if(FD_Sim_mu_start_vx < setFD_FV_max[0] && FD_Sim_mu_start_vx > setFD_FV_min[0] && FD_Sim_mu_start_vy < setFD_FV_max[1] && FD_Sim_mu_start_vy > setFD_FV_min[1] && FD_Sim_mu_start_vz < setFD_FV_max[2] && FD_Sim_mu_start_vz > setFD_FV_min[2])
         {
           Eff_FD_HV_dnm++;
 
@@ -265,7 +265,7 @@ void FDVtxPlot_z_fixed_ivy()
 
       std::cout << "Tot entries: " << nentries << std::endl;
       std::cout << "Num of chosen events: " << iwritten << std::endl;
-      cout << "FD_FV_x: " << FD_FV_min[0] << " - " << FD_FV_max[0] << ", FD_FV_y: " << FD_FV_min[1] << " - " << FD_FV_max[1] << ", FD_FV_z: " << FD_FV_min[2] << " - " << FD_FV_max[2] << endl;
+      cout << "FD_FV_x: " << setFD_FV_min[0] << " - " << setFD_FV_max[0] << ", FD_FV_y: " << setFD_FV_min[1] << " - " << setFD_FV_max[1] << ", FD_FV_z: " << setFD_FV_min[2] << " - " << setFD_FV_max[2] << endl;
 
       // Calculate Eff_FD_HV
       Eff_FD_HV = Eff_FD_HV_nm*1.0/Eff_FD_HV_dnm;
