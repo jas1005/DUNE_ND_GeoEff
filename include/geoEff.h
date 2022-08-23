@@ -8,32 +8,6 @@
 
 #include <Eigen/Dense>
 
-// ROOT includes
-#include <TFile.h>
-#include <TTree.h>
-#include <TString.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TF1.h>
-#include <TH3.h>
-#include <TCut.h>
-#include <TGraph.h>
-#include <TGraphErrors.h>
-#include <TLegend.h>
-#include <TCanvas.h>
-#include <TStyle.h>
-#include <TPaveStats.h>
-#include <THStack.h>
-#include <TFitResultPtr.h>
-#include <TChain.h>
-#include <TChainElement.h>
-#include <TEfficiency.h>
-#include <TMath.h>
-#include "TLorentzVector.h"
-#include <TRandom3.h>
-#include "TSystem.h"
-#include "TROOT.h"
-
 class geoEff
 {
 

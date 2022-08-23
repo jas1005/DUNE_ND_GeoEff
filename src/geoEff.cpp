@@ -4,7 +4,6 @@
 #include <vector>
 #include <random>
 #include <math.h>
-using namespace std;
 
 // Eigen Library
 #include <Eigen/Dense>
