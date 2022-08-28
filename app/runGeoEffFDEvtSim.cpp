@@ -48,8 +48,15 @@ using namespace std;
 // 4. ND: get after eigen rotated vectors for step 3
 // 5. ND: generate random throws
 // 6. Calculate Geo Eff
-int main()
+int main(int argc, char** argv)
 {
+  string inFname;
+  if ( (argc > 2) or (argc == 1) ){
+    cout << "Usage: ./runGeoEffFDEvtSim inputFDntuple" << endl;
+    exit(-1);
+  } else {
+    inFname = string(argv[1]);
+  }
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -58,11 +65,8 @@ int main()
   //
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   // Ntuple path on FNAL dunegpvm machine
-  // For Ivy machine:
-  // t->Add("/home/fyguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
-  // For FNAL machine:
-  t->Add("/dune/app/users/flynnguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root");
-
+  t->Add(inFname.c_str());
+  
   // Define variables for FD event
   int FD_Run; // # of the run being processed
   int FD_SubRun; // # of the sub-run being processed
