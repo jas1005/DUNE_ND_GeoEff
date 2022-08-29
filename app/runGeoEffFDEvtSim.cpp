@@ -66,7 +66,7 @@ int main(int argc, char** argv)
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   // Ntuple path on FNAL dunegpvm machine
   t->Add(inFname.c_str());
-  
+
   // Define variables for FD event
   int FD_Run; // # of the run being processed
   int FD_SubRun; // # of the sub-run being processed
@@ -457,7 +457,7 @@ int main(int argc, char** argv)
   //
   // Add output txt file
   ofstream myfile;
-   myfile.open ("Output_FDGeoEff_DataCheck_ivy.txt");
+   myfile.open ("Output_FDGeoEff_DataCheck.txt");
 
   //
   // Calculate FD eff
@@ -1084,7 +1084,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Write trees
-  TFile * outFile = new TFile("Output_FDGeoEff_ivy.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
   effValues->Write();
