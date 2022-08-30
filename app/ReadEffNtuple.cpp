@@ -41,12 +41,12 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-void ReadEffNtuple_ivy()
+void ReadEffNtuple()
 {
   gROOT->Reset();
 
   // Input FDroot file
-  TString FileIn = "/home/fyguo/NDEff/DUNE_ND_GeoEff/bin/Output_FDGeoEff_ivy.root";
+  TString FileIn = "/pnfs/dune/persistent/users/${GRID_USER}/FDGeoEffinND/FDGeoEff_59933943_0.root.root";
   //
   // Read branch from input trees
   //
