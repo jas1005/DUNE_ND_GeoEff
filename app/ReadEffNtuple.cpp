@@ -46,7 +46,7 @@ void ReadEffNtuple()
   gROOT->Reset();
 
   // Input FDroot file
-  TString FileIn = "/pnfs/dune/persistent/users/${GRID_USER}/FDGeoEffinND/FDGeoEff_59933943_0.root.root";
+  TString FileIn = "/pnfs/dune/persistent/users/${GRID_USER}/FDGeoEffinND/FDGeoEff_59933943_0.root";
   //
   // Read branch from input trees
   //
