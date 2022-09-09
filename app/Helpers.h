@@ -80,8 +80,8 @@ namespace FDEffCalc_cfg {
         inDeadRegion = true;
     }
     // return fiducial volume
-    return (abs(pos_x_cm) < 300 && abs(pos_y_cm) < 100 && pos_z_cm > 50 &&
-            pos_z_cm < 350 && !inDeadRegion);
+    return (abs(pos_x_cm) < ND_FV_max[0] && abs(pos_y_cm) < ND_FV_max[1] && pos_z_cm > ND_FV_min[2] &&
+            pos_z_cm < ND_FV_max[2] && !inDeadRegion);
   } // end ND FV cut
 
 } // end namespace
