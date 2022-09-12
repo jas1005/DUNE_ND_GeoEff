@@ -44,7 +44,8 @@ void FDEffCalc() {
 
   bool debug             = false; // Print out for debug purpose
   // Inout file on FNAL dunegpvm machine
-  TString FileIn         = "/dune/app/users/weishi/NDEff/DUNE_ND_GeoEff/bin/Output_FDGeoEff.root";
+  TString FileIn         = "/home/fyguo/NDEff/DUNE_ND_GeoEff/bin/Output_FDGeoEff_ivy.root";
+
   double effthreshold    = 0.;    // b/t 0 and 1: only use evts with hadron contain eff above the threshold in some plots
   Double_t eff_binning   = 0.05;  // A positive number
   Double_t Vtx_x_binning = 1.;    // cm, a positive number

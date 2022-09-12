@@ -6,8 +6,11 @@
 #include "TSystemDirectory.h"
 
 bool verbose = false; // default to false, true for debugging, a lot of printouts
+bool myfileVerbose = false;
+bool throwfileVerbose = false;
+bool hadronhitVerbose = false;
 
-unsigned long N_throws = 4096; // Use multiple of 64
+unsigned long N_throws = 64*64; // Use multiple of 64
 
 // Active volume for FD: based on ntuple hadron hit x/y/z histogram
 float FDActiveVol_min[] = {-370., -600.,    0.};
@@ -16,7 +19,17 @@ float FDActiveVol_max[] = {370.,   600., 1400.};
 // Active volume for ND
 float NDActiveVol_min[] = {-350., -150.,   0.};
 float NDActiveVol_max[] = { 350.,  150., 500.};
-float offset[]          = { 0.,      0.,   0.}; // this offset is only for ND MC, use 0 for FD MC
+float NDLAr_OnAxis_offset[]    = { 0.,     5.5, 411.0}; // this offset is only for ND MC when On-Axis, use 0 for FD MC
+
+// Fiducial volume for ND
+float ND_FV_min[] = {-300., -100., 50.};
+float ND_FV_max[] = { 300.,  100., 350.};
+
+// Fiducial volume for FD ( minus the same amount from FDActiveVol)
+float FD_FV_min[] = {-240., -470., 130.};
+float FD_FV_max[] = { 240.,  470., 1170.};
+
+
 
 bool random_ND_off_axis_pos     = false; // Set to true will only use a random ND off axis position per event in runGeoEffFDEvtSim
 double ND_off_axis_pos_stepsize = 2.5;   // unit meters
@@ -26,16 +39,17 @@ double meanPDPZ[]               = {93.6072, 93.362,  90.346, 85.6266, 81.1443, 7
 double OffAxisPoints[]          = {-2,      0.5,     3,      5.5,     8,       10.5,    13,      15.5,    18,      20.5,   23,      25.5,    28,      30.5};
 
 bool random_vtx_vx         = false; // Set to true will only use a random vtx x per event in runGeoEffFDEvtSim
-double ND_local_x_stepsize = 50.;   // unit cm, must be a positive number below 200
-double ND_local_x_min      = -200.;
-double ND_local_x_max      = 200.;
+double ND_local_x_stepsize = 48.;   // unit cm, must be a positive number below 200
+double ND_local_x_min      = -312.;
+double ND_local_x_max      = 312.;
 
 namespace FDEffCalc_cfg {
 
   // This ND FV cut function is copied from CAFAna:
   // https://github.com/DUNE/lblpwgtools/blob/master/CAFAna/Cuts/TruthCuts.h#L65-L98
   // To confirm: 1.6cm or 1.3cm dead region b/t modules in x?
-  inline bool IsInNDFV(double pos_x_cm, double pos_y_cm, double pos_z_cm) {
+  // Function for on-axis!!! geo Eff
+    inline bool IsInNDFV(double pos_x_cm, double pos_y_cm, double pos_z_cm) {
     bool inDeadRegion = false;
     for (int i = -3; i <= 3; ++i) {
       // 0.5cm cathode in the middle of each module, plus 0.5cm buffer
@@ -65,9 +79,9 @@ namespace FDEffCalc_cfg {
       if (pos_z_cm > module_boundary - 1.7 && pos_z_cm < module_boundary + 1.7)
         inDeadRegion = true;
     }
-
-    return (abs(pos_x_cm) < 300 && abs(pos_y_cm) < 100 && pos_z_cm > 50 &&
-            pos_z_cm < 350 && !inDeadRegion);
+    // return fiducial volume
+    return (abs(pos_x_cm) < ND_FV_max[0] && abs(pos_y_cm) < ND_FV_max[1] && pos_z_cm > ND_FV_min[2] &&
+            pos_z_cm < ND_FV_max[2] && !inDeadRegion);
   } // end ND FV cut
 
 } // end namespace

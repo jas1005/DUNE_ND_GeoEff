@@ -15,6 +15,13 @@ class geoEff
 
   // Event vertex
   float vertex[3];
+  // New vector
+  float OnAxisVertex[3];
+  float OffAxisVertex[3];
+  std::vector<float>  OffAxisMuEndV_BF;
+  std::vector<float>  OffAxisMuStartP_BF; // Can only be float instead of double
+  std::vector<float>  OffAxisHadronHitV_BF;
+
   // Vector to store energy deposits corresponding to hit segments
   std::vector<float> hitSegEdeps;
   // Vector to store positions of hit segments
@@ -31,6 +38,7 @@ class geoEff
 
   // Detector coordinates offset:
   float offset[3];
+  float OffAxisOffset[3];
 
   // Beam direction:
   float beamdir[3];
@@ -59,9 +67,15 @@ class geoEff
   std::uniform_real_distribution<> uniform;
 
   bool isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold );
+  float getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize);
+  float getTotE( std::vector<float> energyDeposits );
 
   // Calculate transforms for current vertex
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms(unsigned int iStart = 0, int iEnd = -1);
+  // Position transforms from On-Axis to Off-Axis
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND();
+  // Momentum transforms from On-Axis to Off-Axis
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND_P();
 
  public:
   geoEff(int seed, bool verbose = false);
@@ -72,6 +86,12 @@ class geoEff
   void setVertex(float x, float y, float z);
   void setHitSegEdeps(std::vector<float> thishitSegEdeps);
   void setHitSegPoss(std::vector<float> thishitSegPoss);
+  // Transforms from On-Axis to Off-Axis
+  void setOnAxisVertex(float x, float y, float z);
+  void setOffAxisVertex(float x, float y, float z);
+  void setMuEndV(float x, float y, float z);
+  void setMuStartP(float x, float y, float z);
+  void setHadronHitV(float x, float y, float z);
 
   void setRangeX(float xmin, float xmax);
   void setRangeY(float ymin, float ymax);
@@ -88,9 +108,13 @@ class geoEff
   void setOffsetX(float x);
   void setOffsetY(float y);
   void setOffsetZ(float z);
+  void setOffAxisOffsetX(float x);
+  void setOffAxisOffsetY(float y);
+  void setOffAxisOffsetZ(float z);
 
   void setBeamDir(float xdir, float ydir, float zdir);
   void setDecayPos(float x, float y, float z);
+  float getDecayPos(int dim);
   void setUseFixedBeamDir(bool use);
 
   void setVetoSizes(std::vector< float > vSizes);
@@ -107,13 +131,35 @@ class geoEff
   std::vector< float > getCurrentThrowDepsX(int i);
   std::vector< float > getCurrentThrowDepsY(int i);
   std::vector< float > getCurrentThrowDepsZ(int i);
+
+  // Transforms from On-Axis to Off-Axis
+  float getOffAxisMuEndV(int dim);
+  float getOffAxisMuStartP(int dim);
+  float getOffAxisHadronHitV(int dim);
+
+  // Unchanged case
+  double RemainUnchanged(double element);
+  // Total momentum calculations
+  float getTotalMomentum(double momentum[3]);
+  // Distance calculation
+  double getDistance(double v1[3],double v2[3]);
+  // Get earth curvature
+  double getEarthCurvature(double v[3], double BeamAngle, int dim);
+  // Get translations
+  double getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3], int dim);
+
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
-  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows(bool ignore_uncontained = true);
+  std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows(bool ignore_uncontained);
 
   // Get pass/fail containment criterion for original event
   std::vector< std::vector< bool > > getHadronContainmentOrigin();
 
   void setSeed(int seed);
+
+  // get vetoEnergy
+  float getCurrentThrowsVetoE(int t);
+  float getCurrentThrowsTotE();
+
 
 };
 
