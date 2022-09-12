@@ -15,17 +15,24 @@ cmake -DPYTHON_EXECUTABLE:FILEPATH=`which python` .
 make -j geoEff                                                                                     # Build geoEff (can also use: make -j pyGeoEff)
 ```
 
-To (re)compile and (re)run,
+To (re)compile
 ```
 cd /dune/app/users/<your_username>/NDEff/DUNE_ND_GeoEff/
 #
 # In case you log out, need to source setup.sh to setup ROOT
 #
-source setup.sh                                                                           
+source setup.sh         
+
+# Compile program
 cd app
-make runGeoEffFDEvtSim                                                                             # Compile program
+make runGeoEffFDEvtSim                                                                       
+```
+
+To (re)run program,
+```
 cd ../bin
-./runGeoEffFDEvtSim                                                                                # Run program
+# Usage: ./runGeoEffFDEvtSim inputFDntuple
+./runGeoEffFDEvtSim /dune/app/users/weishi/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root
 ```
 this will produce a root file containing throws and the hadron throw result.
 
@@ -61,3 +68,43 @@ root -l -b -q FDEffCalc.C
 ```
 
 The output root file from running ```runGeoEffFDEvtSim``` can also be used for lepton NN training.
+
+## Run on Grid
+
+First get the work env setup:
+```
+cd /dune/app/users/weishi
+wget https://raw.githubusercontent.com/weishi10141993/NeutrinoPhysics/main/setupNDEff-grid.sh --no-check-certificate
+```
+
+Suppose the input FD ntuples are in this ```pnfs``` directory,
+```
+/pnfs/dune/persistent/users/weishi/myFDntuples
+```
+write the list to txt file,
+```
+ls -d "/pnfs/dune/persistent/users/weishi/myFDntuples"/* | sed "s\/pnfs\root://fndca1.fnal.gov:1094/pnfs/fnal.gov/usr\g" > myFDntuples.txt
+# it also changes pnfs to xrootd so that worker node can access
+```
+which is going to be sent to the grid in a tarball below.
+
+Now make the tarball,
+```
+tar -czvf NDEff.tar.gz setupNDEff-grid.sh myFDntuples.txt
+# Check the tarball *.tar.gz is indeed created and open with: tar -xf *.tar.gz
+```
+
+Get the running script,
+```
+wget https://raw.githubusercontent.com/weishi10141993/NeutrinoPhysics/main/run_NDEff_autogrid.sh --no-check-certificate
+
+# set the job client
+source /cvmfs/dune.opensciencegrid.org/products/dune/setup_dune.sh
+setup jobsub_client
+
+# this submits N jobs (N = number of input files, so each job runs 1 file)
+jobsub_submit -G dune -N 3 --memory=500MB --disk=1GB --expected-lifetime=20m --cpu=1 --resource-provides=usage_model=DEDICATED,OPPORTUNISTIC,OFFSITE --tar_file_name=dropbox:///dune/app/users/weishi/NDEff.tar.gz --use-cvmfs-dropbox -l '+SingularityImage=\"/cvmfs/singularity.opensciencegrid.org/fermilab/fnal-wn-sl7:latest\"' --append_condor_requirements='(TARGET.HAS_Singularity==true&&TARGET.HAS_CVMFS_dune_opensciencegrid_org==true&&TARGET.HAS_CVMFS_larsoft_opensciencegrid_org==true&&TARGET.CVMFS_dune_opensciencegrid_org_REVISION>=1105&&TARGET.HAS_CVMFS_fifeuser1_opensciencegrid_org==true&&TARGET.HAS_CVMFS_fifeuser2_opensciencegrid_org==true&&TARGET.HAS_CVMFS_fifeuser3_opensciencegrid_org==true&&TARGET.HAS_CVMFS_fifeuser4_opensciencegrid_org==true)' file:///dune/app/users/weishi/run_NDEff_autogrid.sh
+
+```
+Reference:
+3 files each 100 events:``` -N 3 --memory=500MB --disk=1GB --expected-lifetime=20m --cpu=1```
