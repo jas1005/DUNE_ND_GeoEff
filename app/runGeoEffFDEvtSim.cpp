@@ -407,12 +407,14 @@ int main(int argc, char** argv)
   effValues->Branch("ND_LAr_pos",                   &ND_LAr_pos,           "ND_LAr_pos/D");
   effValues->Branch("ND_OffAxis_eff",               &ND_OffAxis_eff,       "ND_OffAxis_eff/D");
   // Store ND_off_axis_pos_vec and ND_vtx_vx_vec
-  vector<Int_t> iwritten_vec;
-  TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
-  PosVec->Branch("iwritten_vec",                             &iwritten_vec);
-  PosVec->Branch("ND_OffAxis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
-  PosVec->Branch("ND_LAr_pos_vec",                           &ND_vtx_vx_vec);
-
+  if(plotVerbose)
+  {
+    vector<Int_t> iwritten_vec;
+    TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
+    PosVec->Branch("iwritten_vec",                             &iwritten_vec);
+    PosVec->Branch("ND_OffAxis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+    PosVec->Branch("ND_LAr_pos_vec",                           &ND_vtx_vx_vec);
+  }
 
   //
   //------------------------------------------------------------------------------
@@ -491,7 +493,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Add hist of veto E
-  TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 1500, 0, 1500);
+  TH1F *hist_vetoEnergyFD = new TH1F("hist_vetoEnergyFD", "hist_vetoEnergyFD", 150, 0, 1500);
 
   //
   //------------------------------------------------------------------------------
@@ -540,7 +542,7 @@ int main(int argc, char** argv)
     if ( FD_CCNC_truth == 1) continue;   // only use CC events
     if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
     // Only pick the events' vertex inside the FD FV
-    if(FD_Sim_mu_start_vx < FD_FV_max[0] || FD_Sim_mu_start_vx > FD_FV_min[0] || FD_Sim_mu_start_vy < FD_FV_max[1] || FD_Sim_mu_start_vy > FD_FV_min[1] || FD_Sim_mu_start_vz < FD_FV_max[2] || FD_Sim_mu_start_vz > FD_FV_min[2]) continue;
+    if(FD_Sim_mu_start_vx > FD_FV_max[0] || FD_Sim_mu_start_vx < FD_FV_min[0] || FD_Sim_mu_start_vy > FD_FV_max[1] || FD_Sim_mu_start_vy < FD_FV_min[1] || FD_Sim_mu_start_vz > FD_FV_max[2] || FD_Sim_mu_start_vz < FD_FV_min[2]) continue;
     FD_FV_counter++;
 
     //
@@ -957,7 +959,7 @@ int main(int argc, char** argv)
             HadronHitPoss.emplace_back(ND_OffAxis_Sim_hadronic_hit[ihadronhit][i]);
           }
           HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
-          // if (throwfileVerbose) myfile << "HadronHitEdeps: " << FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) << "\n";
+          if (throwfileVerbose) myfile << "HadronHitEdeps: " << FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) << "\n";
         }
 
         eff->setVertex(ND_OffAxis_Sim_mu_start_v[0], ND_OffAxis_Sim_mu_start_v[1], ND_OffAxis_Sim_mu_start_v[2]);
@@ -1107,7 +1109,7 @@ int main(int argc, char** argv)
     ND_RandomVtx_Sim_hadronic_hit.clear();
     ND_OnAxis_Sim_hadronic_hit.clear();
 
-    iwritten_vec.emplace_back(iwritten);
+    if(plotVerbose) iwritten_vec.emplace_back(iwritten);
     cout<< "ientry: " << ientry << ", iwritten: " << iwritten << endl;
     if (verbose) myfile << "ientry: " << ientry << ", iwritten: " << iwritten << endl;
 
