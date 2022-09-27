@@ -181,20 +181,22 @@ int main(int argc, char** argv)
   if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= OffAxisPos_new1[1] ) {
     OffAxisPos_new1_step = ( OffAxisPos_new1[1] - OffAxisPos_new1[0] ) / OffAxisPos_new_stepsize;
   }
+  cout << "OffAxisPos_new1_step: " << OffAxisPos_new1_step <<endl;
   else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
   if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= OffAxisPos_new2[1] ) {
     OffAxisPos_new2_step = ( OffAxisPos_new2[1] - OffAxisPos_new2[0] ) / OffAxisPos_new_stepsize;
   }
+  cout << "OffAxisPos_new2_step: " << OffAxisPos_new2_step <<endl;
   else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
 
 
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new1_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new1[0])*100. );
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new1[1])*100. );
   }
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new2_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new2[0])*100. );
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new2[1])*100. );
   }
 
   // Sort the vector
@@ -237,7 +239,7 @@ int main(int argc, char** argv)
   // ND_vtx_vx_vec.emplace_back(-299., -292., -285., -278., -271., 271., 278., 285., 292., 299.);
   for(unsigned int i =0; i< ND_vtx_vx_vec.size(); i++)
   {
-    cout<< "i: " << i << ", ND_vtx_vx_vec: " << ND_vtx_vx_vec[i] <<endl;
+    if (verbose) cout<< "i: " << i << ", ND_vtx_vx_vec: " << ND_vtx_vx_vec[i] <<endl;
   }
 
   if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
@@ -539,7 +541,7 @@ int main(int argc, char** argv)
     // Only pick the events' vertex inside the FD FV
     if(FD_Sim_mu_start_vx < FD_FV_max[0] || FD_Sim_mu_start_vx > FD_FV_min[0] || FD_Sim_mu_start_vy < FD_FV_max[1] || FD_Sim_mu_start_vy > FD_FV_min[1] || FD_Sim_mu_start_vz < FD_FV_max[2] || FD_Sim_mu_start_vz > FD_FV_min[2]) continue;
     FD_FV_counter++;
-    
+
     //
     // Calculate total hadron E in FD veto region
     //
