@@ -192,17 +192,17 @@ int main(int argc, char** argv)
 
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new1_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new1[1])*100. );
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new1[0])*100. );
   }
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new2_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new2[1])*100. );
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new2[0])*100. );
   }
 
   // Sort the vector
   sort(ND_off_axis_pos_vec.begin(), ND_off_axis_pos_vec.end());
   for (auto x : ND_off_axis_pos_vec)
-        std::cout << x << " ";
+        std::cout << x << ",  ";
   if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
 
 
