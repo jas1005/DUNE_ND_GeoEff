@@ -187,8 +187,8 @@ int main(int argc, char** argv)
   }
   else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
 
-  cout << "OffAxisPos_new1_step: " << OffAxisPos_new1_step <<endl;
-  cout << "OffAxisPos_new2_step: " << OffAxisPos_new2_step <<endl;
+  if (verbose) cout << "OffAxisPos_new1_step: " << OffAxisPos_new1_step <<endl;
+  if (verbose) cout << "OffAxisPos_new2_step: " << OffAxisPos_new2_step <<endl;
 
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new1_step + 1; i_ND_off_axis_pos_step++ )
   {
@@ -201,8 +201,9 @@ int main(int argc, char** argv)
 
   // Sort the vector
   sort(ND_off_axis_pos_vec.begin(), ND_off_axis_pos_vec.end());
-  for (auto x : ND_off_axis_pos_vec)
-        std::cout << x << ",  ";
+  if (verbose)
+  {for (auto x : ND_off_axis_pos_vec)
+        std::cout << x << ",  ";}
   if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
 
 
