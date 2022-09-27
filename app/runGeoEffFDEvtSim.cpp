@@ -179,11 +179,11 @@ int main(int argc, char** argv)
 
   // Calculate steps
   if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= OffAxisPos_new1[1] ) {
-    OffAxisPos_new1_step = ( OffAxisPos_new1[1] - OffAxisPos_new1[0] ) / OffAxisPos_new_stepsize;
+    OffAxisPos_new1_step = - ( OffAxisPos_new1[1] - OffAxisPos_new1[0] ) / OffAxisPos_new_stepsize;
   }
   else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
   if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= OffAxisPos_new2[1] ) {
-    OffAxisPos_new2_step = ( OffAxisPos_new2[1] - OffAxisPos_new2[0] ) / OffAxisPos_new_stepsize;
+    OffAxisPos_new2_step = - ( OffAxisPos_new2[1] - OffAxisPos_new2[0] ) / OffAxisPos_new_stepsize;
   }
   else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
 
@@ -192,11 +192,11 @@ int main(int argc, char** argv)
 
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new1_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new1[0])*100. );
+    ND_off_axis_pos_vec.emplace_back( (i_ND_off_axis_pos_step*OffAxisPos_new_stepsize + OffAxisPos_new1[1])*100. );
   }
   for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new2_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new2[0])*100. );
+    ND_off_axis_pos_vec.emplace_back( (i_ND_off_axis_pos_step*OffAxisPos_new_stepsize + OffAxisPos_new2[1])*100. );
   }
 
   // Sort the vector
