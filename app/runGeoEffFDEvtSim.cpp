@@ -57,6 +57,7 @@ int main(int argc, char** argv)
   } else {
     inFname = string(argv[1]);
   }
+
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -245,6 +246,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   //
+
   // Result of hadron containment is stored in nested vectors, need to generate dictionary
   gSystem->Exec("rm -f AutoDict*vector*vector*float*"); // Remove old dictionary if exists
   gSystem->Exec("rm -f AutoDict*vector*vector*bool*"); // Remove old dictionary if exists
@@ -414,6 +416,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   //
+
   //
   // A separate tree to store translations and rotations of throws
   // which will be applied to leptons before NN training
@@ -536,6 +539,7 @@ int main(int argc, char** argv)
     // Only pick the events' vertex inside the FD FV
     if(FD_Sim_mu_start_vx < FD_FV_max[0] || FD_Sim_mu_start_vx > FD_FV_min[0] || FD_Sim_mu_start_vy < FD_FV_max[1] || FD_Sim_mu_start_vy > FD_FV_min[1] || FD_Sim_mu_start_vz < FD_FV_max[2] || FD_Sim_mu_start_vz > FD_FV_min[2]) continue;
     FD_FV_counter++;
+    
     //
     // Calculate total hadron E in FD veto region
     //
@@ -558,6 +562,7 @@ int main(int argc, char** argv)
     //add a vetoEnergyFD histogram in the root file
 
     hist_vetoEnergyFD->Fill(vetoEnergyFD);
+
     //
     // Skip FD event if the total hadron E in veto region exceeds vetoEnergy [MeV]
     //
