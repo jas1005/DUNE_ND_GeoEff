@@ -407,10 +407,11 @@ int main(int argc, char** argv)
   effValues->Branch("ND_LAr_pos",                   &ND_LAr_pos,           "ND_LAr_pos/D");
   effValues->Branch("ND_OffAxis_eff",               &ND_OffAxis_eff,       "ND_OffAxis_eff/D");
   // Store ND_off_axis_pos_vec and ND_vtx_vx_vec
+
+  vector<Int_t> iwritten_vec;
+  TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
   if(plotVerbose)
   {
-    vector<Int_t> iwritten_vec;
-    TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
     PosVec->Branch("iwritten_vec",                             &iwritten_vec);
     PosVec->Branch("ND_OffAxis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
     PosVec->Branch("ND_LAr_pos_vec",                           &ND_vtx_vx_vec);
