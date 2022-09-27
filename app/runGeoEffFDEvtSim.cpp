@@ -149,27 +149,64 @@ int main(int argc, char** argv)
   //
   // Choose Off-Axis and ND_Lar positions
   vector<double> ND_off_axis_pos_vec; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt
-  int ND_off_axis_pos_steps = 0;
+  vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt (ND_Lar pos)
+  // int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
 
   // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
   ND_off_axis_pos_vec.clear();
 
-  if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
-    ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
+  // Old algorithm chooseing ND off axis pos
+  // if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
+  //   ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
+  // }
+  // else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+  //
+  // // if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
+  //
+  // // The rest elements follow fixed increments from min ND local x
+  // for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
+  //   ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0])*100. );
+  // }
+  //
+  // if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
+
+  //------------------------------------------------------------------------------
+  // New algorithm chooseing ND off axis pos
+  int OffAxisPos_new1_step = 0;
+  int OffAxisPos_new2_step = 0;
+
+  // Calculate steps
+  if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= OffAxisPos_new1[1] ) {
+    OffAxisPos_new1_step = ( OffAxisPos_new1[1] - OffAxisPos_new1[0] ) / OffAxisPos_new_stepsize;
+  }
+  else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+  if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= OffAxisPos_new2[1] ) {
+    OffAxisPos_new2_step = ( OffAxisPos_new2[1] - OffAxisPos_new2[0] ) / OffAxisPos_new_stepsize;
   }
   else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
 
-  // if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
 
-  // The rest elements follow fixed increments from min ND local x
-  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
-    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0])*100. );
+  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new1_step + 1; i_ND_off_axis_pos_step++ )
+  {
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new1[0])*100. );
+  }
+  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new2_step + 1; i_ND_off_axis_pos_step++ )
+  {
+    ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPos_new2[0])*100. );
   }
 
+  // Sort the vector
+  sort(ND_off_axis_pos_vec.begin(), ND_off_axis_pos_vec.end());
+  for (auto x : ND_off_axis_pos_vec)
+        std::cout << x << " ";
   if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
 
+
+
+  //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
   // Initialize first element as -999, to be replaced by a random vtx x in each evt below
   ND_vtx_vx_vec.clear();
 
@@ -327,25 +364,25 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_end_v",                 ND_RandomVtx_Sim_mu_end_v,         "ND_RandomVtx_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_start_p",               ND_RandomVtx_Sim_mu_start_p,       "ND_RandomVtx_Sim_mu_start_p[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,          "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
-  effTreeFD->Branch("ND_RandomVtx_Sim_hadronic_hit_xyz",         &ND_RandomVtx_Sim_hadronic_hit);
+  if (ntupleVerbose) effTreeFD->Branch("ND_RandomVtx_Sim_hadronic_hit_xyz",         &ND_RandomVtx_Sim_hadronic_hit);
   // 2. ND: move back to the beam center
   effTreeFD->Branch("ND_OnAxis_Sim_mu_start_v",               ND_OnAxis_Sim_mu_start_v,       "ND_OnAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OnAxis_Sim_mu_end_v",                 ND_OnAxis_Sim_mu_end_v,         "ND_OnAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OnAxis_Sim_mu_start_p",               ND_OnAxis_Sim_mu_start_p,       "ND_OnAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
-  effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_xyz",             &ND_OnAxis_Sim_hadronic_hit);
+  if (ntupleVerbose) effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_xyz",             &ND_OnAxis_Sim_hadronic_hit);
   // 3. ND to ND: translate from OnAxis to OffAxis
   effTreeFD->Branch("ND_off_axis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
   effTreeFD->Branch("ND_vtx_vx_vec",                             &ND_vtx_vx_vec);
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_start_v",               ND_OffAxis_Unrotated_Sim_mu_start_v,       "ND_OffAxis_Unrotated_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_end_v",                 ND_OffAxis_Unrotated_Sim_mu_end_v,         "ND_OffAxis_Unrotated_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_start_p",               ND_OffAxis_Unrotated_Sim_mu_start_p,       "ND_OffAxis_Unrotated_Sim_mu_start_p[3]/D");   // entries = written evts*3
-  effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_hadronic_hit_xyz",         &ND_OffAxis_Unrotated_Sim_hadronic_hit);
+  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_hadronic_hit_xyz",         &ND_OffAxis_Unrotated_Sim_hadronic_hit);
   // 4. ND: get after eigen rotated vectors for step 4
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_v",               ND_OffAxis_Sim_mu_start_v,       "ND_OffAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,      "ND_OffAxis_Sim_mu_start_E/D");
-  effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
+  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
   effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
     // effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
@@ -497,7 +534,7 @@ int main(int argc, char** argv)
     if ( FD_CCNC_truth == 1) continue;   // only use CC events
     if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
     // Only pick the events' vertex inside the FD FV
-    if(FD_Sim_mu_start_vx < FD_FV_max[0] && FD_Sim_mu_start_vx > FD_FV_min[0] && FD_Sim_mu_start_vy < FD_FV_max[1] && FD_Sim_mu_start_vy > FD_FV_min[1] && FD_Sim_mu_start_vz < FD_FV_max[2] && FD_Sim_mu_start_vz > FD_FV_min[2]) continue;
+    if(FD_Sim_mu_start_vx < FD_FV_max[0] || FD_Sim_mu_start_vx > FD_FV_min[0] || FD_Sim_mu_start_vy < FD_FV_max[1] || FD_Sim_mu_start_vy > FD_FV_min[1] || FD_Sim_mu_start_vz < FD_FV_max[2] || FD_Sim_mu_start_vz > FD_FV_min[2]) continue;
     FD_FV_counter++;
     //
     // Calculate total hadron E in FD veto region
