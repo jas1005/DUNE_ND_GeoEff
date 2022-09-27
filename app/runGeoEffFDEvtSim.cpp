@@ -1109,7 +1109,7 @@ int main(int argc, char** argv)
     ND_RandomVtx_Sim_hadronic_hit.clear();
     ND_OnAxis_Sim_hadronic_hit.clear();
 
-    if(plotVerbose) iwritten_vec.emplace_back(iwritten);
+    if(plotVerbose) {iwritten_vec.emplace_back(iwritten);}
     cout<< "ientry: " << ientry << ", iwritten: " << iwritten << endl;
     if (verbose) myfile << "ientry: " << ientry << ", iwritten: " << iwritten << endl;
 
@@ -1135,8 +1135,11 @@ int main(int argc, char** argv)
   ThrowsFD->Write();
   effTreeFD->Write();
   effValues->Write();
-  PosVec->Fill();
-  PosVec->Write();
+  if(plotVerbose)
+  {
+    PosVec->Fill();
+    PosVec->Write();
+  }
   hist_vetoEnergyFD->Write();
 
   myfile.close();
