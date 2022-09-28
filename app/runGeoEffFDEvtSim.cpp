@@ -399,13 +399,15 @@ int main(int argc, char** argv)
   // 6. Calculate Geo Eff
   double ND_OffAxis_pos;
   double ND_LAr_pos;
-  double ND_OffAxis_eff;
+  double ND_GeoEff;
+  double ND_OffAxis_MeanEff = 0.;
 
   TTree *effValues = new TTree("effValues", "ND eff Tree");
   effValues->Branch("iwritten",                     &iwritten,             "iwritten/I");
   effValues->Branch("ND_OffAxis_pos",               &ND_OffAxis_pos,       "ND_OffAxis_pos/D");
   effValues->Branch("ND_LAr_pos",                   &ND_LAr_pos,           "ND_LAr_pos/D");
-  effValues->Branch("ND_OffAxis_eff",               &ND_OffAxis_eff,       "ND_OffAxis_eff/D");
+  effValues->Branch("ND_GeoEff",                    &ND_GeoEff,            "ND_GeoEff/D");
+  effValues->Branch("ND_OffAxis_MeanEff",           &ND_OffAxis_MeanEff,   "ND_OffAxis_MeanEff/D");
   // Store ND_off_axis_pos_vec and ND_vtx_vx_vec
 
   vector<Int_t> iwritten_vec;
@@ -739,8 +741,19 @@ int main(int argc, char** argv)
 
 
     int ND_off_axis_pos_counter = 0;
+
+
     for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec )
     {
+      // Calculate meanEff
+      Int_t MiddleEff_counter = 0;
+      Double_t MiddleEff = 0.;
+      Double_t Leff = 0.;
+      Double_t Reff = 0.;
+      Int_t Leff_counter = 0;
+      Int_t Reff_counter = 0;
+
+      
       eff->setOffsetX(NDLAr_OnAxis_offset[0]-i_ND_off_axis_pos);
       ND_off_axis_pos_counter++;
       //
@@ -1078,13 +1091,22 @@ int main(int argc, char** argv)
                 // But for the ND FV cut, we could probably factorize it analytically instead of using these random throws to evaluate
                 // therefore we exclude such throws from the denominator as well
                 if ( validthrows > 0 ) hadron_contain_eff = hadronpass*1.0/validthrows;
-                ND_OffAxis_eff = hadron_contain_eff;
+                ND_GeoEff = hadron_contain_eff;
                 ND_LAr_pos = i_vtx_vx;
                 ND_OffAxis_pos = i_ND_off_axis_pos;
 
-                if (throwfileVerbose) myfile << "        ND_OffAxis_pos: " << ND_OffAxis_pos << "cm,  ND_LAr_pos: " << ND_LAr_pos << ", Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << ND_OffAxis_eff << "\n\n";
-                cout << "        ND_OffAxis_pos: " << ND_OffAxis_pos << "cm,  ND_LAr_pos: " << ND_LAr_pos << ", Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << ND_OffAxis_eff << "\n\n";
+                if (throwfileVerbose) myfile << "        ND_OffAxis_pos: " << ND_OffAxis_pos << "cm,  ND_LAr_pos: " << ND_LAr_pos << ", Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << ND_GeoEff << "\n\n";
+                if (verbose) cout << "        ND_OffAxis_pos: " << ND_OffAxis_pos << " cm,  ND_LAr_pos: " << ND_LAr_pos << " cm, Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << ND_GeoEff << "\n\n";
                 effValues->Fill();
+
+                // Calculate the meanEff
+                if(ND_LAr_pos<-250)
+                {Leff += ND_GeoEff;Leff_counter++;}
+                else if(ND_LAr_pos>250)
+                {Reff += ND_GeoEff;Reff_counter++;}
+                else
+                {MiddleEff += ND_GeoEff;MiddleEff_counter++;}
+
 
           }     // end loop over veto energy
         }       // end loop over veto size
@@ -1102,8 +1124,12 @@ int main(int argc, char** argv)
           // CurrentThrowVetoE.clear();
           // CurrentThrowTotE.clear();
 
+        // Calculate the average geo eff for different ND off axis positions
+        ND_OffAxis_MeanEff = (Leff*1.0/Leff_counter+MiddleEff*1.0+Reff*1.0/Reff_counter)/(MiddleEff_counter+2);
 
-     } // end Loop over ND_vtx_vx_vec
+
+      } // end Loop over ND_vtx_vx_vec
+
 
    }   // end Loop over ND_off_axis_pos_vec
 
