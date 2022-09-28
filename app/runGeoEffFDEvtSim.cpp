@@ -1124,13 +1124,11 @@ int main(int argc, char** argv)
           // CurrentThrowVetoE.clear();
           // CurrentThrowTotE.clear();
 
-        // Calculate the average geo eff for different ND off axis positions
-        ND_OffAxis_MeanEff = (Leff*1.0/Leff_counter+MiddleEff*1.0+Reff*1.0/Reff_counter)/(MiddleEff_counter+2);
-        cout << "        ND_OffAxis_pos: " << ND_OffAxis_pos << " cm, eff: " << ND_OffAxis_MeanEff << "\n\n";
-
-
       } // end Loop over ND_vtx_vx_vec
 
+      // Calculate the average geo eff for different ND off axis positions
+      ND_OffAxis_MeanEff = (Leff*1.0/Leff_counter+MiddleEff*1.0+Reff*1.0/Reff_counter)/(MiddleEff_counter+2);
+      cout << "        ND_OffAxis_pos: " << ND_OffAxis_pos << " cm, eff: " << ND_OffAxis_MeanEff << "\n\n";
 
    }   // end Loop over ND_off_axis_pos_vec
 
