@@ -201,10 +201,10 @@ int main(int argc, char** argv)
 
   // Sort the vector
   sort(ND_off_axis_pos_vec.begin(), ND_off_axis_pos_vec.end());
-  if (verbose)
+  if (true)
   {for (auto x : ND_off_axis_pos_vec)
         std::cout << x << ",  ";}
-  if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
+  if (true) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
 
 
 
@@ -239,11 +239,11 @@ int main(int argc, char** argv)
 
   // ND_vtx_vx_vec.emplace_back(-299., -292., -285., -278., -271., 271., 278., 285., 292., 299.);
 
-  if (verbose)
+  if (true)
   {for (auto x : ND_vtx_vx_vec)
         std::cout << x << ",  ";}
 
-  if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
+  if (true) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
