@@ -520,7 +520,7 @@ int main(int argc, char** argv)
   if (throwfileVerbose) myfile << "Tot evts: " << nentries << "\n";
   if (hadronhitVerbose) myfile << "Tot evts: " << nentries << "\n";
   for ( int ientry = 0; ientry < nentries; ientry++ )
-  // for ( int ientry = 116; ientry < 117; ientry++ )
+  // for ( int ientry = 116; ientry < 117; ientry++ ) // Use for drwaing one hardronic hits plots
   {
     t->GetEntry(ientry);
     if ( ientry%10000 == 0 )
@@ -1032,7 +1032,7 @@ int main(int argc, char** argv)
             for ( vector<uint64_t>::iterator it_chunk = it_veto_energy->begin(); it_chunk != it_veto_energy->end(); ++it_chunk )
             {
               counter5++;
-              // cout << "i_ND_off_axis_pos: " << i_ND_off_axis_pos << " cm, vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, it_chunk " << counter5<< endl;
+              if (verbose) cout << "i_ND_off_axis_pos: " << i_ND_off_axis_pos << " cm, vtx x #" << vtx_vx_counter << ": " << i_vtx_vx << " cm, it_chunk " << counter5<< endl;
               if (verbose) std::cout << "          chunk #" << counter5 << ": " << *it_chunk << std::endl;
 
               for ( unsigned int ithrow = 0; ithrow < 64; ithrow++ )
@@ -1082,7 +1082,8 @@ int main(int argc, char** argv)
                 ND_LAr_pos = i_vtx_vx;
                 ND_OffAxis_pos = i_ND_off_axis_pos;
 
-                if (throwfileVerbose) myfile << "        Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << hadron_contain_eff << "\n\n";
+                if (throwfileVerbose) myfile << "        ND_OffAxis_pos: " << ND_OffAxis_pos << "cm,  ND_LAr_pos: " << ND_LAr_pos << ", Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << ND_OffAxis_eff << "\n\n";
+                cout << "        ND_OffAxis_pos: " << ND_OffAxis_pos << "cm,  ND_LAr_pos: " << ND_LAr_pos << ", Passed throws: " << hadronpass << ", tot. valid throws: " << validthrows << ", eff: " << ND_OffAxis_eff << "\n\n";
                 effValues->Fill();
 
           }     // end loop over veto energy
