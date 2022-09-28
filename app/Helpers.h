@@ -5,7 +5,7 @@
 #include <iomanip>
 #include "TSystemDirectory.h"
 
-bool verbose = false; // default to false, true for debugging, a lot of printouts
+bool verbose = true; // default to false, true for debugging, a lot of printouts
 bool myfileVerbose = false;
 bool throwfileVerbose = false;
 bool hadronhitVerbose = false;

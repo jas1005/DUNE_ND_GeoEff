@@ -238,10 +238,10 @@ int main(int argc, char** argv)
   }
 
   // ND_vtx_vx_vec.emplace_back(-299., -292., -285., -278., -271., 271., 278., 285., 292., 299.);
-  for(unsigned int i =0; i< ND_vtx_vx_vec.size(); i++)
-  {
-    if (verbose) cout<< "i: " << i << ", ND_vtx_vx_vec: " << ND_vtx_vx_vec[i] <<endl;
-  }
+
+  if (verbose)
+  {for (auto x : ND_vtx_vx_vec)
+        std::cout << x << ",  ";}
 
   if (verbose) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
   //
