@@ -6,7 +6,7 @@
 #include "TSystemDirectory.h"
 
 bool verbose = false; // default to false, true for debugging, a lot of printouts
-bool myfileVerbose = false;
+bool myfileVerbose = true;
 bool throwfileVerbose = false;
 bool hadronhitVerbose = false;
 bool plotVerbose = false;
