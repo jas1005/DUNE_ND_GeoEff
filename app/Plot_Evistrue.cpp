@@ -41,7 +41,7 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-void Plot_Evisture() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_*.root
+void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_*.root
 {
   gROOT->Reset();
   // Input FDroot file
