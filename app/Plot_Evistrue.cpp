@@ -46,14 +46,11 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   //
   // Read branch from input trees
   //
-  // TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
-  // t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root");
-
-  TFile *input = new TFile("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root","read");
- 	TTree *t_E = (TTree*)input->Get("MyEnergyAnalysis/MyTree");
+  TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
+  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root");
 
   double E_vis_true;                 // True vis energy
-  // t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
 
   TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","hist_E_vis_true",100,0,100);
 
