@@ -43,8 +43,6 @@ using namespace std;
 
 void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_*.root
 {
-  // Input FDroot file
-  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root";
   //
   // Read branch from input trees
   //
@@ -53,6 +51,9 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
 
   double E_vis_true;                 // True vis energy
   t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  double fNuvtxx_truth; 		 //Genie true neutrino interaction vertex x
+  t_E->SetBranchAddress("fNuvtxx_truth",                      &fNuvtxx_truth);
+
 
 
   TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","hist_E_vis_true",100,0,100);
@@ -65,6 +66,8 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   {
     hist_E_vis_true->Fill(E_vis_true);
     cout << "ientry: " <<ientry<< ", E_vis_true: " << E_vis_true << endl;
+    cout << "ientry: " <<ientry<< ", fNuvtxx_truth: " << fNuvtxx_truth << endl;
+
   }
 
   // Add labels;
