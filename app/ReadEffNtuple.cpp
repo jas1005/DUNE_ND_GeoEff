@@ -41,7 +41,7 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-int main(int argc, char** argv)
+int main(int argc, char** argv) // /pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_39254532_2*.root
 {
   // Input FDroot file
   string inFname;
