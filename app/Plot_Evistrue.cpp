@@ -54,26 +54,29 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   double E_vis_true;                 // True vis energy
   t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
 
-  // Create TCanvas
-  TCanvas *c1 = new TCanvas("E_vis_true","E_vis_true",700,500);
-  c1->cd(1);
+
   TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","hist_E_vis_true",100,0,100);
 
   // Loop over all events
   int nentries = 0; // Total input events
   nentries = t_E->GetEntries();
+  cout<< "nentries:" << nentries<<endl;
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     hist_E_vis_true->Fill(E_vis_true);
   }
 
   // Add labels;
+  // Create TCanvas
+  TCanvas *c1 = new TCanvas("E_vis_true","E_vis_true",700,500);
+  c1->cd(1);
   hist_E_vis_true->GetYaxis()->SetTitle("# of events");
   hist_E_vis_true->GetXaxis()->SetTitle("E_vis_true [MeV]");
   hist_E_vis_true->Draw();
 
 
   //Save into root file
+
   c1->SaveAs("E_vis_true.pdf");
 
 
