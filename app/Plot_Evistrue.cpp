@@ -64,6 +64,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     hist_E_vis_true->Fill(E_vis_true);
+    cout << "ientry: " <<ientry<< ", E_vis_true: " << E_vis_true << endl;
   }
 
   // Add labels;
