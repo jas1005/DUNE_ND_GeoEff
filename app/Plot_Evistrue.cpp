@@ -46,15 +46,14 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   //
   // Read branch from input trees
   //
-  TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
-  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root");
+  // TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
+  // t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root");
+
+  TFile *input = new TFile("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root","read");
+ 	TTree *t_E = (TTree*)input->Get("MyEnergyAnalysis/MyTree");
 
   double E_vis_true;                 // True vis energy
-  t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
-  double fNuvtxx_truth; 		 //Genie true neutrino interaction vertex x
-  t_E->SetBranchAddress("fNuvtxx_truth",                      &fNuvtxx_truth);
-
-
+  // t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
 
   TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","hist_E_vis_true",100,0,100);
 
@@ -66,8 +65,6 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   {
     hist_E_vis_true->Fill(E_vis_true);
     cout << "ientry: " <<ientry<< ", E_vis_true: " << E_vis_true << endl;
-    cout << "ientry: " <<ientry<< ", fNuvtxx_truth: " << fNuvtxx_truth << endl;
-
   }
 
   // Add labels;
