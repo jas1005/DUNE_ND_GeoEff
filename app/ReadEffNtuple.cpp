@@ -41,30 +41,31 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-void ReadEffNtuple()
+int main(int argc, char** argv)
 {
-  gROOT->Reset();
-
   // Input FDroot file
-  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_59933943_0.root";
+  string inFname;
+  if ( (argc > 2) or (argc == 1) ){
+    cout << "Usage: ./runGeoEffFDEvtSim inputFDntuple" << endl;
+    exit(-1);
+  } else {
+    inFname = string(argv[1]);
+  }
+
   //
   // Read branch from input trees
   //
   // Read effValues
   TChain *t_effValues = new TChain("effValues");
-  t_effValues->Add(FileIn.Data());
-  Int_t iwritten;
-  Double_t ND_OffAxis_pos;
-  Double_t ND_LAr_pos;
-  Double_t ND_GeoEff;
-  t_effValues->SetBranchAddress("iwritten",         &iwritten);
-  t_effValues->SetBranchAddress("ND_OffAxis_pos",   &ND_OffAxis_pos);
-  t_effValues->SetBranchAddress("ND_LAr_pos",       &ND_LAr_pos);
-  t_effValues->SetBranchAddress("ND_GeoEff",   &ND_GeoEff);
+  t_effValues->Add(inFname.c_str());
+
+
 
   // Read PosVec
   TChain *t_PosVec = new TChain("PosVec");
-  t_PosVec->Add(FileIn.Data());
+  t_PosVec->Add(inFname.c_str());
+
+  gROOT->Reset();
   vector<Double_t> *ND_OffAxis_pos_vec = 0; // unit: cm, ND off-axis choices for each FD evt
   vector<Double_t> *ND_LAr_pos_vec = 0;       // unit: cm, vtx x choices for each FD evt in ND volume
   vector<Int_t> *iwritten_vec = 0;
