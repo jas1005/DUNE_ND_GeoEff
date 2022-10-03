@@ -61,7 +61,7 @@ void Plot_Evisture() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","hist_E_vis_true",100,0,100);
 
   // Loop over all events
-  nentries = t->GetEntries();
+  nentries = t_E->GetEntries();
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     hist_E_vis_true->Fill(E_vis_true);
