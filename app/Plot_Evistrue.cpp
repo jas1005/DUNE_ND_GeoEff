@@ -78,7 +78,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   TCanvas *c1 = new TCanvas("E_true","E_true",700,500);
   c1->SetLeftMargin(0.15);
   c1->SetRightMargin(0.15);
-  c1->Divide(2,2);
+  c1->Divide(2,1);
 
   c1->cd(1);
   c1->GetPad(1)->SetRightMargin(.15);
