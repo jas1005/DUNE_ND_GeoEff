@@ -68,7 +68,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   {
     ientry = i*330;
     t_effValues->GetEntry(ientry);
-    hist_E_vis_true->Fill(ND_E_vis_true);
+    hist_ND_E_vis_true->Fill(ND_E_vis_true);
     hist_ND_Gen_numu_E->Fill(ND_Gen_numu_E);
     cout << "ientry: " <<ientry<< ", ND_Gen_numu_E: " << ND_Gen_numu_E << endl;
   }
@@ -87,9 +87,9 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   hist_ND_Gen_numu_E->Draw();
   c1->cd(2);
   c1->GetPad(2)->SetRightMargin(.15);
-  hist_E_vis_true->GetYaxis()->SetTitle("# of events");
-  hist_E_vis_true->GetXaxis()->SetTitle("ND_E_vis_true [MeV]");
-  hist_E_vis_true->Draw();
+  hist_ND_E_vis_true->GetYaxis()->SetTitle("# of events");
+  hist_ND_E_vis_true->GetXaxis()->SetTitle("ND_E_vis_true [MeV]");
+  hist_ND_E_vis_true->Draw();
 
 
   //Save into root file
