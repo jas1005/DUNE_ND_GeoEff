@@ -47,7 +47,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   // Read branch from input trees
   //
   TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
-  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_9*.root");
+  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_99*.root");
 
   double E_vis_true;                 // True vis energy
   t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
@@ -69,6 +69,8 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   // Create TCanvas
   TCanvas *c1 = new TCanvas("E_vis_true","E_vis_true",700,500);
   c1->cd(1);
+  c1->SetLeftMargin(0.15);
+  c1->SetRightMargin(0.15);
   hist_E_vis_true->GetYaxis()->SetTitle("# of events");
   hist_E_vis_true->GetXaxis()->SetTitle("E_vis_true [MeV]");
   hist_E_vis_true->Draw();
