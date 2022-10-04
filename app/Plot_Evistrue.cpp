@@ -49,14 +49,14 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   TChain *t_effValues = new TChain("effTreeND");
   t_effValues->Add("/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_61635936_99*.root");
 
-  // double E_vis_true;                 // True vis energy
+  double E_vis_true;                 // True vis energy
   double ND_Gen_numu_E;
 
-  // t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
   t_effValues->SetBranchAddress("ND_Gen_numu_E",                      &ND_Gen_numu_E);
 
 
-  // TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","FD_hist_E_vis_true",100,0,100);
+  TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","FD_hist_E_vis_true",100,0,100);
   TH1D *hist_ND_Gen_numu_E = new TH1D("hist_ND_Gen_numu_E","hist_ND_Gen_numu_E",100,0,100);
 
   // Loop over all events
@@ -68,7 +68,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   {
     ientry = i*330;
     t_effValues->GetEntry(ientry);
-    // hist_E_vis_true->Fill(E_vis_true);
+    hist_E_vis_true->Fill(E_vis_true);
     hist_ND_Gen_numu_E->Fill(ND_Gen_numu_E);
     cout << "ientry: " <<ientry<< ", ND_Gen_numu_E: " << ND_Gen_numu_E << endl;
   }
@@ -76,15 +76,19 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   // Add labels;
   // Create TCanvas
   TCanvas *c1 = new TCanvas("E_true","E_true",700,500);
-  c1->cd(1);
   c1->SetLeftMargin(0.15);
   c1->SetRightMargin(0.15);
-  // hist_E_vis_true->GetYaxis()->SetTitle("# of events");
-  // hist_E_vis_true->GetXaxis()->SetTitle("E_vis_true [MeV]");
-  // hist_E_vis_true->Draw();
+
+  c1->cd(1);
+  c1->GetPad(2)->SetRightMargin(.15);
   hist_ND_Gen_numu_E->GetYaxis()->SetTitle("# of events");
-  hist_ND_Gen_numu_E->GetXaxis()->SetTitle("E_ND_Gen_numu [MeV]");
+  hist_ND_Gen_numu_E->GetXaxis()->SetTitle("ND_E_Gen_numu [MeV]");
   hist_ND_Gen_numu_E->Draw();
+  c1->cd(2);
+  c2->GetPad(2)->SetRightMargin(.15);
+  hist_E_vis_true->GetYaxis()->SetTitle("# of events");
+  hist_E_vis_true->GetXaxis()->SetTitle("ND_E_vis_true [MeV]");
+  hist_E_vis_true->Draw();
 
 
   //Save into root file
