@@ -80,7 +80,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   c1->SetRightMargin(0.15);
 
   c1->cd(1);
-  c1->GetPad(2)->SetRightMargin(.15);
+  c1->GetPad(1)->SetRightMargin(.15);
   hist_ND_Gen_numu_E->GetYaxis()->SetTitle("# of events");
   hist_ND_Gen_numu_E->GetXaxis()->SetTitle("ND_E_Gen_numu [MeV]");
   hist_ND_Gen_numu_E->Draw();
