@@ -46,39 +46,48 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   //
   // Read branch from input trees
   //
-  TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
-  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_99*.root");
+  TChain *t_effValues = new TChain("effTreeND");
+  t_effValues->Add("/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_39254532_99*.root");
 
-  double E_vis_true;                 // True vis energy
-  t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  // double E_vis_true;                 // True vis energy
+  double ND_Gen_numu_E;
 
-  TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","hist_E_vis_true",100,0,100);
+  // t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  t_effValues->SetBranchAddress("ND_Gen_numu_E",                      &ND_Gen_numu_E);
+
+
+  // TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","FD_hist_E_vis_true",100,0,100);
+  TH1D *hist_ND_Gen_numu_E = new TH1D("hist_ND_Gen_numu_E","hist_ND_Gen_numu_E",100,0,100);
 
   // Loop over all events
   int nentries = 0; // Total input events
-  nentries = t_E->GetEntries();
+  nentries = t_effValues->GetEntries();
   cout<< "nentries:" << nentries<<endl;
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
-    t_E->GetEntry(ientry);
-    hist_E_vis_true->Fill(E_vis_true);
-    cout << "ientry: " <<ientry<< ", E_vis_true: " << E_vis_true << endl;
+    t_effValues->GetEntry(ientry);
+    // hist_E_vis_true->Fill(E_vis_true);
+    hist_ND_Gen_numu_E->Fill(ND_Gen_numu_E);
+    cout << "ientry: " <<ientry<< ", ND_Gen_numu_E: " << ND_Gen_numu_E << endl;
   }
 
   // Add labels;
   // Create TCanvas
-  TCanvas *c1 = new TCanvas("E_vis_true","E_vis_true",700,500);
+  TCanvas *c1 = new TCanvas("E_true","E_true",700,500);
   c1->cd(1);
   c1->SetLeftMargin(0.15);
   c1->SetRightMargin(0.15);
-  hist_E_vis_true->GetYaxis()->SetTitle("# of events");
-  hist_E_vis_true->GetXaxis()->SetTitle("E_vis_true [MeV]");
-  hist_E_vis_true->Draw();
+  // hist_E_vis_true->GetYaxis()->SetTitle("# of events");
+  // hist_E_vis_true->GetXaxis()->SetTitle("E_vis_true [MeV]");
+  // hist_E_vis_true->Draw();
+  hist_ND_Gen_numu_E->GetYaxis()->SetTitle("# of events");
+  hist_ND_Gen_numu_E->GetXaxis()->SetTitle("E_ND_Gen_numu [MeV]");
+  hist_ND_Gen_numu_E->Draw();
 
 
   //Save into root file
 
-  c1->SaveAs("E_vis_true.pdf");
+  c1->SaveAs("E_true.pdf");
 
 
 } // end Plot_Evisture
