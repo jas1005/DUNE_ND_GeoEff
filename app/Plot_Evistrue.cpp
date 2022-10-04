@@ -64,7 +64,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   int ientry = 0;
   nentries = t_effValues->GetEntries();
   cout<< "nentries:" << nentries<<endl;
-  for ( int i = 0; ientry < nentries; i++ )
+  for ( int i = 0; ientry < (nentries-1); i++ )
   {
     ientry = i*330;
     t_effValues->GetEntry(ientry);
