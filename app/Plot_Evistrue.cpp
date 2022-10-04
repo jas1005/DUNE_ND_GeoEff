@@ -47,7 +47,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   // Read branch from input trees
   //
   TChain *t_E = new TChain("MyEnergyAnalysis/MyTree");
-  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_991.root");
+  t_E->Add("/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_9*.root");
 
   double E_vis_true;                 // True vis energy
   t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
