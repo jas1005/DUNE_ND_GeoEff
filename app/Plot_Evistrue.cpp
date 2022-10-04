@@ -47,7 +47,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   // Read branch from input trees
   //
   TChain *t_effValues = new TChain("effTreeND");
-  t_effValues->Add("/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_39254532_99*.root");
+  t_effValues->Add("/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_39254532_99.root");
 
   // double E_vis_true;                 // True vis energy
   double ND_Gen_numu_E;
