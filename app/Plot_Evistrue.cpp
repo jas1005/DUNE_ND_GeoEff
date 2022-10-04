@@ -52,7 +52,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   double E_vis_true;                 // True vis energy
   double ND_Gen_numu_E;
 
-  t_E->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  t_effValues->SetBranchAddress("E_vis_true",                      &E_vis_true);
   t_effValues->SetBranchAddress("ND_Gen_numu_E",                      &ND_Gen_numu_E);
 
 
@@ -85,7 +85,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   hist_ND_Gen_numu_E->GetXaxis()->SetTitle("ND_E_Gen_numu [MeV]");
   hist_ND_Gen_numu_E->Draw();
   c1->cd(2);
-  c2->GetPad(2)->SetRightMargin(.15);
+  c1->GetPad(2)->SetRightMargin(.15);
   hist_E_vis_true->GetYaxis()->SetTitle("# of events");
   hist_E_vis_true->GetXaxis()->SetTitle("ND_E_vis_true [MeV]");
   hist_E_vis_true->Draw();
