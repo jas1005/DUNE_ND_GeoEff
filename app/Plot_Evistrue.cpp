@@ -49,15 +49,15 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   TChain *t_effValues = new TChain("effTreeND");
   t_effValues->Add("/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_61635936_99*.root");
 
-  double E_vis_true;                 // True vis energy
+  double ND_E_vis_true;                 // True vis energy
   double ND_Gen_numu_E;
 
-  t_effValues->SetBranchAddress("E_vis_true",                      &E_vis_true);
+  t_effValues->SetBranchAddress("ND_E_vis_true",                      &ND_E_vis_true);
   t_effValues->SetBranchAddress("ND_Gen_numu_E",                      &ND_Gen_numu_E);
 
 
-  TH1D *hist_E_vis_true = new TH1D("hist_E_vis_true","FD_hist_E_vis_true",100,0,100);
-  TH1D *hist_ND_Gen_numu_E = new TH1D("hist_ND_Gen_numu_E","hist_ND_Gen_numu_E",100,0,100);
+  TH1D *hist_ND_E_vis_true = new TH1D("hist_ND_E_vis_true","ND_E_vis_true",100,0,100);
+  TH1D *hist_ND_Gen_numu_E = new TH1D("hist_ND_Gen_numu_E","ND_Gen_numu_E",100,0,100);
 
   // Loop over all events
   int nentries = 0; // Total input events
@@ -68,7 +68,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   {
     ientry = i*330;
     t_effValues->GetEntry(ientry);
-    hist_E_vis_true->Fill(E_vis_true);
+    hist_E_vis_true->Fill(ND_E_vis_true);
     hist_ND_Gen_numu_E->Fill(ND_Gen_numu_E);
     cout << "ientry: " <<ientry<< ", ND_Gen_numu_E: " << ND_Gen_numu_E << endl;
   }
