@@ -61,10 +61,12 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
 
   // Loop over all events
   int nentries = 0; // Total input events
+  int ientry = 0;
   nentries = t_effValues->GetEntries();
   cout<< "nentries:" << nentries<<endl;
-  for ( int ientry = 0; ientry < nentries; ientry++ )
+  for ( int i = 0; ientry < nentries/330; i++ )
   {
+    ientry = i*330;
     t_effValues->GetEntry(ientry);
     // hist_E_vis_true->Fill(E_vis_true);
     hist_ND_Gen_numu_E->Fill(ND_Gen_numu_E);
