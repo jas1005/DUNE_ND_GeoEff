@@ -50,7 +50,6 @@ using namespace std;
 // 6. Calculate Geo Eff
 int main(int argc, char** argv)
 {
-
   string inFname;
   int seed;
 
