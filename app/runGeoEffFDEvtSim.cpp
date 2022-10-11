@@ -51,12 +51,20 @@ using namespace std;
 int main(int argc, char** argv)
 {
   string inFname;
-  if ( (argc > 2) or (argc == 1) ){
-    cout << "Usage: ./runGeoEffFDEvtSim inputFDntuple" << endl;
+  int seed;
+
+  if ( (argc > 3) or (argc == 1) ){
+    cout << "Usage: ./runGeoEffFDEvtSim inputFDntuple (seed)" << endl;
     exit(-1);
+  } else if(argc == 2){
+    inFname = string(argv[1]);
+    seed = 314;
   } else {
     inFname = string(argv[1]);
+    seed = argv[2]; //range between 0 and 624
   }
+
+  cout << "seed: " << seed << endl;
 
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -391,7 +399,7 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,      "ND_OffAxis_Sim_mu_start_E/D");
-  effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
+  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
   effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
     // effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
@@ -399,7 +407,7 @@ int main(int argc, char** argv)
     // effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
     // effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
     // effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
-  effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
+  if (ntupleVerbose) effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
   // 6. Calculate Geo Eff
   double ND_OffAxis_pos;
   double ND_LAr_pos;
@@ -467,7 +475,7 @@ int main(int argc, char** argv)
   //
   // Initialize geometric efficiency module
   //
-  geoEff * eff = new geoEff(314, false); // set verbose to true for debug
+  geoEff * eff = new geoEff(seed, false); // set verbose to true for debug , seed range: between 0 and 624
   eff->setNthrows(N_throws);
   // Rotate w.r.t. neutrino direction, rather than fixed beam direction
   eff->setUseFixedBeamDir(false);
@@ -582,13 +590,14 @@ int main(int argc, char** argv)
     if ( vetoEnergyFD > 30 ) continue; // 30 MeV
     FD_vetocut_counter++;
     //
-    // Renew throws every 100th written event to save file size, i.e., if N = 128,
+    // Renew throws every 100th (iwritten % 100 == 0)written event to save file size, i.e., if N = 128,
     // for written evt 0-99:    same 128 transformations for each event,
     // for written evt 100-199: same but renewed 128 transformations for each evt
     // so on so forth...
     // These transformations will be applied to leptons in the event, so need to keep track of iwritten
     //
-    if ( iwritten % 100 == 0 ) {
+    // Now change to renew throws every one written event
+    if ( iwritten % 1 == 0 ) {
 
       // Produce N throws defined at setNthrows(N)
       // Same throws applied for hadron below
