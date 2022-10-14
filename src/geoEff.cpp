@@ -28,7 +28,7 @@ geoEff::geoEff(int seed, bool verbose){
 
   prnGenerator = std::mt19937_64(seed);
   if (verbosity) {
-    std::cout << "geoEff set random number generator to mt19937_64" << std::endl;
+    std::cout << "geoEff set random number generator to mt19937_64: seed= "<< seed << std::endl;
   }
 
   uniform = std::uniform_real_distribution<>(0., 1.);

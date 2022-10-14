@@ -59,7 +59,8 @@ int main(int argc, char** argv)
     exit(-1);
   } else if(argc == 2){
     inFname = string(argv[1]);
-    seed = 314;
+    random_device rd;
+    seed = rd();
   } else {
     inFname = string(argv[1]);
     seed = argv[2]; //range between 0 and 624
