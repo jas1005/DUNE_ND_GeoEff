@@ -448,6 +448,7 @@ int main(int argc, char** argv)
   vector<float> throwRot;
 
   TTree * ThrowsFD = new TTree("ThrowsFD", "FD Throws");
+  ThrowsFD->Branch("seed", &seed);
   ThrowsFD->Branch("throwVtxY", &throwVtxY); // vector<float>: entries = [ (int)(written evts / 100) + 1 ] * N_throws
   ThrowsFD->Branch("throwVtxZ", &throwVtxZ);
   ThrowsFD->Branch("throwRot",  &throwRot);
