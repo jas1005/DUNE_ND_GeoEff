@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     seed = rd();
   } else {
     inFname = string(argv[1]);
-    seed = atoi(argv[2]); //range between 0 and 624
+    seed = atoi(argv[2]); //turn char into int
   }
 
   cout << "seed: " << seed << endl;
