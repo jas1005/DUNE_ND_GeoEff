@@ -600,7 +600,7 @@ int main(int argc, char** argv)
     // These transformations will be applied to leptons in the event, so need to keep track of iwritten
     //
     // Now change to renew throws every one written event
-    if ( iwritten % 1 == 0 ) {
+    if ( iwritten % 100 == 0 ) {
 
       // Produce N throws defined at setNthrows(N)
       // Same throws applied for hadron below
