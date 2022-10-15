@@ -59,11 +59,11 @@ int main(int argc, char** argv)
     exit(-1);
   } else if(argc == 2){
     inFname = string(argv[1]);
-    random_device rd;
+    random_device rd; // generate random seed number
     seed = rd();
   } else {
     inFname = string(argv[1]);
-    seed = atoi(argv[2]); //turn char into int
+    seed = atoi(argv[2]); //turn char into int, use the input number as seed
   }
 
   cout << "seed: " << seed << endl;
