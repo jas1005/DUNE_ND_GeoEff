@@ -999,8 +999,8 @@ int main(int argc, char** argv)
 
         // Get coordinates of hadron hits after random throws
 
-          for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
-          // for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
+          // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
+          for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
           {
             CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
             CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
