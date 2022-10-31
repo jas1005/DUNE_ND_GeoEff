@@ -37,14 +37,14 @@
 #include <vector> // Need this for generate dictionary for nested vectors
 using namespace std;
 
-void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_*.root
+void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_*.root
 {
   gStyle->SetOptStat(0);
   //
   // Read branch from input trees
   //
   // TString FileIn = "/Users/flynnguo/Documents/Codes/DUNE/DUNE_PRISM/GeometricEfficiencyCorrections/Eigentest/FNAL_test/FDGeoEffinND/FDGeoEff_61916696_99*.root";
-  TString FileIn = "/Users/flynnguo/Documents/Codes/DUNE/DUNE_PRISM/GeometricEfficiencyCorrections/Eigentest/FNAL_test/FDGeoEffinND/OutFDGeoEff_61916696.root";
+  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511.root";
   TChain *effTreeND = new TChain("effTreeND");
   effTreeND->Add(FileIn.Data());
 
@@ -81,7 +81,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
   TPad** dnpad = new TPad*[plot_total_num];
   TH1F** ratio_Eff_cut = new TH1F*[plot_total_num];
 
-  Int_t OffAxispos = -2800; // units: cm
+  Int_t OffAxispos = 0; // units: cm
   // Draw different plots with different ND_LAr_pos
   for (Int_t plot_num = 0; plot_num < plot_total_num; plot_num++)
   {
@@ -217,7 +217,7 @@ void Plot_Evistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntupl
     gSystem->ProcessEvents();
   }
 
-  c1->SaveAs("E_vis_true_d.pdf");
+  c1->SaveAs("E_vis_true_62311511.pdf");
 
 
   // delete all hist variables

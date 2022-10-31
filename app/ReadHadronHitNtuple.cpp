@@ -50,7 +50,7 @@ void ReadHadronHitNtuple()
 
 
   // Input FDroot file
-  TString FileIn = "/home/fyguo/NDEff/DUNE_ND_GeoEff/bin/Test_Output_FDGeoEff_ivy.root";
+  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511.root";
   //
   // Read branch from input trees
   //
