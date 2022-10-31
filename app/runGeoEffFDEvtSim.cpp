@@ -362,12 +362,12 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   // 5. ND: generate random throws
-    // vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
-    // vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
-    // vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
-    // // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
-    // vector<float> CurrentThrowVetoE;
-    // vector<float> CurrentThrowTotE;
+    vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
+    vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
+    vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
+    // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
+    vector<float> CurrentThrowVetoE;
+    vector<float> CurrentThrowTotE;
 
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -404,11 +404,11 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
   effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
-  effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
-  effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
-  effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
-  effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
-  effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
+    effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
+    effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
+    effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
+    effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
+    effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
   effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
   // 6. Calculate Geo Eff
   double ND_OffAxis_pos;
