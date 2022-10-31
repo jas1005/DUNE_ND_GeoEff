@@ -362,12 +362,12 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   // 5. ND: generate random throws
-    vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
-    vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
-    vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
-    // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
-    vector<float> CurrentThrowVetoE;
-    vector<float> CurrentThrowTotE;
+    // vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
+    // vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
+    // vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
+    // // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
+    // vector<float> CurrentThrowVetoE;
+    // vector<float> CurrentThrowTotE;
 
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -404,11 +404,11 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
   effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
-    effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
-    effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
-    effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
-    effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
-    effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
+    // effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
+    // effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
+    // effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
+    // effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
+    // effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
   effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
   // 6. Calculate Geo Eff
   double ND_OffAxis_pos;
@@ -999,15 +999,15 @@ int main(int argc, char** argv)
 
         // Get coordinates of hadron hits after random throws
 
-          // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
-          for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
-          {
-            CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
-            CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
-            CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
-            CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
-            CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
-          }
+          // // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
+          // for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
+          // {
+          //   CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
+          //   CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
+          //   CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
+          //   CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
+          //   CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
+          // }
           // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
           // {
           //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
@@ -1135,11 +1135,11 @@ int main(int argc, char** argv)
         ND_OffAxis_Unrotated_Sim_hadronic_hit.clear();
         ND_OffAxis_Sim_hadronic_hit.clear();
 
-          CurrentThrowDepsX.clear();
-          CurrentThrowDepsY.clear();
-          CurrentThrowDepsZ.clear();
-          CurrentThrowVetoE.clear();
-          CurrentThrowTotE.clear();
+          // CurrentThrowDepsX.clear();
+          // CurrentThrowDepsY.clear();
+          // CurrentThrowDepsZ.clear();
+          // CurrentThrowVetoE.clear();
+          // CurrentThrowTotE.clear();
 
       } // end Loop over ND_vtx_vx_vec
 
