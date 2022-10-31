@@ -401,15 +401,15 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,      "ND_OffAxis_Sim_mu_start_E/D");
-  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
+  effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
   // 5. ND: generate random throws
   effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
-    // effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
-    // effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
-    // effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
-    // effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
-    // effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
-  if (ntupleVerbose) effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
+  effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
+  effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
+  effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
+  effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
+  effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
+  effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
   // 6. Calculate Geo Eff
   double ND_OffAxis_pos;
   double ND_LAr_pos;
@@ -999,15 +999,15 @@ int main(int argc, char** argv)
 
         // Get coordinates of hadron hits after random throws
 
-          // // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
+          for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
           // for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
-          // {
-          //   CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
-          //   CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
-          //   CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
-          //   CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
-          //   CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
-          // }
+          {
+            CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
+            CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
+            CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
+            CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
+            CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
+          }
           // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
           // {
           //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
