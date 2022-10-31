@@ -44,7 +44,7 @@ using namespace std;
 float vSize = 30.;
 
 
-void ReadHadronHitNtuple_ivy()
+void ReadHadronHitNtuple()
 {
   gROOT->Reset();
 
