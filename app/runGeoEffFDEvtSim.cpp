@@ -1135,11 +1135,11 @@ int main(int argc, char** argv)
         ND_OffAxis_Unrotated_Sim_hadronic_hit.clear();
         ND_OffAxis_Sim_hadronic_hit.clear();
 
-          // CurrentThrowDepsX.clear();
-          // CurrentThrowDepsY.clear();
-          // CurrentThrowDepsZ.clear();
-          // CurrentThrowVetoE.clear();
-          // CurrentThrowTotE.clear();
+          CurrentThrowDepsX.clear();
+          CurrentThrowDepsY.clear();
+          CurrentThrowDepsZ.clear();
+          CurrentThrowVetoE.clear();
+          CurrentThrowTotE.clear();
 
       } // end Loop over ND_vtx_vx_vec
 
