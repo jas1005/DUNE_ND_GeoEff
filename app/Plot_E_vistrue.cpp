@@ -165,7 +165,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
     hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitle("# of events ");
     hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleSize(10);
     hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleFont(43);
-    hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleOffset(15);
+    hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleOffset(6);
     hist_ND_E_vis_true_eff_cut[plot_num]->Draw("SAME");
 
     uppad_L[plot_num] = new TLegend(0.5, 0.5, 0.9, 0.9);
@@ -204,7 +204,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
     ratio_Eff_cut[plot_num]->GetYaxis()->SetNdivisions(505);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleSize(10);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleFont(43);
-    ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleOffset(15);
+    ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleOffset(6);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetLabelSize(10);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetLabelFont(43);
     ratio_Eff_cut[plot_num]->SetMarkerStyle(21);
