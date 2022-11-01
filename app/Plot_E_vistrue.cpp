@@ -43,8 +43,8 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
   //
   // Read branch from input trees
   //
-  // TString FileIn = "/Users/flynnguo/Documents/Codes/DUNE/DUNE_PRISM/GeometricEfficiencyCorrections/Eigentest/FNAL_test/FDGeoEffinND/FDGeoEff_61916696_99*.root";
-  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511_999.root";
+  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_61916696_999.root";
+  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511_9all.root";
   TChain *effTreeND = new TChain("effTreeND");
   effTreeND->Add(FileIn.Data());
 
