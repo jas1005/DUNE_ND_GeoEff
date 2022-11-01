@@ -43,8 +43,8 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
   //
   // Read branch from input trees
   //
-  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_61916696_999.root";
-  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511_9all.root";
+  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_61916696_999.root";
+  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511_8to9.root";
   TChain *effTreeND = new TChain("effTreeND");
   effTreeND->Add(FileIn.Data());
 
@@ -217,7 +217,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
     gSystem->ProcessEvents();
   }
 
-  c1->SaveAs("E_vis_true_62311511_999.pdf");
+  c1->SaveAs("E_vis_true_62311511_8to9.pdf");
 
 
   // delete all hist variables
