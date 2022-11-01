@@ -165,7 +165,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
     hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitle("# of events ");
     hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleSize(10);
     hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleFont(43);
-    hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleOffset(3);
+    hist_ND_E_vis_true[plot_num]->GetYaxis()->SetTitleOffset(30);
     hist_ND_E_vis_true_eff_cut[plot_num]->Draw("SAME");
 
     uppad_L[plot_num] = new TLegend(0.5, 0.5, 0.9, 0.9);
@@ -197,14 +197,14 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
     ratio_Eff_cut[plot_num]->GetXaxis()->SetTitle("ND_E_vis_true [GeV]");
     ratio_Eff_cut[plot_num]->GetXaxis()->SetTitleSize(10);
     ratio_Eff_cut[plot_num]->GetXaxis()->SetTitleFont(43);
-    ratio_Eff_cut[plot_num]->GetXaxis()->SetTitleOffset(2);
+    ratio_Eff_cut[plot_num]->GetXaxis()->SetTitleOffset(15);
     ratio_Eff_cut[plot_num]->GetXaxis()->SetLabelSize(10); // Labels will be 15 pixels
     ratio_Eff_cut[plot_num]->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
     ratio_Eff_cut[plot_num]->GetYaxis()->SetTitle("ratio cut/raw  ");
     ratio_Eff_cut[plot_num]->GetYaxis()->SetNdivisions(505);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleSize(10);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleFont(43);
-    ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleOffset(3);
+    ratio_Eff_cut[plot_num]->GetYaxis()->SetTitleOffset(30);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetLabelSize(10);
     ratio_Eff_cut[plot_num]->GetYaxis()->SetLabelFont(43);
     ratio_Eff_cut[plot_num]->SetMarkerStyle(21);
