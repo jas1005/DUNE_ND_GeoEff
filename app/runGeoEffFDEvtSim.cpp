@@ -160,63 +160,65 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   //
-  // Choose Off-Axis and ND_Lar positions
-  vector<double> ND_off_axis_pos_vec; // unit: cm, ND off-axis choices for each FD evt: 1st element is randomized for each evt
-  vector<double> ND_vtx_vx_vec;          // unit: cm, vtx x choices for each FD evt in ND volume: 1st element is randomized for each evt (ND_Lar pos)
+  // Choose ND_Lar detector and vtx within ND_LAr positions
+  vector<double> ND_LAr_dtctr_pos_vec;      // unit: cm, ND LAr detector off-axis choices for each FD evt
+  vector<double> ND_vtx_vx_vec;             // unit: cm, vtx x choices for each FD evt in ND_Lar volume
+  vector<double> ND_OffAxis_pos_vec;        // unit: cm, Off-Axis pos = ND_LAr_dtctr_pos_vec + ND_vtx_vx_vec;
+
   // int ND_off_axis_pos_steps = 0;
   int vtx_vx_steps = 0;
 
   // Initialize first element as -999, to be replaced by a random off-axis nd pos in each evt below
-  ND_off_axis_pos_vec.clear();
+  ND_LAr_dtctr_pos_vec.clear();
 
   // Old algorithm chooseing ND off axis pos
-  // if ( ND_off_axis_pos_stepsize > 0 && ND_off_axis_pos_stepsize <= OffAxisPoints[13] ) {
-  //   ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_off_axis_pos_stepsize;
+  // if ( ND_Lar_dtctr_pos_new_stepsize > 0 && ND_Lar_dtctr_pos_new_stepsize <= OffAxisPoints[13] ) {
+  //   ND_off_axis_pos_steps = ( OffAxisPoints[13] - OffAxisPoints[0] ) / ND_Lar_dtctr_pos_new_stepsize;
   // }
-  // else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+  // else std::cout << "Error: please set the ND_Lar_dtctr_pos_new_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
   //
   // // if (verbose) std::cout << "ND_off_axis_pos_steps: " << ND_off_axis_pos_steps << std::endl;
   //
   // // The rest elements follow fixed increments from min ND local x
   // for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < ND_off_axis_pos_steps + 1; i_ND_off_axis_pos_step++ ){
-  //   ND_off_axis_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_off_axis_pos_stepsize + OffAxisPoints[0])*100. );
+  //   ND_LAr_dtctr_pos_vec.emplace_back( -(i_ND_off_axis_pos_step*ND_Lar_dtctr_pos_new_stepsize + OffAxisPoints[0])*100. );
   // }
   //
-  // if (verbose) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
+  // if (verbose) std::cout << "ND_LAr_dtctr_pos_vec size: "<< ND_LAr_dtctr_pos_vec.size() << std::endl;
 
   //------------------------------------------------------------------------------
   // New algorithm chooseing ND off axis pos
-  int OffAxisPos_new1_step = 0;
-  int OffAxisPos_new2_step = 0;
+  int LArPos_new1_step = 0;
+  int LArPos_new2_step = 0;
 
   // Calculate steps
-  if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= abs(OffAxisPos_new1[1]) ) {
-    OffAxisPos_new1_step = - ( OffAxisPos_new1[1] - OffAxisPos_new1[0] ) / OffAxisPos_new_stepsize;
+  if ( ND_Lar_dtctr_pos_new_stepsize > 0 && ND_Lar_dtctr_pos_new_stepsize <= abs(NDLarPos_new1[1]) ) {
+    LArPos_new1_step = - ( NDLarPos_new1[1] - NDLarPos_new1[0] ) / ND_Lar_dtctr_pos_new_stepsize;
   }
-  else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
-  if ( OffAxisPos_new_stepsize > 0 && OffAxisPos_new_stepsize <= abs(OffAxisPos_new2[1]) ) {
-    OffAxisPos_new2_step = - ( OffAxisPos_new2[1] - OffAxisPos_new2[0] ) / OffAxisPos_new_stepsize;
+  else std::cout << "Error: please set the ND_Lar_dtctr_pos_new_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+  if ( ND_Lar_dtctr_pos_new_stepsize > 0 && ND_Lar_dtctr_pos_new_stepsize <= abs(NDLarPos_new2[1]) ) {
+    LArPos_new2_step = - ( NDLarPos_new2[1] - NDLarPos_new2[0] ) / ND_Lar_dtctr_pos_new_stepsize;
   }
-  else std::cout << "Error: please set the ND_off_axis_pos_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
+  else std::cout << "Error: please set the ND_Lar_dtctr_pos_new_stepsize above 0 and below max element of OffAxisPoints." << std::endl;
 
-  if (verbose) cout << "OffAxisPos_new1_step: " << OffAxisPos_new1_step <<endl;
-  if (verbose) cout << "OffAxisPos_new2_step: " << OffAxisPos_new2_step <<endl;
+  if (verbose) cout << "LArPos_new1_step: " << LArPos_new1_step <<endl;
+  if (verbose) cout << "LArPos_new2_step: " << LArPos_new2_step <<endl;
 
-  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new1_step + 1; i_ND_off_axis_pos_step++ )
+  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < LArPos_new1_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( (i_ND_off_axis_pos_step*OffAxisPos_new_stepsize + OffAxisPos_new1[1])*100. );
+    ND_LAr_dtctr_pos_vec.emplace_back( (i_ND_off_axis_pos_step*ND_Lar_dtctr_pos_new_stepsize + NDLarPos_new1[1])*100. );
   }
-  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < OffAxisPos_new2_step + 1; i_ND_off_axis_pos_step++ )
+  for ( int i_ND_off_axis_pos_step = 0; i_ND_off_axis_pos_step < LArPos_new2_step + 1; i_ND_off_axis_pos_step++ )
   {
-    ND_off_axis_pos_vec.emplace_back( (i_ND_off_axis_pos_step*OffAxisPos_new_stepsize + OffAxisPos_new2[1])*100. );
+    ND_LAr_dtctr_pos_vec.emplace_back( (i_ND_off_axis_pos_step*ND_Lar_dtctr_pos_new_stepsize + NDLarPos_new2[1])*100. );
   }
 
   // Sort the vector
-  sort(ND_off_axis_pos_vec.begin(), ND_off_axis_pos_vec.end());
+  sort(ND_LAr_dtctr_pos_vec.begin(), ND_LAr_dtctr_pos_vec.end());
   if (true)
-  {for (auto x : ND_off_axis_pos_vec)
+  {for (auto x : ND_LAr_dtctr_pos_vec)
         std::cout << x << ",  ";}
-  if (true) std::cout << "ND_off_axis_pos_vec size: "<< ND_off_axis_pos_vec.size() << std::endl;
+  if (true) std::cout << "ND_lar_pos_vec size: "<< ND_LAr_dtctr_pos_vec.size() << std::endl;
 
 
 
@@ -289,7 +291,7 @@ int main(int argc, char** argv)
   //
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E; // Energy of generator level neutrino [GeV]
-  double ND_E_vis_true; //
+  double ND_E_vis_true; // True visible energy of neutrino [GeV]
   // Muon info
   // array: (x,y,z)<->dim=(0,1,2)
   double ND_RandomVtx_Sim_mu_start_v[3]; // Position of the muon trajectory at start point [cm]
@@ -390,7 +392,7 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_OnAxis_Sim_mu_start_p",               ND_OnAxis_Sim_mu_start_p,       "ND_OnAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
   if (ntupleVerbose) effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_xyz",             &ND_OnAxis_Sim_hadronic_hit);
   // 3. ND to ND: translate from OnAxis to OffAxis
-  effTreeFD->Branch("ND_off_axis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+  effTreeFD->Branch("ND_LAr_dtctr_pos_vec",                       &ND_LAr_dtctr_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
   effTreeFD->Branch("ND_vtx_vx_vec",                             &ND_vtx_vx_vec);
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_start_v",               ND_OffAxis_Unrotated_Sim_mu_start_v,       "ND_OffAxis_Unrotated_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_end_v",                 ND_OffAxis_Unrotated_Sim_mu_end_v,         "ND_OffAxis_Unrotated_Sim_mu_end_v[3]/D");   // entries = written evts*3
@@ -422,14 +424,14 @@ int main(int argc, char** argv)
   effValues->Branch("ND_LAr_pos",                   &ND_LAr_pos,           "ND_LAr_pos/D");
   effValues->Branch("ND_GeoEff",                    &ND_GeoEff,            "ND_GeoEff/D");
   effValues->Branch("ND_OffAxis_MeanEff",           &ND_OffAxis_MeanEff,   "ND_OffAxis_MeanEff/D");
-  // Store ND_off_axis_pos_vec and ND_vtx_vx_vec
+  // Store ND_LAr_dtctr_pos_vec and ND_vtx_vx_vec
 
   vector<Int_t> iwritten_vec;
   TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
   if(plotVerbose)
   {
     PosVec->Branch("iwritten_vec",                             &iwritten_vec);
-    PosVec->Branch("ND_OffAxis_pos_vec",                       &ND_off_axis_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
+    PosVec->Branch("ND_LAr_dtctr_pos_vec",                       &ND_LAr_dtctr_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
     PosVec->Branch("ND_LAr_pos_vec",                           &ND_vtx_vx_vec);
   }
 
@@ -752,7 +754,7 @@ int main(int argc, char** argv)
     //------------------------------------------------------------------------------
     //------------------------------------------------------------------------------
     //
-    // Loop over ND_off_axis_pos_vec: random off_axis_pos or every ND_off_axis_pos_stepsize
+    // Loop over ND_LAr_dtctr_pos_vec: random off_axis_pos or every ND_Lar_dtctr_pos_new_stepsize
     // Don't put it outside event loop to avoid looping over all events multiple times
     //
 
@@ -760,7 +762,7 @@ int main(int argc, char** argv)
     int ND_off_axis_pos_counter = 0;
 
 
-    for ( double i_ND_off_axis_pos : ND_off_axis_pos_vec )
+    for ( double i_ND_off_axis_pos : ND_LAr_dtctr_pos_vec )
     {
       // Calculate meanEff
       Int_t MiddleEff_counter = 0;
@@ -1103,7 +1105,7 @@ int main(int argc, char** argv)
                 // If a throwed evt vtx is in ND dead region, it is not going to be detected by ND, but probably will be detected in FD (assume)
                 // In principle, we should NOT exclude such throws in the denominator
                 // hadron_contain_eff = hadronpass*1.0/N_throws; // N_throws also equals 64 * counter5
-                //if ( debug ) std::cout << "        Passed throws: " << hadronpass << ", eff: " << hadron_contain_eff << ", evt vtx x [cm]: " << ND_OffAxis_Sim_mu_start_v[0]->at( counter2 - 1 ) << ", nd off-axis pos [m]: " << ND_off_axis_pos_vec->at( counter1 -1 ) << std::endl;
+                //if ( debug ) std::cout << "        Passed throws: " << hadronpass << ", eff: " << hadron_contain_eff << ", evt vtx x [cm]: " << ND_OffAxis_Sim_mu_start_v[0]->at( counter2 - 1 ) << ", nd off-axis pos [m]: " << ND_LAr_dtctr_pos_vec->at( counter1 -1 ) << std::endl;
 
                 // But for the ND FV cut, we could probably factorize it analytically instead of using these random throws to evaluate
                 // therefore we exclude such throws from the denominator as well
@@ -1147,7 +1149,7 @@ int main(int argc, char** argv)
       ND_OffAxis_MeanEff = (Leff*1.0/Leff_counter+MiddleEff*1.0+Reff*1.0/Reff_counter)/(MiddleEff_counter+2);
       cout << "        ND_OffAxis_pos: " << ND_OffAxis_pos << " cm, mean eff: " << ND_OffAxis_MeanEff << "\n\n";
 
-   }   // end Loop over ND_off_axis_pos_vec
+   }   // end Loop over ND_LAr_dtctr_pos_vec
 
 
     ND_RandomVtx_Sim_hadronic_hit.clear();
