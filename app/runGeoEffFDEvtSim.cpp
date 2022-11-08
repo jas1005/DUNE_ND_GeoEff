@@ -437,11 +437,13 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_start_p",               ND_RandomVtx_Sim_mu_start_p,       "ND_RandomVtx_Sim_mu_start_p[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,          "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
   if (ntupleVerbose) effTreeFD->Branch("ND_RandomVtx_Sim_hadronic_hit_xyz",         &ND_RandomVtx_Sim_hadronic_hit);
+
   // 2. ND: move back to the beam center
   effTreeFD->Branch("ND_OnAxis_Sim_mu_start_v",               ND_OnAxis_Sim_mu_start_v,       "ND_OnAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OnAxis_Sim_mu_end_v",                 ND_OnAxis_Sim_mu_end_v,         "ND_OnAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_OnAxis_Sim_mu_start_p",               ND_OnAxis_Sim_mu_start_p,       "ND_OnAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
   if (ntupleVerbose) effTreeFD->Branch("ND_OnAxis_Sim_hadronic_hit_xyz",             &ND_OnAxis_Sim_hadronic_hit);
+
   // 3. ND to ND: translate from OnAxis to OffAxis
   // effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_start_v",               ND_OffAxis_Unrotated_Sim_mu_start_v,       "ND_OffAxis_Unrotated_Sim_mu_start_v[3]/D");   // entries = written evts*3
   // effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_end_v",                 ND_OffAxis_Unrotated_Sim_mu_end_v,         "ND_OffAxis_Unrotated_Sim_mu_end_v[3]/D");   // entries = written evts*3
@@ -450,9 +452,9 @@ int main(int argc, char** argv)
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_start_v_xyz_LAr",       &ND_OffAxis_Unrotated_Sim_mu_start_v_xyz_LAr);
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_end_v_xyz_LAr",         &ND_OffAxis_Unrotated_Sim_mu_end_v_xyz_LAr);
   effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_mu_start_p_xyz_LAr",       &ND_OffAxis_Unrotated_Sim_mu_start_p_xyz_LAr);
-  effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_hadronic_hit_xyz_LAr",       &ND_OffAxis_Unrotated_Sim_hadronic_hit_xyz_LAr);
-  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz_LAr",         &ND_OffAxis_Sim_hadronic_hit_xyz_LAr);
-// 4. ND: get after eigen rotated vectors for step 4
+  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Unrotated_Sim_hadronic_hit_xyz_LAr",       &ND_OffAxis_Unrotated_Sim_hadronic_hit_xyz_LAr);
+
+ // 4. ND: get after eigen rotated vectors for step 4
   // effTreeFD->Branch("ND_OffAxis_Sim_mu_start_v",               ND_OffAxis_Sim_mu_start_v,       "ND_OffAxis_Sim_mu_start_v[3]/D");   // entries = written evts*3
   // effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   // effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
