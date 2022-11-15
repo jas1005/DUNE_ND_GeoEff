@@ -410,12 +410,12 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
   // 5. ND: generate random throws
-    // vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
-    // vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
-    // vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
-    // // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
-    // vector<float> CurrentThrowVetoE;
-    // vector<float> CurrentThrowTotE;
+    vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
+    vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
+    vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
+    // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
+    vector<float> CurrentThrowVetoE;
+    vector<float> CurrentThrowTotE;
 
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -459,22 +459,28 @@ int main(int argc, char** argv)
   // effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v",                 ND_OffAxis_Sim_mu_end_v,         "ND_OffAxis_Sim_mu_end_v[3]/D");   // entries = written evts*3
   // effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p",               ND_OffAxis_Sim_mu_start_p,       "ND_OffAxis_Sim_mu_start_p[3]/D");   // entries = written evts*3
   // effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E",               &ND_OffAxis_Sim_mu_start_E,      "ND_OffAxis_Sim_mu_start_E/D");
-  effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
+  // effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz",         &ND_OffAxis_Sim_hadronic_hit);
+
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_v_xyz_LAr",       &ND_OffAxis_Sim_mu_start_v_xyz_LAr);
   effTreeFD->Branch("ND_OffAxis_Sim_mu_end_v_xyz_LAr",         &ND_OffAxis_Sim_mu_end_v_xyz_LAr);
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_p_xyz_LAr",       &ND_OffAxis_Sim_mu_start_p_xyz_LAr);
   effTreeFD->Branch("ND_OffAxis_Sim_mu_start_E_xyz_LAr",       &ND_OffAxis_Sim_mu_start_E_xyz_LAr);
-  // if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz_LAr",         &ND_OffAxis_Sim_hadronic_hit_xyz_LAr);
+  if (ntupleVerbose) effTreeFD->Branch("ND_OffAxis_Sim_hadronic_hit_xyz_LAr",         &ND_OffAxis_Sim_hadronic_hit_xyz_LAr);
 
   // 5. ND: generate random throws
   // effTreeFD->Branch("hadron_throw_result",                     &hadron_throw_result);
   effTreeFD->Branch("hadron_throw_result_LAr",                     &hadron_throw_result_LAr);
-    effTreeFD->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
-    effTreeFD->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
-    effTreeFD->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
-    effTreeFD->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
-    effTreeFD->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
-    effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
+  effTreeFD->Branch("HadronHitEdeps",                       &HadronHitEdeps);
+
+  TTree *effHdPlot = new TTree("effHdPlot", "Hadronic hits Tree");
+  if(plotVerbose)
+  {
+    effHdPlot->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
+    effHdPlot->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
+    effHdPlot->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
+    effHdPlot->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
+    effHdPlot->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
+  }
   // 6. Calculate Geo Eff
   double ND_LAr_dtctr_pos;
   double ND_LAr_vtx_pos;
@@ -490,9 +496,9 @@ int main(int argc, char** argv)
   // Store ND_LAr_dtctr_pos_vec and ND_vtx_vx_vec
 
   vector<Int_t> iwritten_vec;
-  TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
   if(plotVerbose)
   {
+    TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
     PosVec->Branch("iwritten_vec",                             &iwritten_vec);
     PosVec->Branch("ND_LAr_dtctr_pos_vec",                     &ND_LAr_dtctr_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
     PosVec->Branch("ND_vtx_vx_vec",                            &ND_vtx_vx_vec);
@@ -601,7 +607,7 @@ int main(int argc, char** argv)
   if (myfileVerbose) myfile << "Tot evts: " << nentries << "\n";
   if (throwfileVerbose) myfile << "Tot evts: " << nentries << "\n";
   if (hadronhitVerbose) myfile << "Tot evts: " << nentries << "\n";
-  for ( int ientry = 0; ientry < nentries; ientry++ )
+  for ( int ientry = 0; ientry < 4; ientry++ )
   // for ( int ientry = 116; ientry < 117; ientry++ ) // Use for drwaing one hardronic hits plots
   {
     t->GetEntry(ientry);
@@ -851,6 +857,7 @@ int main(int argc, char** argv)
       {
 
         vtx_vx_counter++;
+        cout << "vtx_vx_counter: " << vtx_vx_counter <<endl;
 
         // Interpolate event neutrino production point (beam coordinate)
         decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos + i_vtx_vx - detRefBeamCoord[0] );
@@ -1027,7 +1034,7 @@ int main(int argc, char** argv)
             ND_OffAxis_Sim_hadronic_hit_xyz.emplace_back(eff->getOffAxisHadronHitV(i));
           }
           ND_OffAxis_Sim_hadronic_hit.emplace_back(ND_OffAxis_Sim_hadronic_hit_xyz);
-          // ND_OffAxis_Sim_hadronic_hit_xyz.clear();
+          ND_OffAxis_Sim_hadronic_hit_xyz.clear();
         }
         ND_OffAxis_Sim_hadronic_hit_xyz_vtx.emplace_back(ND_OffAxis_Sim_hadronic_hit);
 
@@ -1103,31 +1110,35 @@ int main(int argc, char** argv)
 
         // Get coordinates of hadron hits after random throws
 
-          // // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
-          // for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
-          // {
-          //   CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
-          //   CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
-          //   CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
-          //   CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
-          //   CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
-          // }
-          // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
-          // {
-          //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
-          //   {
-          //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsX[it_throw][ihadronhit] - i_ND_off_axis_pos);
-          //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsY[it_throw][ihadronhit] - NDLAr_OnAxis_offset[1]);
-          //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsZ[it_throw][ihadronhit] - NDLAr_OnAxis_offset[2]);
-          //     if (hadronhitVerbose)
-          //     {
-          //       myfile << "ithrow: " << it_throw << ", ihadronhit: " << ihadronhit << "\n";
-          //       myfile << "ND_Lar_ThrowDepsX:" << CurrentThrowDepsX[it_throw][ihadronhit] - i_ND_off_axis_pos << "\n";
-          //       myfile << "ND_Lar_ThrowDepsY:" << CurrentThrowDepsY[it_throw][ihadronhit] - NDLAr_OnAxis_offset[1] << "\n";
-          //       myfile << "ND_Lar_ThrowDepsZ:" << CurrentThrowDepsZ[it_throw][ihadronhit] - NDLAr_OnAxis_offset[2] << "\n\n";
-          //     }
-          //   }
-          // }
+          // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
+          if(plotVerbose)
+          {
+            for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
+            {
+              CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
+              CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
+              CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
+              CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
+              CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
+            }
+            // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
+            // {
+            //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
+            //   {
+            //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsX[it_throw][ihadronhit] - i_ND_off_axis_pos);
+            //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsY[it_throw][ihadronhit] - NDLAr_OnAxis_offset[1]);
+            //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsZ[it_throw][ihadronhit] - NDLAr_OnAxis_offset[2]);
+            //     if (hadronhitVerbose)
+            //     {
+            //       myfile << "ithrow: " << it_throw << ", ihadronhit: " << ihadronhit << "\n";
+            //       myfile << "ND_Lar_ThrowDepsX:" << CurrentThrowDepsX[it_throw][ihadronhit] - i_ND_off_axis_pos << "\n";
+            //       myfile << "ND_Lar_ThrowDepsY:" << CurrentThrowDepsY[it_throw][ihadronhit] - NDLAr_OnAxis_offset[1] << "\n";
+            //       myfile << "ND_Lar_ThrowDepsZ:" << CurrentThrowDepsZ[it_throw][ihadronhit] - NDLAr_OnAxis_offset[2] << "\n\n";
+            //     }
+            //   }
+            // }
+          }
+
 
 
 
@@ -1242,11 +1253,16 @@ int main(int argc, char** argv)
         hadron_throw_result_vtx.emplace_back(hadron_throw_result);
         hadron_throw_result.clear();
 
-          // CurrentThrowDepsX.clear();
-          // CurrentThrowDepsY.clear();
-          // CurrentThrowDepsZ.clear();
-          // CurrentThrowVetoE.clear();
-          // CurrentThrowTotE.clear();
+
+        if(plotVerbose)
+        {
+          CurrentThrowDepsX.clear();
+          CurrentThrowDepsY.clear();
+          CurrentThrowDepsZ.clear();
+          CurrentThrowVetoE.clear();
+          CurrentThrowTotE.clear();
+        }
+
         ND_OffAxis_pos_vec.emplace_back(i_ND_off_axis_pos+i_vtx_vx);
       } // end Loop over ND_vtx_vx_vec
 
@@ -1291,6 +1307,7 @@ int main(int argc, char** argv)
     ND_OffAxis_Sim_mu_start_p_xyz_LAr.clear();
     ND_OffAxis_Sim_mu_start_E_xyz_LAr.clear();
     ND_OffAxis_Sim_hadronic_hit_xyz_LAr.clear();
+    hadron_throw_result_LAr.clear();
 
     ND_RandomVtx_Sim_hadronic_hit.clear();
     ND_OnAxis_Sim_hadronic_hit.clear();
@@ -1317,7 +1334,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Write trees
-  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff_hadron.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
   effValues->Write();
