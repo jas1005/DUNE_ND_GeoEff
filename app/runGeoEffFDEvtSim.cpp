@@ -496,9 +496,9 @@ int main(int argc, char** argv)
   // Store ND_LAr_dtctr_pos_vec and ND_vtx_vx_vec
 
   vector<Int_t> iwritten_vec;
+  TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
   if(plotVerbose)
   {
-    TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
     PosVec->Branch("iwritten_vec",                             &iwritten_vec);
     PosVec->Branch("ND_LAr_dtctr_pos_vec",                     &ND_LAr_dtctr_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
     PosVec->Branch("ND_vtx_vx_vec",                            &ND_vtx_vx_vec);
@@ -607,7 +607,7 @@ int main(int argc, char** argv)
   if (myfileVerbose) myfile << "Tot evts: " << nentries << "\n";
   if (throwfileVerbose) myfile << "Tot evts: " << nentries << "\n";
   if (hadronhitVerbose) myfile << "Tot evts: " << nentries << "\n";
-  for ( int ientry = 0; ientry < 4; ientry++ )
+  for ( int ientry = 0; ientry < nentries; ientry++ )
   // for ( int ientry = 116; ientry < 117; ientry++ ) // Use for drwaing one hardronic hits plots
   {
     t->GetEntry(ientry);
@@ -848,17 +848,12 @@ int main(int argc, char** argv)
       // Loop over vtx x: random x or stepwise increased x
       // Don't put it outside event loop to avoid looping over all events multiple times
       //
-      int vtx_vx_counter = 0;
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //
       for ( double i_vtx_vx : ND_vtx_vx_vec )
       {
-
-        vtx_vx_counter++;
-        cout << "vtx_vx_counter: " << vtx_vx_counter <<endl;
-
         // Interpolate event neutrino production point (beam coordinate)
         decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos + i_vtx_vx - detRefBeamCoord[0] );
 
@@ -1268,7 +1263,7 @@ int main(int argc, char** argv)
 
       // Calculate the average geo eff for different ND off axis positions
       ND_OffAxis_MeanEff = (Leff*1.0/Leff_counter+MiddleEff*1.0+Reff*1.0/Reff_counter)/(MiddleEff_counter+2);
-      cout << "        ND_LAr_dtctr_pos: " << ND_LAr_dtctr_pos << " cm, mean eff: " << ND_OffAxis_MeanEff << "\n\n";
+      if (verbose) cout << "        ND_LAr_dtctr_pos: " << ND_LAr_dtctr_pos << " cm, mean eff: " << ND_OffAxis_MeanEff << "\n\n";
 
       ND_OffAxis_Unrotated_Sim_mu_start_v_xyz_LAr.emplace_back(ND_OffAxis_Unrotated_Sim_mu_start_v_xyz_vtx);
       ND_OffAxis_Unrotated_Sim_mu_start_v_xyz_vtx.clear();
@@ -1334,7 +1329,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Write trees
-  TFile * outFile = new TFile("Output_FDGeoEff_hadron.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
   effValues->Write();
