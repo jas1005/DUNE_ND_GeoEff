@@ -852,6 +852,8 @@ int main(int argc, char** argv)
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //
+      int vtx_vx_counter = 0;
+      
       for ( double i_vtx_vx : ND_vtx_vx_vec )
       {
         // Interpolate event neutrino production point (beam coordinate)
