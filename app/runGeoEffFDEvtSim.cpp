@@ -251,13 +251,20 @@ int main(int argc, char** argv)
     ND_vtx_vx_vec.emplace_back(271+7*i);
   }
 
-  // ND_vtx_vx_vec.emplace_back(-299., -292., -285., -278., -271., 271., 278., 285., 292., 299.);
-
   if (true)
   {for (auto x : ND_vtx_vx_vec)
         std::cout << x << ",  ";}
 
   if (true) std::cout << "ND_vtx_vx_vec size: "<< ND_vtx_vx_vec.size() << std::endl;
+
+  // Generate ND_off_axis_pos_vec
+  for ( double i_ND_off_axis_pos : ND_LAr_dtctr_pos_vec )
+  {
+    for ( double i_vtx_vx : ND_vtx_vx_vec )
+    {
+        ND_OffAxis_pos_vec.emplace_back(i_ND_off_axis_pos+i_vtx_vx);
+    }
+  }
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -610,6 +617,7 @@ int main(int argc, char** argv)
   for ( int ientry = 0; ientry < nentries; ientry++ )
   // for ( int ientry = 116; ientry < 117; ientry++ ) // Use for drwaing one hardronic hits plots
   {
+
     t->GetEntry(ientry);
     if ( ientry%10000 == 0 )
     {
@@ -853,7 +861,7 @@ int main(int argc, char** argv)
       //------------------------------------------------------------------------------
       //
       int vtx_vx_counter = 0;
-      
+
       for ( double i_vtx_vx : ND_vtx_vx_vec )
       {
         // Interpolate event neutrino production point (beam coordinate)
@@ -1260,7 +1268,6 @@ int main(int argc, char** argv)
           CurrentThrowTotE.clear();
         }
 
-        ND_OffAxis_pos_vec.emplace_back(i_ND_off_axis_pos+i_vtx_vx);
       } // end Loop over ND_vtx_vx_vec
 
       // Calculate the average geo eff for different ND off axis positions
