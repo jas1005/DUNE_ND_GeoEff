@@ -43,8 +43,8 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
   //
   // Read branch from input trees
   //
-  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_61916696_999.root";
-  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511_8to9.root";
+  TString FileIn = "/dune/app/users/flynnguo/NDEff/DUNE_ND_GeoEff/bin/Output_FDGeoEff_hadron_61454381.root";
+  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/OutFDGeoEff_62311511_8to9.root";
   TChain *effTreeND = new TChain("effTreeND");
   effTreeND->Add(FileIn.Data());
 
@@ -52,14 +52,14 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
 
   TChain *effValues = new TChain("effValues");
   effValues->Add(FileIn.Data());
-  double ND_OffAxis_pos;
+  double ND_LAr_dtctr_pos;
   double ND_GeoEff;
-  double ND_LAr_pos;
+  double ND_LAr_vtx_pos;
 
   effTreeND->SetBranchAddress("ND_E_vis_true",                      &ND_E_vis_true);
-  effValues->SetBranchAddress("ND_OffAxis_pos",                     &ND_OffAxis_pos);
+  effValues->SetBranchAddress("ND_LAr_dtctr_pos",                     &ND_LAr_dtctr_pos);
   effValues->SetBranchAddress("ND_GeoEff",                          &ND_GeoEff);
-  effValues->SetBranchAddress("ND_LAr_pos",                         &ND_LAr_pos);
+  effValues->SetBranchAddress("ND_LAr_vtx_pos",                         &ND_LAr_vtx_pos);
 
   // Create output files
   // TFile * outFile = new TFile("E_vis_true_d.pdf", "RECREATE");
@@ -82,7 +82,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
   TH1F** ratio_Eff_cut = new TH1F*[plot_total_num];
 
   Int_t OffAxispos = 0; // units: cm
-  // Draw different plots with different ND_LAr_pos
+  // Draw different plots with different ND_LAr_vtx_pos
   for (Int_t plot_num = 0; plot_num < plot_total_num; plot_num++)
   {
     // Set hist arrays
@@ -104,22 +104,22 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
       //15 off axis positions * 22 vtx positions,
-      // ientry = i*330-1; //only choose On axis events 308-329, ND_OffAxis_pos=0cm
-      // ientry = (i-1)*330; //only choose Off axis events 0,1,...,  ND_OffAxis_pos=-2800cm
+      // ientry = i*330-1; //only choose On axis events 308-329, ND_LAr_dtctr_pos=0cm
+      // ientry = (i-1)*330; //only choose Off axis events 0,1,...,  ND_LAr_dtctr_pos=-2800cm
 
     effTreeND->GetEntry(ientry);
     effValues->GetEntry(ientry);
 
-    if (ND_OffAxis_pos != OffAxispos) continue;
-    cout << "ientry:" << ientry <<", ND_OffAxis_pos: " << ND_OffAxis_pos << ", ND_LAr_pos: " << ND_LAr_pos << endl;
+    if (ND_LAr_dtctr_pos != OffAxispos) continue;
+    cout << "ientry:" << ientry <<", ND_LAr_dtctr_pos: " << ND_LAr_dtctr_pos << ", ND_LAr_vtx_pos: " << ND_LAr_vtx_pos << endl;
 
     for (Int_t plot_num = 0; plot_num < plot_total_num; plot_num++)
     {
       // Set bin size edges
-      Int_t Left_edge = -300 + plot_num*50;
-      Int_t Right_edge = Left_edge + 50;
+      Int_t Left_edge = -300 + plot_num*7; //7:-300 to -250 ; 50 : -300 to 300
+      Int_t Right_edge = Left_edge + 7;
 
-      if (Left_edge < ND_LAr_pos && ND_LAr_pos < Right_edge)
+      if (Left_edge < ND_LAr_vtx_pos && ND_LAr_vtx_pos < Right_edge)
       {
         cout << " Left_edge: "<< Left_edge << ", Right_edge: " << Right_edge << endl;
 
@@ -130,7 +130,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
         }
         if(ND_GeoEff<0.1)
         {
-          cout << "ientry: " <<ientry << ", ND_OffAxis_pos:" << ND_OffAxis_pos << ", ND_LAr_pos:" << ND_LAr_pos << ", ND_E_vis_true: " << ND_E_vis_true << ", ND_GeoEff: " << ND_GeoEff << endl;
+          cout << "ientry: " <<ientry << ", ND_LAr_dtctr_pos:" << ND_LAr_dtctr_pos << ", ND_LAr_vtx_pos:" << ND_LAr_vtx_pos << ", ND_E_vis_true: " << ND_E_vis_true << ", ND_GeoEff: " << ND_GeoEff << endl;
         }
       }
     }
@@ -139,8 +139,8 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
   for (Int_t plot_num = 0; plot_num < plot_total_num; plot_num++)
   {
     // Set bin size edges
-    Int_t Left_edge = -300 + plot_num*50;
-    Int_t Right_edge = Left_edge + 50;
+    Int_t Left_edge = -300 + plot_num*7; //7:-300 to -250 ; 50 : -300 to 300
+    Int_t Right_edge = Left_edge + 7;
 
     // Draw Plots
     c1->cd(plot_num+1);
@@ -217,7 +217,7 @@ void Plot_E_vistrue() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntup
     gSystem->ProcessEvents();
   }
 
-  c1->SaveAs("E_vis_true_62311511_8to9.pdf");
+  c1->SaveAs("E_vis_true_hadron_61454381.pdf");
 
 
   // delete all hist variables
