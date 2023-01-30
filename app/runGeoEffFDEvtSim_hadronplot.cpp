@@ -40,6 +40,18 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
+//
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//
+// This is just for making hadronic plots without nested vectors
+// Use this code to test and make plots to check why there are high efficiencies near the edge when E_vis_true > 70 GeV
+//
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//
 // The program which do all translations and rotations when moving event from FD to ND:
 // 0. FD: read event from FD MC ntuple: before earth curvature rotation
 // 1. FD to ND: after earth curvature rotation
@@ -546,6 +558,7 @@ int main(int argc, char** argv)
   for ( int ientry = 0; ientry < nentries; ientry++ )
   // for ( int ientry = 116; ientry < 117; ientry++ ) // Use for drwaing one hardronic hits plots
   {
+    if (iwritten>=10) continue;
     t->GetEntry(ientry);
     if ( ientry%10000 == 0 )
     {
@@ -1007,14 +1020,14 @@ int main(int argc, char** argv)
         // Get coordinates of hadron hits after random throws
 
           // // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
-          // for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
-          // {
-          //   CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
-          //   CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
-          //   CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
-          //   CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
-          //   CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
-          // }
+          for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
+          {
+            CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
+            CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
+            CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
+            CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
+            CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
+          }
           // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
           // {
           //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
@@ -1142,17 +1155,17 @@ int main(int argc, char** argv)
         ND_OffAxis_Unrotated_Sim_hadronic_hit.clear();
         ND_OffAxis_Sim_hadronic_hit.clear();
 
-          // CurrentThrowDepsX.clear();
-          // CurrentThrowDepsY.clear();
-          // CurrentThrowDepsZ.clear();
-          // CurrentThrowVetoE.clear();
-          // CurrentThrowTotE.clear();
+          CurrentThrowDepsX.clear();
+          CurrentThrowDepsY.clear();
+          CurrentThrowDepsZ.clear();
+          CurrentThrowVetoE.clear();
+          CurrentThrowTotE.clear();
 
       } // end Loop over ND_vtx_vx_vec
 
       // Calculate the average geo eff for different ND off axis positions
       ND_OffAxis_MeanEff = (Leff*1.0/Leff_counter+MiddleEff*1.0+Reff*1.0/Reff_counter)/(MiddleEff_counter+2);
-      cout << "        ND_LAr_dtctr_pos: " << ND_LAr_dtctr_pos << " cm, mean eff: " << ND_OffAxis_MeanEff << "\n\n";
+      if (verbose) cout << "        ND_LAr_dtctr_pos: " << ND_LAr_dtctr_pos << " cm, mean eff: " << ND_OffAxis_MeanEff << "\n\n";
 
    }   // end Loop over ND_off_axis_pos_vec
 
