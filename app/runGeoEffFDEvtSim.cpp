@@ -1338,7 +1338,7 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Write trees
-  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff_62877585_990.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
   effValues->Write();
