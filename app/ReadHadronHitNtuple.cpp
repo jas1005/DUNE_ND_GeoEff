@@ -134,7 +134,7 @@ void ReadHadronHitNtuple_ND()
 
   // Set Palette
   gStyle->SetPalette(55);
-  gStyle->SetOptStat(1111);
+  gStyle->SetOptStat(110110);
   gStyle->SetStatX(0.85);		//Stat box x position (top right hand corner)
   gStyle->SetStatY(0.9); 		//Stat box y position
   gStyle->SetStatW(0.2);	 		//Stat box width as fraction of pad size
@@ -611,13 +611,20 @@ void ReadHadronHitNtuple_FD()
   TH2F** h_hadronhit_zy = new TH2F*[nentries];
   // Set Palette
   gStyle->SetPalette(55);
-  gStyle->SetOptStat(1111);
-  gStyle->SetStatX(0.85);		//Stat box x position (top right hand corner)
-  gStyle->SetStatY(0.9); 		//Stat box y position
-  gStyle->SetStatW(0.2);	 		//Stat box width as fraction of pad size
-  gStyle->SetStatH(0.15);	 		//Size of each line in stat box
+  gStyle->SetOptStat(0); // Remove Stat Box
+  // gStyle->SetOptStat("nemou");
+  // gStyle->SetStatX(0.85);		//Stat box x position (top right hand corner)
+  // gStyle->SetStatY(0.9); 		//Stat box y position
+  // gStyle->SetStatW(0.2);	 		//Stat box width as fraction of pad size
+  // gStyle->SetStatH(0.15);	 		//Size of each line in stat box
 
   vector<float> vetoEnergyFD_v; // Total hadron deposited energy in FD veto region
+
+  // Print out the data
+  ofstream myfile;
+   myfile.open ("Output_FD_HadronhitCheck_64401080.txt");
+
+
   // create histograms
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
@@ -647,7 +654,12 @@ void ReadHadronHitNtuple_FD()
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     t->GetEntry(ientry);
-    
+
+    if(myfileVerbose)
+    {
+      myfile<< "ientry: " << ientry << "\n\n";
+    }
+
     float vetoEnergyFD = 0.;
     for(Int_t ihadronhit =0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
     {
@@ -661,12 +673,23 @@ void ReadHadronHitNtuple_FD()
          ){
            vetoEnergyFD += FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
+
       h_hadronhit_xy[ientry]->Fill(FD_Sim_hadronic_hit_x_a->at(ihadronhit), FD_Sim_hadronic_hit_y_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
-      h_hadronhit_zx[ientry]->Fill(FD_Sim_hadronic_hit_y_a->at(ihadronhit), FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
-      h_hadronhit_zy[ientry]->Fill(FD_Sim_hadronic_hit_y_a->at(ihadronhit), FD_Sim_hadronic_hit_y_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
+      h_hadronhit_zx[ientry]->Fill(FD_Sim_hadronic_hit_z_a->at(ihadronhit), FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
+      h_hadronhit_zy[ientry]->Fill(FD_Sim_hadronic_hit_z_a->at(ihadronhit), FD_Sim_hadronic_hit_y_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
+      if(myfileVerbose)
+      {
+        myfile << "ientry: " << ientry << ", ihadronhit: " << ihadronhit << "\n";
+        myfile << "FD_Sim_hadronic_hit_x_a: " << FD_Sim_hadronic_hit_x_a->at(ihadronhit) << "\n";
+        myfile << "FD_Sim_hadronic_hit_y_a: " << FD_Sim_hadronic_hit_y_a->at(ihadronhit) << "\n";
+        myfile << "FD_Sim_hadronic_hit_z_a: " << FD_Sim_hadronic_hit_z_a->at(ihadronhit) << "\n\n";
+      }
     }
     vetoEnergyFD_v.emplace_back(vetoEnergyFD);
     cout << "ientry: " << ientry << endl;
+
+
+
   }
 
   // draw histograms
@@ -690,17 +713,17 @@ void ReadHadronHitNtuple_FD()
     h_hadronhit_xy[ientry]->Draw("COLZ");
     auto *xy_box = new TBox(FDActiveVol_min[0],FDActiveVol_min[1],FDActiveVol_max[0],FDActiveVol_max[1]);
     xy_box->SetLineColor(kBlack);
-    xy_box->SetLineWidth(2);
+    xy_box->SetLineWidth(1);
     xy_box->SetFillStyle(0);
     xy_box->Draw();
     auto *xy_box1 = new TBox(FDActiveVol_min[0]+vSize,FDActiveVol_min[1]+vSize,FDActiveVol_max[0]-vSize,FDActiveVol_max[1]-vSize);
     xy_box1->SetLineColor(kBlue);
-    xy_box1->SetLineWidth(2);
+    xy_box1->SetLineWidth(1);
     xy_box1->SetFillStyle(0);
     xy_box1->Draw();
     auto *xy_box2 = new TBox(FD_FV_min[0],FD_FV_min[1],FD_FV_max[0],FD_FV_max[1]);
     xy_box2->SetLineColor(kRed);
-    xy_box2->SetLineWidth(2);
+    xy_box2->SetLineWidth(1);
     xy_box2->SetFillStyle(0);
     xy_box2->Draw();
     TLatex xy_text(-480,620,energy_name1);
@@ -716,19 +739,19 @@ void ReadHadronHitNtuple_FD()
     // ND active volume
     auto *zx_box = new TBox(FDActiveVol_min[2],FDActiveVol_min[0],FDActiveVol_max[2],FDActiveVol_max[0]);
     zx_box->SetLineColor(kBlack);
-    zx_box->SetLineWidth(2);
+    zx_box->SetLineWidth(1);
     zx_box->SetFillStyle(0);
     zx_box->Draw();
     // ND veto volume
     auto *zx_box1 = new TBox(FDActiveVol_min[2]+vSize,FDActiveVol_min[0]+vSize,FDActiveVol_max[2]-vSize,FDActiveVol_max[0]-vSize);
     zx_box1->SetLineColor(kBlue);
-    zx_box1->SetLineWidth(2);
+    zx_box1->SetLineWidth(1);
     zx_box1->SetFillStyle(0);
     zx_box1->Draw();
     // ND fiducial volume
     auto *zx_box2 = new TBox(FD_FV_min[2],FD_FV_min[0],FD_FV_max[2],FD_FV_max[0]);
     zx_box2->SetLineColor(kRed);
-    zx_box2->SetLineWidth(2);
+    zx_box2->SetLineWidth(1);
     zx_box2->SetFillStyle(0);
     zx_box2->Draw();
     TLatex xz_text(-50,400,energy_name1);
@@ -743,17 +766,17 @@ void ReadHadronHitNtuple_FD()
     h_hadronhit_zy[ientry]->Draw("COLZ");
     auto *yz_box = new TBox(FDActiveVol_min[2],FDActiveVol_min[1],FDActiveVol_max[2],FDActiveVol_max[1]);
     yz_box->SetLineColor(kBlack);
-    yz_box->SetLineWidth(2);
+    yz_box->SetLineWidth(1);
     yz_box->SetFillStyle(0);
     yz_box->Draw();
     auto *yz_box1 = new TBox(FDActiveVol_min[2]+vSize,FDActiveVol_min[1]+vSize,FDActiveVol_max[2]-vSize,FDActiveVol_max[1]-vSize);
     yz_box1->SetLineColor(kBlue);
-    yz_box1->SetLineWidth(2);
+    yz_box1->SetLineWidth(1);
     yz_box1->SetFillStyle(0);
     yz_box1->Draw();
     auto *yz_box2 = new TBox(FD_FV_min[2],FD_FV_min[1],FD_FV_max[2],FD_FV_max[1]);
     yz_box2->SetLineColor(kRed);
-    yz_box2->SetLineWidth(2);
+    yz_box2->SetLineWidth(1);
     yz_box2->SetFillStyle(0);
     yz_box2->Draw();
     TLatex yz_text(-50,620,energy_name1);
@@ -769,8 +792,12 @@ void ReadHadronHitNtuple_FD()
 
     c_hadronhit[ientry]->SaveAs( TString::Format("HadronHitPlots_FD/c_event_%d_hadronhit.pdf",ientry) );
   }
+
+
   delete[] h_hadronhit_xy;
   delete[] h_hadronhit_zx;
   delete[] h_hadronhit_zy;
   delete[] c_hadronhit;
+
+  myfile.close();
 }

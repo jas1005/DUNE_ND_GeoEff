@@ -15,8 +15,10 @@ bool ntupleVerbose = false;
 unsigned long N_throws = 64*64; // Use multiple of 64
 
 // Active volume for FD: based on ntuple hadron hit x/y/z histogram
-float FDActiveVol_min[] = {-370., -600.,    0.};
-float FDActiveVol_max[] = {370.,   600., 1400.};
+// float FDActiveVol_min[] = {-370., -600.,    0.};
+// float FDActiveVol_max[] = {370.,   600., 1400.};
+float FDActiveVol_min[] = {-370., -601.,    -1.};
+float FDActiveVol_max[] = {370.,   601., 1400.};
 
 // Active volume for ND
 float NDActiveVol_min[] = {-350., -150.,   0.};
