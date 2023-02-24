@@ -548,20 +548,22 @@ void ReadHadronHitNtuple_FD()
   gROOT->Reset();
 
   // Input FDroot file
-  TString FileIn = "/dune/app/users/flynnguo/NDEff/DUNE_ND_GeoEff/app/myntuple_64401080_cut.root";
+  TString FileIn = "/dune/app/users/flynnguo/FDEff/srcs/myntuples/myntuples/MyEnergyAnalysis/myntuple.root";
+  // TString FileIn = "/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_44271498_GENIE.root";
 
   TChain *t = new TChain("MyEnergyAnalysis/MyTree");
   t->Add(FileIn.Data());
 
-  double FD_LepE;                      // Generator level neutrino lepton energy
+  double FD_Vis_LepE;                      // Generator level neutrino lepton energy
   double FD_E_vis_true;                 // True vis energy [GeV]
-  t->SetBranchAddress("LepE",           &FD_LepE);
+  t->SetBranchAddress("Vis_LepE",           &FD_Vis_LepE);
   t->SetBranchAddress("E_vis_true",     &FD_E_vis_true);
   // Muon
   double FD_Gen_numu_E;                // Energy of generator level neutrino [GeV]
   double FD_Sim_mu_start_vx;           // x position of the muon trajectory start
   double FD_Sim_mu_start_vy;           // y .....................................
   double FD_Sim_mu_start_vz;           // z .....................................
+  double FD_Sim_mu_start_E;            // Energy of leading mu
   double FD_Sim_mu_end_vx;             // x position of the muon trajectory end
   double FD_Sim_mu_end_vy;             // y ...................................
   double FD_Sim_mu_end_vz;             // z ...................................
@@ -573,6 +575,7 @@ void ReadHadronHitNtuple_FD()
   t->SetBranchAddress("Sim_mu_start_vx",          &FD_Sim_mu_start_vx);
   t->SetBranchAddress("Sim_mu_start_vy",          &FD_Sim_mu_start_vy);
   t->SetBranchAddress("Sim_mu_start_vz",          &FD_Sim_mu_start_vz);
+  t->SetBranchAddress("Sim_mu_start_E",          &FD_Sim_mu_start_E);
   t->SetBranchAddress("Sim_mu_end_vx",            &FD_Sim_mu_end_vx);
   t->SetBranchAddress("Sim_mu_end_vy",            &FD_Sim_mu_end_vy);
   t->SetBranchAddress("Sim_mu_end_vz",            &FD_Sim_mu_end_vz);
@@ -580,6 +583,11 @@ void ReadHadronHitNtuple_FD()
   t->SetBranchAddress("Sim_mu_Edep_a2",     &FD_Sim_mu_Edep_a2);
   t->SetBranchAddress("Sim_mu_Edep_b1",     &FD_Sim_mu_Edep_b1);
   t->SetBranchAddress("Sim_mu_Edep_b2",     &FD_Sim_mu_Edep_b2);
+
+  double FD_Sim_numu_E, FD_Sim_LepE, FD_Sim_HadE;   //GEANT4 Sim energy
+  t->SetBranchAddress("Sim_numu_E",     &FD_Sim_numu_E);
+  t->SetBranchAddress("Sim_LepE",       &FD_Sim_LepE);
+  t->SetBranchAddress("Sim_HadE",       &FD_Sim_HadE);
 
   int FD_Sim_nMu; // # of Sim muons (mu+/mu-)
   int FD_CCNC_truth; // 0 =CC 1 =NC
@@ -589,18 +597,64 @@ void ReadHadronHitNtuple_FD()
   t->SetBranchAddress("neuPDG",                   &FD_neuPDG);
 
   // Hardon hits
-  int    FD_Sim_n_hadronic_Edep_a;   // # of hadronic energy deposits
-  double FD_Sim_hadronic_Edep_a2;    // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
-  vector<float> *FD_Sim_hadronic_hit_Edep_a2 = 0; // Need initialize 0 here to avoid error
-  vector<float> *FD_Sim_hadronic_hit_x_a = 0; // Position of each energy deposit on the x-axis [cm]
-  vector<float> *FD_Sim_hadronic_hit_y_a = 0; // Position of each energy deposit on the y-axis [cm]
-  vector<float> *FD_Sim_hadronic_hit_z_a = 0; // Position of each energy deposit on the z-axis [cm]
-  t->SetBranchAddress("Sim_hadronic_Edep_a2",     &FD_Sim_hadronic_Edep_a2);
-  t->SetBranchAddress("Sim_n_hadronic_Edep_a",    &FD_Sim_n_hadronic_Edep_a);
-  t->SetBranchAddress("Sim_hadronic_hit_Edep_a2", &FD_Sim_hadronic_hit_Edep_a2);
-  t->SetBranchAddress("Sim_hadronic_hit_x_a",     &FD_Sim_hadronic_hit_x_a);
-  t->SetBranchAddress("Sim_hadronic_hit_y_a",     &FD_Sim_hadronic_hit_y_a);
-  t->SetBranchAddress("Sim_hadronic_hit_z_a",     &FD_Sim_hadronic_hit_z_a);
+  int    FD_Sim_n_hadronic_Edep_b;   // # of hadronic energy deposits
+  double FD_Sim_hadronic_Edep_b2;    // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
+  vector<float> *FD_Sim_hadronic_hit_Edep_b2 = 0; // Need initialize 0 here to avoid error
+  vector<float> *FD_Sim_hadronic_hit_x_b = 0; // Position of each energy deposit on the x-axis [cm]
+  vector<float> *FD_Sim_hadronic_hit_y_b = 0; // Position of each energy deposit on the y-axis [cm]
+  vector<float> *FD_Sim_hadronic_hit_z_b = 0; // Position of each energy deposit on the z-axis [cm]
+  t->SetBranchAddress("Sim_hadronic_Edep_b2",     &FD_Sim_hadronic_Edep_b2);
+  t->SetBranchAddress("Sim_n_hadronic_Edep_b",    &FD_Sim_n_hadronic_Edep_b);
+  t->SetBranchAddress("Sim_hadronic_hit_Edep_b2", &FD_Sim_hadronic_hit_Edep_b2);
+  t->SetBranchAddress("Sim_hadronic_hit_x_b",     &FD_Sim_hadronic_hit_x_b);
+  t->SetBranchAddress("Sim_hadronic_hit_y_b",     &FD_Sim_hadronic_hit_y_b);
+  t->SetBranchAddress("Sim_hadronic_hit_z_b",     &FD_Sim_hadronic_hit_z_b);
+
+
+  // add true info for each particle
+  double FD_LepNuAngle;                // Angle b/w nu and lepton
+  std::vector<int> *FD_P_PDG = 0;                         // PDG code for each particle
+  int FD_P_num;                         // Number of types of particle
+  std::vector<int> *FD_P_StatusCode = 0;                  // Status code for each particle, https://internal.dunescience.org/doxygen/GENIEGen__module_8cc_source.html
+  std::vector<float> *FD_P_vtx_x = 0;                    // Position: x component for each particle
+  std::vector<float> *FD_P_vtx_y = 0;                    // Position: y component for each particle
+  std::vector<float> *FD_P_vtx_z = 0;                    // Position: z component for each particle
+  std::vector<float> *FD_P_ptot = 0;                     // Total momentum for each particle
+  std::vector<float> *FD_P_px = 0;                       // Momentum: x component for each particle
+  std::vector<float> *FD_P_py = 0;                       // Momentum: y component for each particle
+  std::vector<float> *FD_P_pz = 0;                       // Momentum: z component for each particle
+  std::vector<float> *FD_P_E = 0;                        // Energy for each particle [GeV]
+  std::vector<float> *FD_P_mass = 0;                     // Mass for each particle [GeV/c^2]
+  std::vector<float> *FD_P_Ek = 0;                       // Kinetic Energy for each particle [GeV]
+  t->SetBranchAddress("LepNuAngle",               &FD_LepNuAngle);
+  t->SetBranchAddress("P_PDG",     &FD_P_PDG);
+  t->SetBranchAddress("P_num",     &FD_P_num);
+  t->SetBranchAddress("P_StatusCode",     &FD_P_StatusCode);
+  t->SetBranchAddress("P_vtx_x",    &FD_P_vtx_x);
+  t->SetBranchAddress("P_vtx_y",    &FD_P_vtx_y);
+  t->SetBranchAddress("P_vtx_z",    &FD_P_vtx_z);
+  t->SetBranchAddress("P_ptot",     &FD_P_ptot);
+  t->SetBranchAddress("P_px",       &FD_P_px);
+  t->SetBranchAddress("P_py",       &FD_P_py);
+  t->SetBranchAddress("P_pz",       &FD_P_pz);
+  t->SetBranchAddress("P_E",        &FD_P_E);
+  t->SetBranchAddress("P_mass",     &FD_P_mass);
+  t->SetBranchAddress("P_Ek",       &FD_P_Ek);
+
+  // True info for energy
+  double FD_True_HadE;                              // True had E by adding all fP_E (!=lepton)
+  double FD_True_LepE;                              // True Lep E by adding all fP_E (==lepton)
+  double FD_Vis_HadE;                               // Visible had E
+  t->SetBranchAddress("True_HadE",       &FD_True_HadE);
+  t->SetBranchAddress("True_LepE",       &FD_True_LepE);
+  t->SetBranchAddress("Vis_HadE",        &FD_Vis_HadE);
+
+  // neutron info
+  int FD_nN;         // # of neutron
+  double FD_eN;      // Energy of neutron
+  t->SetBranchAddress("nN",       &FD_nN);
+  t->SetBranchAddress("eN",       &FD_eN);
+
 
   Int_t nentries = t->GetEntries();
   cout << "nentries: " << nentries << endl;
@@ -609,6 +663,7 @@ void ReadHadronHitNtuple_FD()
   TH2F** h_hadronhit_xy = new TH2F*[nentries];
   TH2F** h_hadronhit_zx = new TH2F*[nentries];
   TH2F** h_hadronhit_zy = new TH2F*[nentries];
+
   // Set Palette
   gStyle->SetPalette(55);
   gStyle->SetOptStat(0); // Remove Stat Box
@@ -622,13 +677,17 @@ void ReadHadronHitNtuple_FD()
 
   // Print out the data
   ofstream myfile;
-   myfile.open ("Output_FD_HadronhitCheck_64401080.txt");
+   myfile.open ("Output_FD_HadronhitCheck_test.txt");
 
 
   // create histograms
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     t->GetEntry(ientry);
+    if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_b == 0 ) continue;
+    if ( FD_CCNC_truth == 1) continue;   // only use CC events
+    if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
+
 
     TString h_hadronhit_xy_name = Form("hadronhitXY_event_%d", ientry);
     h_hadronhit_xy[ientry] = new TH2F(h_hadronhit_xy_name,h_hadronhit_xy_name,200,-500,500,200,-800,800);
@@ -647,6 +706,7 @@ void ReadHadronHitNtuple_FD()
     h_hadronhit_zy[ientry]->GetXaxis()->SetTitle("Z [cm]");
     h_hadronhit_zy[ientry]->GetYaxis()->SetTitle("Y [cm]");
     h_hadronhit_zy[ientry]->GetZaxis()->SetTitle("HadronHitEdeps [MeV]");
+
   }
 
   // fill events
@@ -654,6 +714,10 @@ void ReadHadronHitNtuple_FD()
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     t->GetEntry(ientry);
+    if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_b == 0 ) continue;
+    if ( FD_CCNC_truth == 1) continue;   // only use CC events
+    if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
+
 
     if(myfileVerbose)
     {
@@ -661,44 +725,43 @@ void ReadHadronHitNtuple_FD()
     }
 
     float vetoEnergyFD = 0.;
-    for(Int_t ihadronhit =0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
+    for(Int_t ihadronhit =0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++)
     {
       // Veto region size: 30 cm from the active volume
-      if ( ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
-           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
-           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
-           ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
-           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
-           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
+      if ( ( FD_Sim_hadronic_hit_x_b->at(ihadronhit) > FDActiveVol_min[0] && FD_Sim_hadronic_hit_x_b->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( FD_Sim_hadronic_hit_y_b->at(ihadronhit) > FDActiveVol_min[1] && FD_Sim_hadronic_hit_y_b->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( FD_Sim_hadronic_hit_z_b->at(ihadronhit) > FDActiveVol_min[2] && FD_Sim_hadronic_hit_z_b->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( FD_Sim_hadronic_hit_x_b->at(ihadronhit) > FDActiveVol_max[0] - 30 && FD_Sim_hadronic_hit_x_b->at(ihadronhit) < FDActiveVol_max[0] ) ||
+           ( FD_Sim_hadronic_hit_y_b->at(ihadronhit) > FDActiveVol_max[1] - 30 && FD_Sim_hadronic_hit_y_b->at(ihadronhit) < FDActiveVol_max[1] ) ||
+           ( FD_Sim_hadronic_hit_z_b->at(ihadronhit) > FDActiveVol_max[2] - 30 && FD_Sim_hadronic_hit_z_b->at(ihadronhit) < FDActiveVol_max[2] )
          ){
-           vetoEnergyFD += FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+           vetoEnergyFD += FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
 
-      h_hadronhit_xy[ientry]->Fill(FD_Sim_hadronic_hit_x_a->at(ihadronhit), FD_Sim_hadronic_hit_y_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
-      h_hadronhit_zx[ientry]->Fill(FD_Sim_hadronic_hit_z_a->at(ihadronhit), FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
-      h_hadronhit_zy[ientry]->Fill(FD_Sim_hadronic_hit_z_a->at(ihadronhit), FD_Sim_hadronic_hit_y_a->at(ihadronhit),FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit));
+      h_hadronhit_xy[ientry]->Fill(FD_Sim_hadronic_hit_x_b->at(ihadronhit), FD_Sim_hadronic_hit_y_b->at(ihadronhit),FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit));
+      h_hadronhit_zx[ientry]->Fill(FD_Sim_hadronic_hit_z_b->at(ihadronhit), FD_Sim_hadronic_hit_x_b->at(ihadronhit),FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit));
+      h_hadronhit_zy[ientry]->Fill(FD_Sim_hadronic_hit_z_b->at(ihadronhit), FD_Sim_hadronic_hit_y_b->at(ihadronhit),FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit));
       if(myfileVerbose)
       {
         myfile << "ientry: " << ientry << ", ihadronhit: " << ihadronhit << "\n";
-        myfile << "FD_Sim_hadronic_hit_x_a: " << FD_Sim_hadronic_hit_x_a->at(ihadronhit) << "\n";
-        myfile << "FD_Sim_hadronic_hit_y_a: " << FD_Sim_hadronic_hit_y_a->at(ihadronhit) << "\n";
-        myfile << "FD_Sim_hadronic_hit_z_a: " << FD_Sim_hadronic_hit_z_a->at(ihadronhit) << "\n\n";
+        myfile << "FD_Sim_hadronic_hit_x_b: " << FD_Sim_hadronic_hit_x_b->at(ihadronhit) << "\n";
+        myfile << "FD_Sim_hadronic_hit_y_b: " << FD_Sim_hadronic_hit_y_b->at(ihadronhit) << "\n";
+        myfile << "FD_Sim_hadronic_hit_z_b: " << FD_Sim_hadronic_hit_z_b->at(ihadronhit) << "\n\n";
       }
     }
     vetoEnergyFD_v.emplace_back(vetoEnergyFD);
     cout << "ientry: " << ientry << endl;
-
-
-
   }
 
   // draw histograms
   for ( int ientry = 0; ientry < nentries; ientry++ )
   {
     t->GetEntry(ientry);
+    if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_b == 0 ) continue;
+    if ( FD_CCNC_truth == 1) continue;   // only use CC events
+    if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
 
-    TString energy_name1 = Form("VetoE_%.2f_MeV, TotE_%.2f_MeV, VisTrueE_%.2f_GeV", vetoEnergyFD_v.at(ientry), FD_Sim_hadronic_Edep_a2, FD_E_vis_true);
-    TString energy_name2 = Form("LepE_%.2f_GeV, GenNumuE_%.2f_GeV, DepMuE_%.2f_MeV", FD_LepE, FD_Gen_numu_E, FD_Sim_mu_Edep_a2);
+
     TString c_hadronhit_name = Form("c_hadronhit_event_%d", ientry);
     TString c_hadronhit_title = Form("hadronhit event_%d", ientry);
     c_hadronhit[ientry] = new TCanvas(c_hadronhit_name, c_hadronhit_title, 0,53,995,597);
@@ -708,6 +771,7 @@ void ReadHadronHitNtuple_FD()
     c_hadronhit[ientry]->SetRightMargin(0.10);
     c_hadronhit[ientry]->Divide(2,2);
 
+    // xy plot
     c_hadronhit[ientry]->cd(1);
     c_hadronhit[ientry]->GetPad(1)->SetRightMargin(.15);
     h_hadronhit_xy[ientry]->Draw("COLZ");
@@ -726,13 +790,8 @@ void ReadHadronHitNtuple_FD()
     xy_box2->SetLineWidth(1);
     xy_box2->SetFillStyle(0);
     xy_box2->Draw();
-    TLatex xy_text(-480,620,energy_name1);
-    TLatex xy_text_d(-480,-720,energy_name2);
-    xy_text.SetTextSize(0.04);
-    xy_text_d.SetTextSize(0.04);
-    xy_text.DrawClone();
-    xy_text_d.DrawClone();
 
+    // zx plot
     c_hadronhit[ientry]->cd(2);
     c_hadronhit[ientry]->GetPad(2)->SetRightMargin(.15);
     h_hadronhit_zx[ientry]->Draw("COLZ");
@@ -754,13 +813,8 @@ void ReadHadronHitNtuple_FD()
     zx_box2->SetLineWidth(1);
     zx_box2->SetFillStyle(0);
     zx_box2->Draw();
-    TLatex xz_text(-50,400,energy_name1);
-    TLatex xz_text_d(-50,-480,energy_name2);
-    xz_text.SetTextSize(0.04);
-    xz_text_d.SetTextSize(0.04);
-    xz_text.DrawClone();
-    xz_text_d.DrawClone();
 
+    // yz plot
     c_hadronhit[ientry]->cd(3);
     c_hadronhit[ientry]->GetPad(3)->SetRightMargin(.15);
     h_hadronhit_zy[ientry]->Draw("COLZ");
@@ -779,13 +833,65 @@ void ReadHadronHitNtuple_FD()
     yz_box2->SetLineWidth(1);
     yz_box2->SetFillStyle(0);
     yz_box2->Draw();
-    TLatex yz_text(-50,620,energy_name1);
-    TLatex yz_text_d(-50,-720,energy_name2);
-    yz_text.SetTextSize(0.04);
-    yz_text_d.SetTextSize(0.04);
-    yz_text.DrawClone();
-    yz_text_d.DrawClone();
 
+    // text plot
+    c_hadronhit[ientry]->cd(4);
+    gPad->DrawFrame(0.,0.,60.,10.);
+    TString line1 = Form("VetoE_%.2f_MeV, Angleb/wLep&Nu_%.2f_Degree", vetoEnergyFD_v.at(ientry), FD_LepNuAngle);
+    TString line2 = Form("GenNumuE_%.2f_GeV, VisTrueE_%.2f_GeV", FD_Gen_numu_E, FD_E_vis_true );
+    TLatex text1(1,9.5,line1);
+    TLatex text2(1,8.9,line2);
+    text1.SetTextSize(0.04);
+    text2.SetTextSize(0.04);
+    text1.DrawClone();
+    text2.DrawClone();
+
+    TString line3 = Form("FD_True_LepE_%.2f_GeV, FD_True_HadE_%.2f_GeV, FD_True_E_%.2f_GeV", FD_True_LepE, FD_True_HadE, FD_True_LepE+FD_True_HadE);
+    TLatex text3(1,8.3,line3);
+    text3.SetTextSize(0.04);
+    text3.DrawClone();
+
+    TString line4 = Form("FD_Vis_LepE_%.2f_GeV, FD_Vis_HadE_%.2f_GeV, FD_Vis_E_%.2f_GeV", FD_Vis_LepE, FD_Vis_HadE, FD_Vis_HadE+FD_Vis_LepE );
+    TLatex text4(1,7.7,line4);
+    text4.SetTextSize(0.04);
+    text4.DrawClone();
+
+    TString line5 = Form("FD_#ofNeutron_%.2d, FD_KEofNeutron_%.2f_GeV", FD_nN, FD_eN );
+    TLatex text5(1,7.1,line5);
+    text5.SetTextSize(0.04);
+    text5.DrawClone();
+
+    TString line6 = Form("FD_DepMuE_%.2f_MeV, FD_DepHadE_%.2f_MeV, FD_TotDepE_%.2f_MeV", FD_Sim_mu_Edep_b2, FD_Sim_hadronic_Edep_b2, FD_Sim_hadronic_Edep_b2+FD_Sim_mu_Edep_b2);
+    TLatex text6(1,6.5,line6);
+    text6.SetTextSize(0.04);
+    text6.DrawClone();
+
+    TString line7 = Form("FD_SimMuE_%.2f_GeV, FD_SimHadE_%.2f_GeV, FD_SimE_sum_%.2f_GeV", FD_Sim_LepE, FD_Sim_HadE, FD_Sim_HadE+FD_Sim_LepE);
+    TLatex text7(1,5.9,line7);
+    text7.SetTextSize(0.04);
+    text7.DrawClone();
+
+
+
+    // Save true information
+    for (int p = 0; p < FD_P_num; p++)
+    {
+      myfile << "ientry: " << ientry << ", p: " << p << "\n";
+      myfile << "FD_P_PDG: " << FD_P_PDG->at(p) << "\n";
+      myfile << "FD_P_StatusCode: " << FD_P_StatusCode->at(p) << "\n";
+      myfile << "FD_P_vtx_x: " << FD_P_vtx_x->at(p) << "\n";
+      myfile << "FD_P_vtx_y: " << FD_P_vtx_y->at(p) << "\n";
+      myfile << "FD_P_vtx_z: " << FD_P_vtx_z->at(p) << "\n";
+      myfile << "FD_P_ptot: " << FD_P_ptot->at(p) << "\n";
+      myfile << "FD_P_px: " << FD_P_px->at(p) << "\n";
+      myfile << "FD_P_py: " << FD_P_py->at(p) << "\n";
+      myfile << "FD_P_pz: " << FD_P_pz->at(p) << "\n";
+      myfile << "FD_P_E: " << FD_P_E->at(p) << "\n";
+      myfile << "FD_P_mass: " << FD_P_mass->at(p) << "\n";
+      myfile << "FD_P_Ek: " << FD_P_Ek->at(p) << "\n\n";
+    }
+
+    //
     gPad->Update();
     gPad->Modified();
     gSystem->ProcessEvents();
@@ -794,10 +900,13 @@ void ReadHadronHitNtuple_FD()
   }
 
 
+
   delete[] h_hadronhit_xy;
   delete[] h_hadronhit_zx;
   delete[] h_hadronhit_zy;
   delete[] c_hadronhit;
+
+
 
   myfile.close();
 }
