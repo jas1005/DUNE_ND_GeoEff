@@ -576,6 +576,7 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
       else{for (int dim = 0; dim < 3; dim++) {translationAxis[dim] = 0.;translationAngle =0.;}}
       Eigen::Affine3f rTranslation_NDtoND(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
 
+      // Combine: we only have translation when moving ND onaxis to offaxis
       rThrow_NDtoND = rTranslation_NDtoND;
 
       if(verbosity)
@@ -588,7 +589,6 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms_NDt
     // Put everything together in single transform and store.
     // transforms_NDtoND.emplace_back(tThrow_NDtoND * tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND);
     transforms_NDtoND.emplace_back(tBack_NDtoND * rThrow_NDtoND * tThere_NDtoND );
-    // transforms_NDtoND.emplace_back(rThrow_NDtoND);
 
     /*
     I want to apply a rotation to an event and then move it to a different place.
