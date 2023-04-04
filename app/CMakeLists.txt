@@ -23,9 +23,11 @@ if ( ${ROOT_FOUND} )
   include_directories(${ROOT_INCLUDE_DIRS})
   add_executable(runGeoEffEDepSimBeamDir runGeoEffEDepSimBeamDir.cpp)
   add_executable(runGeoEffFDEvtSim runGeoEffFDEvtSim.cpp)
+  add_executable(runGeoEffFDEvtSim_hadronplot runGeoEffFDEvtSim_hadronplot.cpp)
 
   target_link_libraries(runGeoEffEDepSimBeamDir geoEff EDepSimEvents ${ROOT_LIBRARIES})
   target_link_libraries(runGeoEffFDEvtSim geoEff ${ROOT_LIBRARIES})
+  target_link_libraries(runGeoEffFDEvtSim_hadronplot geoEff ${ROOT_LIBRARIES})
 
 else ()
 

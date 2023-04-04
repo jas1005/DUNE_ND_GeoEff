@@ -41,30 +41,31 @@ using namespace std;
 // Include customized functions and constants
 #include "Helpers.h"
 
-void ReadEffNtuple()
+int main(int argc, char** argv) // /pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_39254532_2*.root
 {
-  gROOT->Reset();
-
   // Input FDroot file
-  TString FileIn = "/pnfs/dune/persistent/users/flynnguo/FDGeoEffinND/FDGeoEff_59933943_0.root";
+  string inFname;
+  if ( (argc > 2) or (argc == 1) ){
+    cout << "Usage: ./runGeoEffFDEvtSim inputFDntuple" << endl;
+    exit(-1);
+  } else {
+    inFname = string(argv[1]);
+  }
+
   //
   // Read branch from input trees
   //
   // Read effValues
   TChain *t_effValues = new TChain("effValues");
-  t_effValues->Add(FileIn.Data());
-  Int_t iwritten;
-  Double_t ND_OffAxis_pos;
-  Double_t ND_LAr_pos;
-  Double_t ND_OffAxis_eff;
-  t_effValues->SetBranchAddress("iwritten",         &iwritten);
-  t_effValues->SetBranchAddress("ND_OffAxis_pos",   &ND_OffAxis_pos);
-  t_effValues->SetBranchAddress("ND_LAr_pos",       &ND_LAr_pos);
-  t_effValues->SetBranchAddress("ND_OffAxis_eff",   &ND_OffAxis_eff);
+  t_effValues->Add(inFname.c_str());
+
+
 
   // Read PosVec
   TChain *t_PosVec = new TChain("PosVec");
-  t_PosVec->Add(FileIn.Data());
+  t_PosVec->Add(inFname.c_str());
+
+  gROOT->Reset();
   vector<Double_t> *ND_OffAxis_pos_vec = 0; // unit: cm, ND off-axis choices for each FD evt
   vector<Double_t> *ND_LAr_pos_vec = 0;       // unit: cm, vtx x choices for each FD evt in ND volume
   vector<Int_t> *iwritten_vec = 0;
@@ -132,11 +133,11 @@ void ReadEffNtuple()
       {
         if(verbose) cout << "ND_LAr_pos: " << ND_LAr_pos << endl;
         if(ND_LAr_pos<-250)
-        {Leff += ND_OffAxis_eff;Leff_counter++;}
+        {Leff += ND_GeoEff;Leff_counter++;}
         else if(ND_LAr_pos>250)
-        {Reff += ND_OffAxis_eff;Reff_counter++;}
+        {Reff += ND_GeoEff;Reff_counter++;}
         else
-        {OnAxisEff += ND_OffAxis_eff;OnAxisEff_counter++;}
+        {OnAxisEff += ND_GeoEff;OnAxisEff_counter++;}
       }
     }
     if(verbose) cout << "OnAxisEff: " << OnAxisEff << endl;
@@ -170,7 +171,7 @@ void ReadEffNtuple()
     h_2dGeoEff[i_iwritten]->SetMaximum(1);
     h_2dGeoEff[i_iwritten]->GetYaxis()->SetTitle("ND_OffAxis_pos [cm]");
     h_2dGeoEff[i_iwritten]->GetXaxis()->SetTitle("ND_LAr_pos [cm]");
-    h_2dGeoEff[i_iwritten]->GetZaxis()->SetTitle("ND_OffAxis_eff");
+    h_2dGeoEff[i_iwritten]->GetZaxis()->SetTitle("ND_GeoEff");
     //------------------------------------------------------------------------------
     // Loop entries matching current iwritten
 
@@ -178,7 +179,7 @@ void ReadEffNtuple()
     {
       t_effValues->GetEntry(i_entry);
       // Fill 2D
-      h_2dGeoEff[i_iwritten]->Fill(ND_LAr_pos,ND_OffAxis_pos,ND_OffAxis_eff);
+      h_2dGeoEff[i_iwritten]->Fill(ND_LAr_pos,ND_OffAxis_pos,ND_GeoEff);
     } // end i_entry
     //------------------------------------------------------------------------------
     // Save canvas for 2d GeoEff
@@ -229,8 +230,8 @@ void ReadEffNtuple()
         if (ND_OffAxis_pos == i_ND_OffAxis_pos)
         {
           x_ND_Lar_pos[m] = ND_LAr_pos;
-          y_geoeff[m] = ND_OffAxis_eff;
-          if(ND_OffAxis_eff == 1 ) ND_Lar_effcounter++;
+          y_geoeff[m] = ND_GeoEff;
+          if(ND_GeoEff == 1 ) ND_Lar_effcounter++;
           m++;
         }
       }
