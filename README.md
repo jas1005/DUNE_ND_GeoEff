@@ -69,6 +69,13 @@ root -l -b -q FDEffCalc.C
 
 The output root file from running ```runGeoEffFDEvtSim``` can also be used for lepton NN training.
 
+## Event displays
+
+The hadronic hits can be plotted in 2D event displays at FD via:
+```
+echo 'gROOT->ProcessLine(".L ReadHadronHitNtuple.cpp"); ReadHadronHitNtuple_FD()'| root -l -b
+```
+
 ## Run on Grid
 
 First get the work env setup:
