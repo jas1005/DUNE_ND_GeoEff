@@ -1,19 +1,34 @@
-# Instruction for running translation and rotations on FD n-tuples
-
-Prerequisite: [Produce Ntuple from DUNE FD MC files](https://github.com/weishi10141993/myntuples#produce-ntuple-from-dune-fd-mc-files). The produced FD n-tuples will be used as input files for the following program to run.
+# Set up
 
 [First time only]
 ```
 cd /dune/app/users/<your_username>
-mkdir NDEff (first time only)
-cd NDEff
+mkdir testn2fd
+cd testn2fd
+
 git clone --recurse-submodules -b N2FD https://github.com/weishi10141993/DUNE_ND_GeoEff.git      # Get geoEff library
 # Note for git version (git --version) before 2.13, use: git clone --recursive -b N2FD https://github.com/weishi10141993/DUNE_ND_GeoEff.git
 cd DUNE_ND_GeoEff
-source setup.sh                                                                                    # Necessary setups for build
+source setup.sh                                                                                  # Necessary setups for build
 cmake -DPYTHON_EXECUTABLE:FILEPATH=`which python` .
-make -j geoEff                                                                                     # Build geoEff (can also use: make -j pyGeoEff)
+make -j geoEff                                                                                   # Build geoEff
+make -j pyGeoEff                                                                                 # Build pygeoEff
 ```
+
+# Analyze edepsim data
+
+```
+source setup.sh
+
+python3 Edepsim_ana.py edep.LArBath.mu70GeV.root
+
+# The first time you may need to install a few packages via pip install, e.g., pip install matplotlib pandas
+# depending on what it complains when you run: python3 Edepsim_ana.py edep.SIMPLECRYO.root
+```
+
+# Instruction for FD event geometric efficiency at ND
+
+Prerequisite: [Produce Ntuple from DUNE FD MC files](https://github.com/weishi10141993/myntuples#produce-ntuple-from-dune-fd-mc-files). The produced FD n-tuples will be used as input files for the following program to run.
 
 To (re)compile
 ```
