@@ -85,6 +85,7 @@ int main(int argc, char** argv)
   int FD_Sim_nNumu; // # of Sim muon neutrinos (numu and numubar)
   double FD_Gen_numu_E; // Energy of generator level neutrino [MeV]
   double FD_E_vis_true; // True visible energy [MeV],  E_vis, true = LepE + eP + ePip + ePim + ePi0 + eOther + nipi0 * pi0_mass,  where pi0_mass is a constant that's 135 MeV
+  double FD_LepNuAngle;                // Angle b/w nu and lepton [radians]
   int FD_Sim_nMu; // # of Sim muons (mu+/mu-)
   int FD_CCNC_truth; // 0 =CC 1 =NC
   int FD_neuPDG; // Generator level neutrino PDG
@@ -102,12 +103,12 @@ int main(int argc, char** argv)
   double FD_Sim_mu_end_py; // Momentum of the muon trajectory at end point on the y-axis [GeV]
   double FD_Sim_mu_end_pz; // Momentum of the muon trajectory at end point on the z-axis [GeV]
   double FD_Sim_mu_end_E; // Energy of leading mu at end point [GeV]
-  double FD_Sim_hadronic_Edep_a2; // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
-  int FD_Sim_n_hadronic_Edep_a; // # of hadronic energy deposits
-  vector<float> *FD_Sim_hadronic_hit_Edep_a2 = 0; // Need initialize 0 here to avoid error
-  vector<float> *FD_Sim_hadronic_hit_x_a = 0; // Position of each energy deposit on the x-axis [cm]
-  vector<float> *FD_Sim_hadronic_hit_y_a = 0; // Position of each energy deposit on the y-axis [cm]
-  vector<float> *FD_Sim_hadronic_hit_z_a = 0; // Position of each energy deposit on the z-axis [cm]
+  double FD_Sim_hadronic_Edep_b2; // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
+  int FD_Sim_n_hadronic_Edep_b; // # of hadronic energy deposits
+  vector<float> *FD_Sim_hadronic_hit_Edep_b2 = 0; // Need initialize 0 here to avoid error
+  vector<float> *FD_Sim_hadronic_hit_x_b = 0; // Position of each energy deposit on the x-axis [cm]
+  vector<float> *FD_Sim_hadronic_hit_y_b = 0; // Position of each energy deposit on the y-axis [cm]
+  vector<float> *FD_Sim_hadronic_hit_z_b = 0; // Position of each energy deposit on the z-axis [cm]
 
   // Extract event info from ntuple
   t->SetBranchAddress("Run",                      &FD_Run);
@@ -115,6 +116,7 @@ int main(int argc, char** argv)
   t->SetBranchAddress("Event",                    &FD_Event);
   t->SetBranchAddress("Sim_nNumu",                &FD_Sim_nNumu);
   t->SetBranchAddress("Gen_numu_E",               &FD_Gen_numu_E);
+  t->SetBranchAddress("LepNuAngle",               &FD_LepNuAngle);
   t->SetBranchAddress("E_vis_true",               &FD_E_vis_true);
   t->SetBranchAddress("Sim_nMu",                  &FD_Sim_nMu);
   t->SetBranchAddress("CCNC_truth",               &FD_CCNC_truth);
@@ -133,12 +135,12 @@ int main(int argc, char** argv)
   t->SetBranchAddress("Sim_mu_end_py",            &FD_Sim_mu_end_py);
   t->SetBranchAddress("Sim_mu_end_pz",            &FD_Sim_mu_end_pz);
   t->SetBranchAddress("Sim_mu_end_E",             &FD_Sim_mu_end_E);
-  t->SetBranchAddress("Sim_hadronic_Edep_a2",     &FD_Sim_hadronic_Edep_a2);
-  t->SetBranchAddress("Sim_n_hadronic_Edep_a",    &FD_Sim_n_hadronic_Edep_a);
-  t->SetBranchAddress("Sim_hadronic_hit_Edep_a2", &FD_Sim_hadronic_hit_Edep_a2);
-  t->SetBranchAddress("Sim_hadronic_hit_x_a",     &FD_Sim_hadronic_hit_x_a);
-  t->SetBranchAddress("Sim_hadronic_hit_y_a",     &FD_Sim_hadronic_hit_y_a);
-  t->SetBranchAddress("Sim_hadronic_hit_z_a",     &FD_Sim_hadronic_hit_z_a);
+  t->SetBranchAddress("Sim_hadronic_Edep_b2",     &FD_Sim_hadronic_Edep_b2);
+  t->SetBranchAddress("Sim_n_hadronic_Edep_b",    &FD_Sim_n_hadronic_Edep_b);
+  t->SetBranchAddress("Sim_hadronic_hit_Edep_b2", &FD_Sim_hadronic_hit_Edep_b2);
+  t->SetBranchAddress("Sim_hadronic_hit_x_b",     &FD_Sim_hadronic_hit_x_b);
+  t->SetBranchAddress("Sim_hadronic_hit_y_b",     &FD_Sim_hadronic_hit_y_b);
+  t->SetBranchAddress("Sim_hadronic_hit_z_b",     &FD_Sim_hadronic_hit_z_b);
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -312,6 +314,7 @@ int main(int argc, char** argv)
   // Lepton info: expressed in ND coordinate sys, do not confuse with branches read above in FD coordinate sys
   double ND_Gen_numu_E; // Energy of generator level neutrino [GeV]
   double ND_E_vis_true; // True visible energy of neutrino [GeV]
+  double ND_LepNuAngle; // Angle b/w nu and lepton [radians]
   // Muon info
   // array: (x,y,z)<->dim=(0,1,2)
   double ND_RandomVtx_Sim_mu_start_v[3]; // Position of the muon trajectory at start point [cm]
@@ -319,7 +322,7 @@ int main(int argc, char** argv)
   double ND_RandomVtx_Sim_mu_start_p[3]; // Momentum of the muon trajectory at start point on the x-axis [GeV]
   // double ND_RandomVtx_Sim_mu_start_E; // Energy of leading mu at start point [GeV]
   // Hadron info
-  double ND_Sim_hadronic_Edep_a2; // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
+  double ND_Sim_hadronic_Edep_b2; // Total amount of energy released by ionizations in the event (from Geant4 simulation) [MeV]
   vector<vector<float>> ND_RandomVtx_Sim_hadronic_hit; // Position of each energy deposit [cm]
   vector<float> ND_RandomVtx_Sim_hadronic_hit_xyz; // Position of each energy deposit [cm]
   // Momentum conservation check
@@ -420,8 +423,6 @@ int main(int argc, char** argv)
     vector<vector<float>> CurrentThrowDepsX; // Coordinates of hadron hits X after random throws
     vector<vector<float>> CurrentThrowDepsY; // Coordinates of hadron hits Y after random throws
     vector<vector<float>> CurrentThrowDepsZ; // Coordinates of hadron hits Z after random throws
-    // vector<float> ND_Lar_ThrowDepsXYZ; // CurrentThrowDepsX,Y,Z - offset
-    vector<float> CurrentThrowVetoE;
     vector<float> CurrentThrowTotE;
 
   //------------------------------------------------------------------------------
@@ -429,20 +430,25 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Store variables into a tree
+
+  // Store ND_LAr_dtctr_pos_vec and ND_vtx_vx_vec
+  vector<Int_t> iwritten_vec; // vector of iwritten
   TTree *effPosND = new TTree("effPosND", "ND offaxis pos vector");
   effPosND->Branch("ND_LAr_dtctr_pos_vec",                       &ND_LAr_dtctr_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
   effPosND->Branch("ND_vtx_vx_vec",                              &ND_vtx_vx_vec);
   effPosND->Branch("ND_OffAxis_pos_vec",                         &ND_OffAxis_pos_vec);
+  effPosND->Branch("iwritten_vec",                               &iwritten_vec);
 
   TTree *effTreeFD = new TTree("effTreeND", "FD eff Tree");
   effTreeFD->Branch("ND_Gen_numu_E",                             &ND_Gen_numu_E,            "ND_Gen_numu_E/D");
   effTreeFD->Branch("ND_E_vis_true",                             &ND_E_vis_true,            "ND_E_vis_true/D");
-  effTreeFD->Branch("ND_Sim_n_hadronic_Edep_a",                  &FD_Sim_n_hadronic_Edep_a,            "FD_Sim_n_hadronic_Edep_a/I");
+  effTreeFD->Branch("ND_LepNuAngle",                             &ND_LepNuAngle,            "ND_LepNuAngle/D");
+  effTreeFD->Branch("ND_Sim_n_hadronic_Edep_b",                  &FD_Sim_n_hadronic_Edep_b,            "FD_Sim_n_hadronic_Edep_b/I");
   // 1. FD to ND: after earth curvature rotation
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_start_v",               ND_RandomVtx_Sim_mu_start_v,       "ND_RandomVtx_Sim_mu_start_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_end_v",                 ND_RandomVtx_Sim_mu_end_v,         "ND_RandomVtx_Sim_mu_end_v[3]/D");   // entries = written evts*3
   effTreeFD->Branch("ND_RandomVtx_Sim_mu_start_p",               ND_RandomVtx_Sim_mu_start_p,       "ND_RandomVtx_Sim_mu_start_p[3]/D");   // entries = written evts*3
-  effTreeFD->Branch("ND_Sim_hadronic_Edep_a2",                   &ND_Sim_hadronic_Edep_a2,          "ND_Sim_hadronic_Edep_a2/D"); // entries = written evts
+  effTreeFD->Branch("ND_Sim_hadronic_Edep_b2",                   &ND_Sim_hadronic_Edep_b2,          "ND_Sim_hadronic_Edep_b2/D"); // entries = written evts
   if (ntupleVerbose) effTreeFD->Branch("ND_RandomVtx_Sim_hadronic_hit_xyz",         &ND_RandomVtx_Sim_hadronic_hit);
 
   // 2. ND: move back to the beam center
@@ -485,7 +491,6 @@ int main(int argc, char** argv)
     effHdPlot->Branch("CurrentThrowDepsX",                       &CurrentThrowDepsX);
     effHdPlot->Branch("CurrentThrowDepsY",                       &CurrentThrowDepsY);
     effHdPlot->Branch("CurrentThrowDepsZ",                       &CurrentThrowDepsZ);
-    effHdPlot->Branch("CurrentThrowVetoE",                       &CurrentThrowVetoE);
     effHdPlot->Branch("CurrentThrowTotE",                        &CurrentThrowTotE);
   }
   // 6. Calculate Geo Eff
@@ -500,16 +505,8 @@ int main(int argc, char** argv)
   effValues->Branch("ND_LAr_vtx_pos",                   &ND_LAr_vtx_pos,           "ND_LAr_vtx_pos/D");
   effValues->Branch("ND_GeoEff",                    &ND_GeoEff,            "ND_GeoEff/D");
   effValues->Branch("ND_OffAxis_MeanEff",           &ND_OffAxis_MeanEff,   "ND_OffAxis_MeanEff/D");
-  // Store ND_LAr_dtctr_pos_vec and ND_vtx_vx_vec
 
-  vector<Int_t> iwritten_vec;
-  TTree *PosVec = new TTree("PosVec", "ND OffAxis pos vec and ND LAr pos vec");
-  if(plotVerbose)
-  {
-    PosVec->Branch("iwritten_vec",                             &iwritten_vec);
-    PosVec->Branch("ND_LAr_dtctr_pos_vec",                     &ND_LAr_dtctr_pos_vec);                             // vector<double>: entries = written evts * ND_off_axis_pos_steps
-    PosVec->Branch("ND_vtx_vx_vec",                            &ND_vtx_vx_vec);
-  }
+
 
   //
   //------------------------------------------------------------------------------
@@ -571,11 +568,11 @@ int main(int argc, char** argv)
   eff->setActiveY(NDActiveVol_min[1], NDActiveVol_max[1]);
   eff->setActiveZ(NDActiveVol_min[2], NDActiveVol_max[2]);
 
-  // Range for translation throws. Use full active volume but fix X.
+  // Range for translation throws. Use full ND FV volume but fix X.
   eff->setRangeX(-1, -1);
   eff->setRandomizeX(false);
-  eff->setRangeY(NDActiveVol_min[1], NDActiveVol_max[1]);
-  eff->setRangeZ(NDActiveVol_min[2], NDActiveVol_max[2]);
+  eff->setRangeY(ND_FV_min[1], ND_FV_max[1]);
+  eff->setRangeZ(ND_FV_min[2], ND_FV_max[2]);
 
   // Set offset between MC coordinate system and det volumes
   eff->setOffsetX(NDLAr_OnAxis_offset[0]);
@@ -633,9 +630,9 @@ int main(int argc, char** argv)
     //
     // Skip events without muon/hadronic deposits
     //
-    if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_a == 0 ) continue;
-    if (myfileVerbose) myfile << "FD_Sim_n_hadronic_Edep_a: " << FD_Sim_n_hadronic_Edep_a <<"\n";
-    if (throwfileVerbose) myfile << "FD_Sim_n_hadronic_Edep_a: " << FD_Sim_n_hadronic_Edep_a <<"\n";
+    if ( FD_Sim_nMu == 0 || FD_Sim_n_hadronic_Edep_b == 0 ) continue;
+    if (myfileVerbose) myfile << "FD_Sim_n_hadronic_Edep_b: " << FD_Sim_n_hadronic_Edep_b <<"\n";
+    if (throwfileVerbose) myfile << "FD_Sim_n_hadronic_Edep_b: " << FD_Sim_n_hadronic_Edep_b <<"\n";
     if ( FD_CCNC_truth == 1) continue;   // only use CC events
     if ( abs(FD_neuPDG) != 14 ) continue;       // only use muon neu
     // Only pick the events' vertex inside the FD FV
@@ -647,17 +644,17 @@ int main(int argc, char** argv)
     //
     vetoEnergyFD = 0.;
     // Loop over hadron E deposits
-    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++ ){
 
       // Veto region size: 30 cm from the active volume
-      if ( ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_min[0] && FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
-           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_min[1] && FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
-           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_min[2] && FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
-           ( FD_Sim_hadronic_hit_x_a->at(ihadronhit) > FDActiveVol_max[0] - 30 && FD_Sim_hadronic_hit_x_a->at(ihadronhit) < FDActiveVol_max[0] ) ||
-           ( FD_Sim_hadronic_hit_y_a->at(ihadronhit) > FDActiveVol_max[1] - 30 && FD_Sim_hadronic_hit_y_a->at(ihadronhit) < FDActiveVol_max[1] ) ||
-           ( FD_Sim_hadronic_hit_z_a->at(ihadronhit) > FDActiveVol_max[2] - 30 && FD_Sim_hadronic_hit_z_a->at(ihadronhit) < FDActiveVol_max[2] )
+      if ( ( FD_Sim_hadronic_hit_x_b->at(ihadronhit) > FDActiveVol_min[0] && FD_Sim_hadronic_hit_x_b->at(ihadronhit) < FDActiveVol_min[0] + 30 ) ||
+           ( FD_Sim_hadronic_hit_y_b->at(ihadronhit) > FDActiveVol_min[1] && FD_Sim_hadronic_hit_y_b->at(ihadronhit) < FDActiveVol_min[1] + 30 ) ||
+           ( FD_Sim_hadronic_hit_z_b->at(ihadronhit) > FDActiveVol_min[2] && FD_Sim_hadronic_hit_z_b->at(ihadronhit) < FDActiveVol_min[2] + 30 ) ||
+           ( FD_Sim_hadronic_hit_x_b->at(ihadronhit) > FDActiveVol_max[0] - 30 && FD_Sim_hadronic_hit_x_b->at(ihadronhit) < FDActiveVol_max[0] ) ||
+           ( FD_Sim_hadronic_hit_y_b->at(ihadronhit) > FDActiveVol_max[1] - 30 && FD_Sim_hadronic_hit_y_b->at(ihadronhit) < FDActiveVol_max[1] ) ||
+           ( FD_Sim_hadronic_hit_z_b->at(ihadronhit) > FDActiveVol_max[2] - 30 && FD_Sim_hadronic_hit_z_b->at(ihadronhit) < FDActiveVol_max[2] )
          ){
-           vetoEnergyFD += FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit);
+           vetoEnergyFD += FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit);
       } // end if hadron deposit in FD veto region
 
     } // end loop over hadron E deposits
@@ -762,11 +759,12 @@ int main(int argc, char** argv)
     // Branches that are not affected by ND off axis position and vtx x (loops below)
     ND_Gen_numu_E = FD_Gen_numu_E;
     ND_E_vis_true = FD_E_vis_true;
-    ND_Sim_hadronic_Edep_a2 = FD_Sim_hadronic_Edep_a2;
+    ND_LepNuAngle = FD_LepNuAngle;
+    ND_Sim_hadronic_Edep_b2 = FD_Sim_hadronic_Edep_b2;
 
 
-    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
-      double FD_Sim_hadronic_hit[3] = {FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_y_a->at(ihadronhit), FD_Sim_hadronic_hit_z_a->at(ihadronhit)};
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++ ){
+      double FD_Sim_hadronic_hit[3] = {FD_Sim_hadronic_hit_x_b->at(ihadronhit),FD_Sim_hadronic_hit_y_b->at(ihadronhit), FD_Sim_hadronic_hit_z_b->at(ihadronhit)};
       for (int i =0; i<3;i++)
       {
         ND_RandomVtx_Sim_hadronic_hit_xyz.emplace_back((float)eff->getEarthCurvature(FD_Sim_hadronic_hit, beamLineRotation, i));
@@ -814,7 +812,7 @@ int main(int argc, char** argv)
     }
 
     // ND_OnAxis_Sim_hadronic_hit
-    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
+    for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++ ){
       double ND_RandomVtx_Sim_hadronic_hit_array[3] = {ND_RandomVtx_Sim_hadronic_hit[ihadronhit][0],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][1],ND_RandomVtx_Sim_hadronic_hit[ihadronhit][2]};
       for (int i =0; i<3;i++)
       {
@@ -949,7 +947,7 @@ int main(int argc, char** argv)
 
 
         // ND_OffAxis_Unrotated_Sim_hadronic_hit
-        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
+        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++ ){
           double ND_OnAxis_Sim_hadronic_hit_array[3] = {ND_OnAxis_Sim_hadronic_hit[ihadronhit][0],ND_OnAxis_Sim_hadronic_hit[ihadronhit][1],ND_OnAxis_Sim_hadronic_hit[ihadronhit][2]};
           for (int i =0; i<3;i++)
           {
@@ -1032,7 +1030,7 @@ int main(int argc, char** argv)
         ND_OffAxis_Sim_mu_start_E_xyz.clear();
 
         // ND_OffAxis_Sim_hadronic_hit
-        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
+        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++ ){
           eff->setHadronHitV(ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][0],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][1],ND_OffAxis_Unrotated_Sim_hadronic_hit[ihadronhit][2]);
           for (int i =0; i<3;i++)
           {
@@ -1046,12 +1044,12 @@ int main(int argc, char** argv)
         // Add hadron hits output
         if (myfileVerbose)
         {
-          for (int ihadronhit = FD_Sim_n_hadronic_Edep_a-2; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++) {
-            myfile << "Hit #" << ihadronhit <<"/" << FD_Sim_n_hadronic_Edep_a << "\n";
-            myfile<<"FD_Sim_hadronic_hit_x[cm]: "<<FD_Sim_hadronic_hit_x_a->at(ihadronhit)<<"\n";
-            myfile<<"FD_Sim_hadronic_hit_y[cm]: "<<FD_Sim_hadronic_hit_y_a->at(ihadronhit)<<"\n";
-            myfile<<"FD_Sim_hadronic_hit_z[cm]: "<<FD_Sim_hadronic_hit_z_a->at(ihadronhit)<<"\n";
-            double FD_Sim_hadronic_hit[3] = {FD_Sim_hadronic_hit_x_a->at(ihadronhit),FD_Sim_hadronic_hit_y_a->at(ihadronhit), FD_Sim_hadronic_hit_z_a->at(ihadronhit)};
+          for (int ihadronhit = FD_Sim_n_hadronic_Edep_b-2; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++) {
+            myfile << "Hit #" << ihadronhit <<"/" << FD_Sim_n_hadronic_Edep_b << "\n";
+            myfile<<"FD_Sim_hadronic_hit_x[cm]: "<<FD_Sim_hadronic_hit_x_b->at(ihadronhit)<<"\n";
+            myfile<<"FD_Sim_hadronic_hit_y[cm]: "<<FD_Sim_hadronic_hit_y_b->at(ihadronhit)<<"\n";
+            myfile<<"FD_Sim_hadronic_hit_z[cm]: "<<FD_Sim_hadronic_hit_z_b->at(ihadronhit)<<"\n";
+            double FD_Sim_hadronic_hit[3] = {FD_Sim_hadronic_hit_x_b->at(ihadronhit),FD_Sim_hadronic_hit_y_b->at(ihadronhit), FD_Sim_hadronic_hit_z_b->at(ihadronhit)};
             double FD_Sim_hadronic_hit_end_start = eff->getDistance(FD_Sim_hadronic_hit,FD_Sim_mu_start_v);
             myfile << "Distance between FD_Sim_hadronic_hit_end_start[cm]:" << FD_Sim_hadronic_hit_end_start <<"\n\n";
 
@@ -1097,16 +1095,16 @@ int main(int argc, char** argv)
         // Hardon hit positions
         HadronHitEdeps.clear();
         HadronHitPoss.clear();
-        HadronHitEdeps.reserve(FD_Sim_n_hadronic_Edep_a);
-        HadronHitPoss.reserve(FD_Sim_n_hadronic_Edep_a*3);
+        HadronHitEdeps.reserve(FD_Sim_n_hadronic_Edep_b);
+        HadronHitPoss.reserve(FD_Sim_n_hadronic_Edep_b*3);
         // Set HadronHitPoss
-        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++ ){
+        for ( int ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++ ){
           for (int i =0; i<3;i++)
           {
             HadronHitPoss.emplace_back(ND_OffAxis_Sim_hadronic_hit[ihadronhit][i]);
           }
-          HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) );
-          if (throwfileVerbose) myfile << "HadronHitEdeps: " << FD_Sim_hadronic_hit_Edep_a2->at(ihadronhit) << "\n";
+          HadronHitEdeps.emplace_back( FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit) );
+          if (throwfileVerbose) myfile << "HadronHitEdeps: " << FD_Sim_hadronic_hit_Edep_b2->at(ihadronhit) << "\n";
         }
 
         eff->setVertex(ND_OffAxis_Sim_mu_start_v[0], ND_OffAxis_Sim_mu_start_v[1], ND_OffAxis_Sim_mu_start_v[2]);
@@ -1118,17 +1116,16 @@ int main(int argc, char** argv)
           // for (unsigned int ithrow = 0; ithrow < N_throws; ithrow++ )
           if(plotVerbose)
           {
-            for (unsigned int ithrow = 0; ithrow < 20; ithrow++ )
+            for (unsigned int ithrow = 0; ithrow < 35; ithrow++ )
             {
               CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
               CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
-              CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
-              CurrentThrowVetoE.emplace_back(eff->getCurrentThrowsVetoE(ithrow));
+              CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));\
               CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
             }
             // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
             // {
-            //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_a; ihadronhit++)
+            //   for (Int_t ihadronhit = 0; ihadronhit < FD_Sim_n_hadronic_Edep_b; ihadronhit++)
             //   {
             //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsX[it_throw][ihadronhit] - i_ND_off_axis_pos);
             //     ND_Lar_ThrowDepsXYZ.emplace_back(CurrentThrowDepsY[it_throw][ihadronhit] - NDLAr_OnAxis_offset[1]);
@@ -1264,7 +1261,6 @@ int main(int argc, char** argv)
           CurrentThrowDepsX.clear();
           CurrentThrowDepsY.clear();
           CurrentThrowDepsZ.clear();
-          CurrentThrowVetoE.clear();
           CurrentThrowTotE.clear();
         }
 
@@ -1316,7 +1312,7 @@ int main(int argc, char** argv)
     ND_RandomVtx_Sim_hadronic_hit.clear();
     ND_OnAxis_Sim_hadronic_hit.clear();
 
-    if(plotVerbose) {iwritten_vec.emplace_back(iwritten);}
+    iwritten_vec.emplace_back(iwritten);
     cout<< "ientry: " << ientry << ", iwritten: " << iwritten << endl;
     if (verbose) myfile << "ientry: " << ientry << ", iwritten: " << iwritten << endl;
 
@@ -1338,17 +1334,12 @@ int main(int argc, char** argv)
   //------------------------------------------------------------------------------
   //
   // Write trees
-  TFile * outFile = new TFile("Output_FDGeoEff_62877585_990.root", "RECREATE");
+  TFile * outFile = new TFile("Output_FDGeoEff.root", "RECREATE");
   ThrowsFD->Write();
   effTreeFD->Write();
   effValues->Write();
   effPosND->Fill();
   effPosND->Write();
-  if(plotVerbose)
-  {
-    PosVec->Fill();
-    PosVec->Write();
-  }
   hist_vetoEnergyFD->Write();
 
   myfile.close();
