@@ -156,8 +156,7 @@ class geoEff
 
   void setSeed(int seed);
 
-  // get vetoEnergy
-  float getCurrentThrowsVetoE(int t);
+  // get throwEnergy
   float getCurrentThrowsTotE();
 
 

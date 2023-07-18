@@ -37,6 +37,7 @@
 #include <vector> // Need this for generate dictionary for nested vectors
 using namespace std;
 
+// Select file w/ E_vis_true>70GeV
 void MergeFiles() // /pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_61454381_*.root
 {
   TString FileIn = "/pnfs/dune/persistent/users/flynnguo/myFDntuples/myntuple_64401080.root";

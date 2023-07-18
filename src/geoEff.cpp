@@ -460,28 +460,6 @@ float geoEff::getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyD
   }
   return vetoEnergy ;
 }
-// Get current throw veto E, t is the # of throw
-float geoEff::getCurrentThrowsVetoE(int t){
-
-  // Set the Eigen map
-  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
-
-  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms = getTransforms();
-  // Else, loop through set of rotation translations
-
-    // Apply transformation to energy deposit positions
-    Eigen::Matrix3Xf transformedEdeps = transforms[t] * hitSegPosOrig;
-    float vetoE =0;
-    // Loop through conditions
-    for (unsigned int i = 0; i < vetoSize.size(); i++)
-    {
-      for (unsigned int j = 0; j < vetoEnergy.size(); j++)
-      {
-        vetoE = getVetoE(transformedEdeps, hitSegEdeps, vetoSize[i]);
-      }
-    }
-  return vetoE;
-}
 // Get TOTAL E
 float geoEff::getTotE(std::vector<float> energyDeposits){
 

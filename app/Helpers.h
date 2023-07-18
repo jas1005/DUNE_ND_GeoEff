@@ -9,16 +9,15 @@ bool verbose = false; // default to false, true for debugging, a lot of printout
 bool myfileVerbose = false;
 bool throwfileVerbose = false;
 bool hadronhitVerbose = false;
-bool plotVerbose = false;
 bool ntupleVerbose = false;
 
 unsigned long N_throws = 64*64; // Use multiple of 64
 
 // Active volume for FD: based on ntuple hadron hit x/y/z histogram
-// float FDActiveVol_min[] = {-370., -600.,    0.};
-// float FDActiveVol_max[] = {370.,   600., 1400.};
-float FDActiveVol_min[] = {-370., -601.,    -1.};
-float FDActiveVol_max[] = {370.,   601., 1400.};
+float FDActiveVol_min[] = {-370., -600.,    0.};
+float FDActiveVol_max[] = {370.,   600., 1400.};
+// float FDActiveVol_min[] = {-370., -601.,    -1.};
+// float FDActiveVol_max[] = {370.,   601., 1400.};
 
 // Active volume for ND
 float NDActiveVol_min[] = {-350., -150.,   0.};
@@ -30,8 +29,10 @@ float ND_FV_min[] = {-300., -100., 50.};
 float ND_FV_max[] = { 300.,  100., 350.};
 
 // Fiducial volume for FD ( minus the same amount from FDActiveVol)
-float FD_FV_min[] = {-240., -470., 130.};
-float FD_FV_max[] = { 240.,  470., 1170.};
+// float FD_FV_min[] = {-240., -470., 130.};
+// float FD_FV_max[] = { 240.,  470., 1170.};
+float FD_FV_min[] = {-145., -375., 100.};
+float FD_FV_max[] = { 145.,  375., 960.};
 
 
 
@@ -39,10 +40,10 @@ bool random_ND_off_axis_pos     = false; // Set to true will only use a random N
 double ND_off_axis_pos_stepsize = 2.5;   // unit meters
 // Average neutrino decay position in beam coordinates as a function of off axis x (from Luke)
 // This is used to interpolate the decay position
-double meanPDPZ[]               = {93.6072, 93.362,  90.346, 85.6266, 81.1443, 76.6664, 73.0865, 69.8348, 67.5822, 65.005, 62.4821, 60.8336, 59.1433, 57.7352}; // unit: meters
-double OffAxisPoints[]          = {2,       -0.5,    -3,     -5.5,    -8,      -10.5,   -13,     -15.5,   -18,     -20.5,  -23,     -25.5,   -28,     -30.5};
-double NDLarPos_new1[]        = {0., -28.}; // unit meter
-double NDLarPos_new2[]        = {-1.75, -25.75}; // unit meter
+double meanPDPZ[]       = {57.7352, 59.1433, 60.8336, 62.4821, 65.005, 67.5822, 69.8348, 73.0865, 76.6664, 81.1443, 85.6266, 90.346, 93.362, 93.6072, 93.362,  90.346, 85.6266, 81.1443, 76.6664, 73.0865, 69.8348, 67.5822, 65.005, 62.4821, 60.8336, 59.1433, 57.7352}; // unit: meters
+double OffAxisPoints[]  = {-30.5,   -28,    -25.5,   -23,     -20.5,   -18,     -15.5,   -13,    -10.5,   -8,      -5.5,    -3,    -0.5,     0,       0.5,    3,     5.5,    8,      10.5,   13,     15.5,   18,     20.5,  23,     25.5,   28,     30.5};
+double NDLarPos_new1[]  = {0., -28.}; // unit meter
+double NDLarPos_new2[]  = {-1.75, -25.75}; // unit meter
 double ND_Lar_dtctr_pos_new_stepsize = 4; // unit meter
 
 bool random_vtx_vx         = false; // Set to true will only use a random vtx x per event in runGeoEffFDEvtSim
