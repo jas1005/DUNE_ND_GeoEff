@@ -20,10 +20,14 @@ make -j pyGeoEff                                                                
 ```
 source setup.sh
 
-python3 Edepsim_ana.py edep.LArBath.mu70GeV.root
+python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root
 
 # The first time you may need to install a few packages via pip install, e.g., pip install matplotlib pandas
-# depending on what it complains when you run: python3 Edepsim_ana.py edep.SIMPLECRYO.root
+# depending on what it complains when you run
+
+# /dune/app/users/weishi/testedepsim/edep.LArBath.mu10GeV.root
+# /dune/app/users/weishi/testedepsim/edep.LArBath.mu70GeV.root
+# /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root
 ```
 
 # Instruction for FD event geometric efficiency at ND

@@ -8,6 +8,11 @@
 
 #include <Eigen/Dense>
 
+struct throwcombo {
+  std::vector< Eigen::Matrix3Xf > thrownEdepspos;
+  std::vector< std::vector< std::vector< uint64_t > > > containresult;
+};
+
 class geoEff
 {
 
@@ -15,6 +20,8 @@ class geoEff
 
   // Event vertex
   float vertex[3];
+  float fdvertex[3];
+  float ndrandvertex[3];
   // New vector
   float OnAxisVertex[3];
   float OffAxisVertex[3];
@@ -27,14 +34,23 @@ class geoEff
   // Vector to store positions of hit segments
   std::vector<float> hitSegPoss;
 
-  // Range of coordinates to randomize over. Set negative for no randomization.
+  // Range of coordinates to randomize over at ND. Set negative for no randomization.
   float range[3][2];
+
+  // Range of coordinates to randomize over at FD. Set negative for no randomization.
+  float fdrange[3][2];
 
   // If false, use vertex for this dimension in every throw: do not randomize
   bool randomizeVertex[3];
 
+  // If false, use vertex for this dimension in every throw: do not randomize
+  bool randomizeVertexfd[3];
+
   // Active volume:
   float active[3][2];
+
+  // Active volume: FD
+  float fdactive[3][2];
 
   // Detector coordinates offset:
   float offset[3];
@@ -46,11 +62,16 @@ class geoEff
   // Decay position used to calculate neutrino direction.
   float decaypos[3];
 
+  // Decay position used to calculate neutrino direction for random throws where vertex x is changed
+  float decayposrandthrow[3];
+
   // Flag to determine whether to use fixed beam direction (appropriate for FD) or calculate direction from vertex position and decay point.
   bool useFixedBeamDir;
 
-  // Number of throws. Should be a multiple of 64 to optimize output efficiency
+  // Number of throws at ND. Should be a multiple of 64 to optimize output efficiency
   unsigned long N_THROWS;
+  // Number of throws at FD
+  unsigned long N_THROWS_FD;
 
   // Veto size. Each element defines a veto region in cm from the end of the active volume in all directions.
   std::vector < float > vetoSize;
@@ -60,6 +81,7 @@ class geoEff
   // Current throws
   std::vector< float > translations[3];
   std::vector< float > rotations;
+  std::vector< float > fdtranslations[3];
 
   bool verbosity;
 
@@ -67,7 +89,8 @@ class geoEff
   std::uniform_real_distribution<> uniform;
 
   bool isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold );
-  float getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize);
+  bool isContainedInND( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold );
+  bool isPairedFDEvtContainedInFD( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold );
   float getTotE( std::vector<float> energyDeposits );
 
   // Calculate transforms for current vertex
@@ -76,12 +99,16 @@ class geoEff
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND();
   // Momentum transforms from On-Axis to Off-Axis
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms_NDtoND_P();
+  // Calculate transforms for current vertex
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransformsFD(unsigned int iStart = 0, int iEnd = -1);
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > getTransforms4RandomThrowX(unsigned int iStart = 0, int iEnd = -1);
 
  public:
   geoEff(int seed, bool verbose = false);
   ~geoEff(){;}
 
   void setNthrows(unsigned long n);
+  void setNthrowsFD(unsigned long n);
 
   void setVertex(float x, float y, float z);
   void setHitSegEdeps(std::vector<float> thishitSegEdeps);
@@ -92,18 +119,33 @@ class geoEff
   void setMuEndV(float x, float y, float z);
   void setMuStartP(float x, float y, float z);
   void setHadronHitV(float x, float y, float z);
+  // N2FD
+  void setNDrandVertex(float x, float y, float z);
+  void setVertexFD(float x, float y, float z);
 
   void setRangeX(float xmin, float xmax);
   void setRangeY(float ymin, float ymax);
   void setRangeZ(float zmin, float zmax);
 
+  void setRangeXFD(float xmin, float xmax);
+  void setRangeYFD(float ymin, float ymax);
+  void setRangeZFD(float zmin, float zmax);
+
   void setRandomizeX(bool r);
   void setRandomizeY(bool r);
   void setRandomizeZ(bool r);
 
+  void setRandomizeXFD(bool r);
+  void setRandomizeYFD(bool r);
+  void setRandomizeZFD(bool r);
+
   void setActiveX(float xmin, float xmax);
   void setActiveY(float ymin, float ymax);
   void setActiveZ(float zmin, float zmax);
+
+  void setFDActiveX(float xmin, float xmax);
+  void setFDActiveY(float ymin, float ymax);
+  void setFDActiveZ(float zmin, float zmax);
 
   void setOffsetX(float x);
   void setOffsetY(float y);
@@ -114,6 +156,7 @@ class geoEff
 
   void setBeamDir(float xdir, float ydir, float zdir);
   void setDecayPos(float x, float y, float z);
+  void setDecayPos4RandomThrowX(float x, float y, float z);
   float getDecayPos(int dim);
   void setUseFixedBeamDir(bool use);
 
@@ -121,6 +164,7 @@ class geoEff
   void setVetoEnergyThresholds(std::vector< float > vThresholds);
 
   void throwTransforms();
+  void throwTransformsFD();
 
   std::vector< float > getCurrentThrowTranslationsX();
   std::vector< float > getCurrentThrowTranslationsY();
@@ -150,6 +194,14 @@ class geoEff
 
   // Pass/fail for each set of vetoSize and vetoEnergy. Storing in TTree as uint64_t seems to take ~half the space of the equivalent vector< bool >.
   std::vector< std::vector< std::vector< uint64_t > > > getHadronContainmentThrows(bool ignore_uncontained);
+  // Similar to above but with random x enabled at ND
+  struct throwcombo getNDContainment4RandomThrowX();
+  // Similar to above but at FD
+  struct throwcombo getFDContainment4RandomThrow(Eigen::Matrix3Xf FDhitSegPosOrig);
+
+  Eigen::Matrix3Xf move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix);
+
+  Eigen::Matrix3Xf getn2fEarthCurvatureCorr(Eigen::Matrix3Xf EdepsposMatrix, double BeamAngle);
 
   // Get pass/fail containment criterion for original event
   std::vector< std::vector< bool > > getHadronContainmentOrigin();

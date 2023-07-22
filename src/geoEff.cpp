@@ -21,9 +21,11 @@ geoEff::geoEff(int seed, bool verbose){
   }
 
   N_THROWS = 64*64;
+  N_THROWS_FD = 64*64;
 
   if (verbosity){
-    std::cout << "Number of throws set to " << N_THROWS << std::endl;
+    std::cout << "Number of throws at ND set to " << N_THROWS << std::endl;
+    std::cout << "Number of throws at FD set to " << N_THROWS_FD << std::endl;
   }
 
   prnGenerator = std::mt19937_64(seed);
@@ -40,6 +42,9 @@ geoEff::geoEff(int seed, bool verbose){
   translations[1].reserve(N_THROWS);
   translations[2].reserve(N_THROWS);
   rotations.reserve(N_THROWS);
+  fdtranslations[0].reserve(N_THROWS_FD);
+  fdtranslations[1].reserve(N_THROWS_FD);
+  fdtranslations[2].reserve(N_THROWS_FD);
 
   if (verbosity){
     std::cout << "geoEff allocated memory for transformation vectors" << std::endl;
@@ -55,24 +60,54 @@ geoEff::geoEff(int seed, bool verbose){
   useFixedBeamDir = false;
 
   // Initialize to all dimensions randomized
-  for (int dim = 0; dim < 3; dim++) randomizeVertex[dim] = true;
+  for (int dim = 0; dim < 3; dim++) {
+    randomizeVertex[dim] = true;
+    randomizeVertexfd[dim] = true;
+  }
 }
 
 void geoEff::setNthrows(unsigned long n){
   N_THROWS = n;
   if (verbosity){
-    std::cout << "geoEff set number of throws to " << N_THROWS << std::endl;
+    std::cout << "geoEff set number of throws at ND to " << N_THROWS << std::endl;
   }
 
   if (N_THROWS%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
+}
+
+void geoEff::setNthrowsFD(unsigned long n){
+  N_THROWS_FD = n;
+  if (verbosity){
+    std::cout << "geoEff set number of throws at FD to " << N_THROWS_FD << std::endl;
+  }
+
+  if (N_THROWS_FD%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
 }
 
 void geoEff::setVertex(float x, float y, float z){
   vertex[0] = x;
   vertex[1] = y;
   vertex[2] = z;
+  if(true){
+    std::cout << "geoEff set vertex at ND to " << vertex[0] << " "<< vertex[1] << " "<< vertex[2] << std::endl;
+  }
+}
+
+void geoEff::setNDrandVertex(float x, float y, float z){
+  ndrandvertex[0] = x;
+  ndrandvertex[1] = y;
+  ndrandvertex[2] = z;
+  if(true){
+    std::cout << "geoEff set nd event random throw vertex to " << ndrandvertex[0] << " "<< ndrandvertex[1] << " "<< ndrandvertex[2] << std::endl;
+  }
+}
+
+void geoEff::setVertexFD(float x, float y, float z){
+  fdvertex[0] = x;
+  fdvertex[1] = y;
+  fdvertex[2] = z;
   if(verbosity){
-    std::cout << "geoEff set vertex to " << vertex[0] << " "<< vertex[1] << " "<< vertex[2] << std::endl;
+    std::cout << "geoEff set vertex at FD to " << fdvertex[0] << " "<< fdvertex[1] << " "<< fdvertex[2] << std::endl;
   }
 }
 
@@ -110,6 +145,19 @@ void geoEff::setRangeZ(float zmin, float zmax){
   range[2][1] = zmax;
 }
 
+void geoEff::setRangeXFD(float xmin, float xmax){
+  fdrange[0][0] = xmin;
+  fdrange[0][1] = xmax;
+}
+void geoEff::setRangeYFD(float ymin, float ymax){
+  fdrange[1][0] = ymin;
+  fdrange[1][1] = ymax;
+}
+void geoEff::setRangeZFD(float zmin, float zmax){
+  fdrange[2][0] = zmin;
+  fdrange[2][1] = zmax;
+}
+
 void geoEff::setRandomizeX(bool r){
   randomizeVertex[0] = r;
 }
@@ -120,6 +168,18 @@ void geoEff::setRandomizeY(bool r){
 
 void geoEff::setRandomizeZ(bool r){
   randomizeVertex[2] = r;
+}
+
+void geoEff::setRandomizeXFD(bool r){
+  randomizeVertexfd[0] = r;
+}
+
+void geoEff::setRandomizeYFD(bool r){
+  randomizeVertexfd[1] = r;
+}
+
+void geoEff::setRandomizeZFD(bool r){
+  randomizeVertexfd[2] = r;
 }
 
 void geoEff::setActiveX(float xmin, float xmax){
@@ -135,6 +195,19 @@ void geoEff::setActiveZ(float zmin, float zmax){
   active[2][1] = zmax;
 }
 
+void geoEff::setFDActiveX(float xmin, float xmax){
+  fdactive[0][0] = xmin;
+  fdactive[0][1] = xmax;
+}
+void geoEff::setFDActiveY(float ymin, float ymax){
+  fdactive[1][0] = ymin;
+  fdactive[1][1] = ymax;
+}
+void geoEff::setFDActiveZ(float zmin, float zmax){
+  fdactive[2][0] = zmin;
+  fdactive[2][1] = zmax;
+}
+
 void geoEff::setOffsetX(float x){
   offset[0] = x;
 }
@@ -147,8 +220,6 @@ void geoEff::setOffsetZ(float z){
   offset[2] = z;
 }
 
-
-
 void geoEff::setBeamDir(float xdir, float ydir, float zdir){
   beamdir[0] = xdir;
   beamdir[1] = ydir;
@@ -159,6 +230,14 @@ void geoEff::setDecayPos(float x, float y, float z){
   decaypos[0] = x;
   decaypos[1] = y;
   decaypos[2] = z;
+}
+
+// For creating paired dataset for near to far det translation training
+// Need a new decay position for random throws where vertex x is changed
+void geoEff::setDecayPos4RandomThrowX(float x, float y, float z){
+  decayposrandthrow[0] = x;
+  decayposrandthrow[1] = y;
+  decayposrandthrow[2] = z;
 }
 
 float geoEff::getDecayPos(int dim)
@@ -213,6 +292,28 @@ void geoEff::throwTransforms(){
     rotations.emplace_back((uniform(prnGenerator)-0.5)*2*M_PI);
   }
 
+}
+
+void geoEff::throwTransformsFD(){
+
+  // Clear vectors
+  fdtranslations[0].clear();
+  fdtranslations[1].clear();
+  fdtranslations[2].clear();
+
+  // dim from 0 to 2, corresponding to x, y and z
+  for (int dim = 0; dim < 3; dim++){
+    if (not randomizeVertexfd[dim]){
+      fdtranslations[dim].resize(0,0);
+    } else {
+      fdtranslations[dim].clear();
+      for (unsigned int i = 0; i < N_THROWS_FD; i++){
+        fdtranslations[dim].emplace_back(uniform(prnGenerator)*(fdrange[dim][1]-fdrange[dim][0])+fdrange[dim][0]);
+      }
+    }
+  }
+
+  // no need to rotate, keep same orientation from ND throw
 }
 
 std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(unsigned int iStart, int iEnd){
@@ -290,6 +391,114 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms(uns
   return transforms;
 }
 
+std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransforms4RandomThrowX(unsigned int iStart, int iEnd){
+
+  unsigned int thisEnd;
+  if (iEnd < 0) thisEnd = N_THROWS;
+  else if (iEnd >= 0){
+    thisEnd = iEnd;
+    if (thisEnd > N_THROWS) thisEnd = N_THROWS;
+  }
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms;
+
+  // Tranformations that do not depend on the throws:
+  // Move vertex to coordinate system origin to apply rotation
+  Eigen::Affine3f tThere(Eigen::Translation3f(Eigen::Vector3f(-vertex[0], -vertex[1], -vertex[2])));
+  // Move vertex back
+  Eigen::Affine3f tBack(Eigen::Translation3f(Eigen::Vector3f(vertex[0], vertex[1], vertex[2])));
+
+  for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
+
+    // Vertex displacement:
+    Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertex[0] ? translations[0][iThrow]-vertex[0] : 0.,
+								randomizeVertex[1] ? translations[1][iThrow]-vertex[1] : 0.,
+								randomizeVertex[2] ? translations[2][iThrow]-vertex[2] : 0.)));
+
+    // Rotation
+    Eigen::Affine3f rThrow;
+    if (useFixedBeamDir){
+      rThrow = Eigen::Affine3f(Eigen::AngleAxisf(rotations[iThrow], Eigen::Vector3f(beamdir[0], beamdir[1], beamdir[2])));
+    } else {
+      // Calculate rotation due to translation
+      // Calculate rotation angle
+      double decayToVertex[3] = {0};
+      double decayToTranslated[3] = {0};
+      double translationAngle = 0, magDecayToVertex = 0, magDecayToTranslated = 0;
+      for (int dim = 0; dim < 3; dim++) {
+        decayToVertex[dim] = vertex[dim]-decaypos[dim];
+        decayToTranslated[dim] = randomizeVertex[dim] ? translations[dim][iThrow]-decayposrandthrow[dim] : vertex[dim]-decayposrandthrow[dim];
+
+        translationAngle += (decayToVertex[dim])*(decayToTranslated[dim]);
+        magDecayToVertex += pow(decayToVertex[dim], 2);
+        magDecayToTranslated += pow(decayToTranslated[dim], 2);
+      }
+      magDecayToVertex = sqrt(magDecayToVertex);
+      magDecayToTranslated = sqrt(magDecayToTranslated);
+      translationAngle /= (magDecayToVertex*magDecayToTranslated);
+      translationAngle = acos(translationAngle);
+
+      // Calculate rotation axis
+      // Cross-product
+      float translationAxis[3] = {0};
+      translationAxis[0] = decayToVertex[1]*decayToTranslated[2] - decayToVertex[2]*decayToTranslated[1];
+      translationAxis[1] = decayToVertex[2]*decayToTranslated[0] - decayToVertex[0]*decayToTranslated[2];
+      translationAxis[2] = decayToVertex[0]*decayToTranslated[1] - decayToVertex[1]*decayToTranslated[0];
+      float magTranslationAxis = 0.;
+      for (int dim = 0; dim < 3; dim++) magTranslationAxis += pow(translationAxis[dim], 2);
+      magTranslationAxis = sqrt(magTranslationAxis);
+
+      if(magTranslationAxis!=0)  {for (int dim = 0; dim < 3; dim++) translationAxis[dim] /= magTranslationAxis;}
+      else{for (int dim = 0; dim < 3; dim++) {translationAxis[dim] = 0.;translationAngle =0.;}}
+      Eigen::Affine3f rTranslation(Eigen::Affine3f(Eigen::AngleAxisf(translationAngle, Eigen::Vector3f(translationAxis[0], translationAxis[1], translationAxis[2]))));
+
+      // Calculate rotation due to thrown angle
+      Eigen::Affine3f rPhiThrow(Eigen::Affine3f(Eigen::AngleAxisf(rotations[iThrow], Eigen::Vector3f(decayToTranslated[0]/magDecayToTranslated, decayToTranslated[1]/magDecayToTranslated, decayToTranslated[2]/magDecayToTranslated))));
+
+      // Combine
+      rThrow = rPhiThrow * rTranslation;
+    }
+
+    // Put everything together in single transform and store.
+    transforms.emplace_back(tThrow * tBack * rThrow * tThere);
+  }
+
+  return transforms;
+}
+
+std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransformsFD(unsigned int iStart, int iEnd){
+
+  unsigned int thisEnd;
+  if (iEnd < 0) thisEnd = N_THROWS_FD;
+  else if (iEnd >= 0){
+    thisEnd = iEnd;
+    if (thisEnd > N_THROWS_FD) thisEnd = N_THROWS_FD;
+  }
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transformsfd;
+
+  // Tranformations that do not depend on the throws:
+  // Move vertex to coordinate system origin to apply rotation
+  Eigen::Affine3f tThere(Eigen::Translation3f(Eigen::Vector3f(-fdvertex[0], -fdvertex[1], -fdvertex[2])));
+  // Move vertex back
+  Eigen::Affine3f tBack(Eigen::Translation3f(Eigen::Vector3f(fdvertex[0], fdvertex[1], fdvertex[2])));
+
+  for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
+
+    // Vertex displacement:
+    Eigen::Affine3f tThrow(Eigen::Translation3f(Eigen::Vector3f(randomizeVertexfd[0] ? fdtranslations[0][iThrow]-fdvertex[0] : 0.,
+								randomizeVertexfd[1] ? fdtranslations[1][iThrow]-fdvertex[1] : 0.,
+								randomizeVertexfd[2] ? fdtranslations[2][iThrow]-fdvertex[2] : 0.)));
+
+    // no need to rotate, keep same orientation from ND rand throw
+
+    // Put everything together in single transform and store.
+    transformsfd.emplace_back(tThrow * tBack * tThere);
+  }
+
+  return transformsfd;
+}
+
 std::vector<float> geoEff::getCurrentThrowTranslationsX(){
   return translations[0];
 }
@@ -302,7 +511,6 @@ std::vector<float> geoEff::getCurrentThrowTranslationsZ(){
 std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
-
 
 // Get the coordinates of hadron hits after eigen transformation, i is the # of throw
 std::vector< float > geoEff::getCurrentThrowDeps(int i, int dim){
@@ -352,7 +560,7 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
     std::vector< std::vector< bool > > vecOrigContained = getHadronContainmentOrigin();
     for (unsigned int i = 0; i < vetoSize.size(); i++){
       for (unsigned int j = 0; j < vetoEnergy.size(); j++){
-	if (vecOrigContained[i][j]) origContained++;
+        if (vecOrigContained[i][j]) origContained++;
       }
     }
 
@@ -380,6 +588,81 @@ std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainme
   return hadronContainment;
 }
 
+struct throwcombo geoEff::getNDContainment4RandomThrowX(){
+
+  struct throwcombo ndthrowcombo;
+
+  // Figure out how many multiples of 64 bits needed to store output
+  int n_longs = N_THROWS / 64;
+  if (N_THROWS % 64) n_longs++;
+
+  // Pass/fail for each set of vetoSize and vetoEnergy
+  std::vector< std::vector< std::vector< uint64_t > > > NDContainment4RandomThrowX(vetoSize.size(), std::vector< std::vector< uint64_t > >(vetoEnergy.size(), std::vector < uint64_t >(n_longs, 0)));
+
+  // Set the Eigen map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > hitSegPosOrig(hitSegPoss.data(),3,hitSegPoss.size()/3,Eigen::OuterStride<>(3));
+  std::vector< Eigen::Matrix3Xf > transformedEdepss;
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transforms4RandomThrowX = getTransforms4RandomThrowX();
+  // Else, loop through set of rotation translations
+  for (unsigned int t = 0; t < N_THROWS; t++){
+    // Apply transformation to energy deposit positions
+    Eigen::Matrix3Xf transformedEdeps4RandomThrowX = transforms4RandomThrowX[t] * hitSegPosOrig;
+    transformedEdepss.emplace_back(transformedEdeps4RandomThrowX);
+    // Loop through conditions
+    for (unsigned int i = 0; i < vetoSize.size(); i++){
+      for (unsigned int j = 0; j < vetoEnergy.size(); j++){
+        // Check containment and set bit
+        if (isContainedInND(transformedEdeps4RandomThrowX, hitSegEdeps, vetoSize[i], vetoEnergy[j]))
+        {
+	         NDContainment4RandomThrowX[i][j][t/64] |= ((uint64_t)1)<<(t%64);
+	      }
+      }
+    }
+  }
+
+  ndthrowcombo.thrownEdepspos = transformedEdepss;
+  ndthrowcombo.containresult = NDContainment4RandomThrowX;
+
+  return ndthrowcombo;
+}
+
+struct throwcombo geoEff::getFDContainment4RandomThrow(Eigen::Matrix3Xf FDhitSegPosOrig){
+
+  struct throwcombo fdthrowcombo;
+
+  // Figure out how many multiples of 64 bits needed to store output
+  int n_longs = N_THROWS_FD / 64;
+  if (N_THROWS_FD % 64) n_longs++;
+
+  std::vector< Eigen::Matrix3Xf > transformedEdepssFD;
+
+  // Pass/fail for each set of vetoSize and vetoEnergy
+  std::vector< std::vector< std::vector< uint64_t > > > FDContainment4RandomThrow(vetoSize.size(), std::vector< std::vector< uint64_t > >(vetoEnergy.size(), std::vector < uint64_t >(n_longs, 0)));
+
+  std::vector< Eigen::Transform<float,3,Eigen::Affine> > transformsFD4RandomThrow = getTransformsFD();
+  // Else, loop through set of rotation translations
+  for (unsigned int t = 0; t < N_THROWS_FD; t++){
+    // Apply transformation to energy deposit positions
+    Eigen::Matrix3Xf transformedFDEdeps4RandomThrow = transformsFD4RandomThrow[t] * FDhitSegPosOrig;
+    transformedEdepssFD.emplace_back(transformedFDEdeps4RandomThrow);
+    // Loop through conditions
+    for (unsigned int i = 0; i < vetoSize.size(); i++){
+      for (unsigned int j = 0; j < vetoEnergy.size(); j++){
+        // Check containment and set bit
+        if (isPairedFDEvtContainedInFD(transformedFDEdeps4RandomThrow, hitSegEdeps, vetoSize[i], vetoEnergy[j]))
+        {
+	         FDContainment4RandomThrow[i][j][t/64] |= ((uint64_t)1)<<(t%64);
+	      }
+      }
+    }
+  }
+
+  fdthrowcombo.thrownEdepspos = transformedEdepssFD;
+  fdthrowcombo.containresult = FDContainment4RandomThrow;
+
+  return fdthrowcombo;
+}
 
 void geoEff::setSeed(int seed){
   prnGenerator = std::mt19937_64(seed);
@@ -437,29 +720,56 @@ bool geoEff::isContained( Eigen::Matrix3Xf hitSegments, std::vector<float> energ
   return vetoEnergy < vetoEnergyThreshold;
 }
 
-// Get veto E
-float geoEff::getVetoE( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize ){
+// New function added for N2FD study
+bool geoEff::isContainedInND( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold ){
 
   float vetoEnergy = 0.;
 
   for (unsigned int i = 0; i < energyDeposits.size(); i++){
     for (int dim = 0; dim < 3; dim++){
       // low
-      if ( (hitSegments(dim, i)-OffAxisOffset[dim] < active[dim][0]+vSize) and
-           (hitSegments(dim, i)-OffAxisOffset[dim] > active[dim][0]) ) {
+      if ( (hitSegments(dim, i)-offset[dim] < active[dim][0]+vSize) and
+           (hitSegments(dim, i)-offset[dim] > active[dim][0]) ) {
         vetoEnergy += energyDeposits[i];
         break; // Only count each energy deposit once
       }
       // high
-      if ( (hitSegments(dim, i)-OffAxisOffset[dim] > active[dim][1]-vSize) and
-           (hitSegments(dim, i)-OffAxisOffset[dim] < active[dim][1]) ) {
+      if ( (hitSegments(dim, i)-offset[dim] > active[dim][1]-vSize) and
+           (hitSegments(dim, i)-offset[dim] < active[dim][1]) ) {
         vetoEnergy += energyDeposits[i];
         break; // Only count each energy deposit once
       }
     }
   }
-  return vetoEnergy ;
+
+  return vetoEnergy < vetoEnergyThreshold;
 }
+
+// New function added for N2FD study
+bool geoEff::isPairedFDEvtContainedInFD( Eigen::Matrix3Xf hitSegments, std::vector<float> energyDeposits, float vSize, float vetoEnergyThreshold ){
+
+  float fdvetoEnergy = 0.;
+
+  for (unsigned int i = 0; i < energyDeposits.size(); i++){
+    for (int dim = 0; dim < 3; dim++){
+      // low
+      if ( (hitSegments(dim, i) < fdactive[dim][0]+vSize) and
+           (hitSegments(dim, i) > fdactive[dim][0]) ) {
+        fdvetoEnergy += energyDeposits[i];
+        break; // Only count each energy deposit once
+      }
+      // high
+      if ( (hitSegments(dim, i) > fdactive[dim][1]-vSize) and
+           (hitSegments(dim, i) < fdactive[dim][1]) ) {
+        fdvetoEnergy += energyDeposits[i];
+        break; // Only count each energy deposit once
+      }
+    }
+  }
+
+  return fdvetoEnergy < vetoEnergyThreshold;
+}
+
 // Get TOTAL E
 float geoEff::getTotE(std::vector<float> energyDeposits){
 
@@ -468,9 +778,9 @@ float geoEff::getTotE(std::vector<float> energyDeposits){
   for (unsigned int i = 0; i < energyDeposits.size(); i++){
     totEnergy += energyDeposits[i];
   }
-  return totEnergy ;
+  return totEnergy;
 }
-// Get current throw veto E, t is the # of throw
+
 float geoEff::getCurrentThrowsTotE(){
   float totEnergy = 0.;
   totEnergy = getTotE(hitSegEdeps);
@@ -753,6 +1063,29 @@ double geoEff::getEarthCurvature(double v[3], double BeamAngle, int dim)
   Vector_af[2]=sin( 2*abs(BeamAngle) )*v[1] + cos( 2*abs(BeamAngle) )*v[2];
   return Vector_af[dim];
 }
+
+// Reimplemented from getEarthCurvature but with rotation reversed
+//                      [ 1          0             0
+// R_x(theta)_inverse =   0      cos(theta)    sin(theta)
+//                        0     -sin(theta)    cos(theta) ]
+Eigen::Matrix3Xf geoEff::getn2fEarthCurvatureCorr(Eigen::Matrix3Xf EdepsposMatrix, double BeamAngle)
+{
+  Eigen::Affine3f rECC;
+  rECC = Eigen::Affine3f(Eigen::AngleAxisf(-2*abs(BeamAngle), Eigen::Vector3f(1,0,0))); // X-axis is rotation axis
+  Eigen::Matrix3Xf ECCposEdeps = rECC * EdepsposMatrix;
+  return ECCposEdeps;
+}
+
+Eigen::Matrix3Xf geoEff::move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix)
+{
+  // Move vertex to ND det coordinate system origin
+  Eigen::Affine3f t2ndorig(Eigen::Translation3f(Eigen::Vector3f(-ndrandvertex[0], -ndrandvertex[1], -ndrandvertex[2])));
+
+  Eigen::Matrix3Xf vtxNDoriginEdepspos = t2ndorig * randndhitSegPosMatrix;
+
+  return vtxNDoriginEdepspos;
+}
+
 // Put events back to beam center
 double geoEff::getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3], int dim)
 {
@@ -763,15 +1096,3 @@ double geoEff::getTranslations(double v_bf[3], double vtx_bf[3], double vtx_af[3
   }
   return Vector_af[dim];
 }
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//
-// Draw 2d graph for geoEff, x axis: ND_LAr_pos, y axis: ND_OffAxis_pos, z axis(colz): ND_OffAxis_eff

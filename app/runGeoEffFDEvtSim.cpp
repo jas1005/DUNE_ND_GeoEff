@@ -529,7 +529,7 @@ int main(int argc, char** argv)
   ThrowsFD->Branch("throwRot",  &throwRot);
 
   // Mean neutrino production point (beam coordinate) on z axis as a function of ND off-axis position
-  TGraph* gDecayZ = new TGraph(14, OffAxisPoints, meanPDPZ);
+  TGraph* gDecayZ = new TGraph(27, OffAxisPoints, meanPDPZ);
   //
   //------------------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -847,8 +847,6 @@ int main(int argc, char** argv)
       Int_t Leff_counter = 0;
       Int_t Reff_counter = 0;
 
-
-      eff->setOffsetX(NDLAr_OnAxis_offset[0]-i_ND_off_axis_pos);
       ND_off_axis_pos_counter++;
       //
       // Loop over vtx x: random x or stepwise increased x
@@ -863,7 +861,7 @@ int main(int argc, char** argv)
       for ( double i_vtx_vx : ND_vtx_vx_vec )
       {
         // Interpolate event neutrino production point (beam coordinate)
-        decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos + i_vtx_vx - detRefBeamCoord[0] );
+        decayZbeamCoord = gDecayZ->Eval( i_ND_off_axis_pos/100. + i_vtx_vx/100. - detRefBeamCoord[0] );
 
         // Calculate neutrino production point in detector coordinate
         decayYdetCoord = beamRefDetCoord[1] - detRefBeamCoord[1]*cos(beamLineRotation) + ( decayZbeamCoord - detRefBeamCoord[2] )*sin(beamLineRotation);
@@ -1120,7 +1118,7 @@ int main(int argc, char** argv)
             {
               CurrentThrowDepsX.emplace_back(eff->getCurrentThrowDepsX(ithrow));
               CurrentThrowDepsY.emplace_back(eff->getCurrentThrowDepsY(ithrow));
-              CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));\
+              CurrentThrowDepsZ.emplace_back(eff->getCurrentThrowDepsZ(ithrow));
               CurrentThrowTotE.emplace_back(eff->getCurrentThrowsTotE());
             }
             // for( unsigned int it_throw = 0; it_throw < N_throws; it_throw ++)
