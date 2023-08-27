@@ -512,6 +512,18 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
 
+
+std::vector<float> geoEff::getCurrentFDThrowTranslationsX(){
+  return fdtranslations[0];
+}
+std::vector<float> geoEff::getCurrentFDThrowTranslationsY(){
+  return fdtranslations[1];
+}
+std::vector<float> geoEff::getCurrentFDThrowTranslationsZ(){
+  return fdtranslations[2];
+}
+
+
 // Get the coordinates of hadron hits after eigen transformation, i is the # of throw
 std::vector< float > geoEff::getCurrentThrowDeps(int i, int dim){
 
@@ -1084,6 +1096,16 @@ Eigen::Matrix3Xf geoEff::move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix)
   Eigen::Matrix3Xf vtxNDoriginEdepspos = t2ndorig * randndhitSegPosMatrix;
 
   return vtxNDoriginEdepspos;
+}
+
+Eigen::Matrix3Xf geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix)
+{
+  // Move vertex to the original ND detector position after the random throw
+  Eigen::Affine3f tBack2ndVertex( Eigen::Translation3f( Eigen::Vector3f( ndrandvertex[0], ndrandvertex[1], ndrandvertex[2])));
+
+  Eigen::Matrix3Xf vtxNDEdepspos = tBack2ndVertex * randndhitSegPosMatrix;
+
+  return vtxNDEdepspos;  
 }
 
 // Put events back to beam center
