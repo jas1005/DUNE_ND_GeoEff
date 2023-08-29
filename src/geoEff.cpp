@@ -72,7 +72,7 @@ void geoEff::setNthrows(unsigned long n){
     std::cout << "geoEff set number of throws at ND to " << N_THROWS << std::endl;
   }
 
-  if (N_THROWS%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
+  if (N_THROWS%64 && verbosity) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
 }
 
 void geoEff::setNthrowsFD(unsigned long n){
@@ -81,14 +81,14 @@ void geoEff::setNthrowsFD(unsigned long n){
     std::cout << "geoEff set number of throws at FD to " << N_THROWS_FD << std::endl;
   }
 
-  if (N_THROWS_FD%64) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
+  if (N_THROWS_FD%64 && verbosity) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
 }
 
 void geoEff::setVertex(float x, float y, float z){
   vertex[0] = x;
   vertex[1] = y;
   vertex[2] = z;
-  if(true){
+  if(verbosity){
     std::cout << "geoEff set vertex at ND to " << vertex[0] << " "<< vertex[1] << " "<< vertex[2] << std::endl;
   }
 }
@@ -97,7 +97,7 @@ void geoEff::setNDrandVertex(float x, float y, float z){
   ndrandvertex[0] = x;
   ndrandvertex[1] = y;
   ndrandvertex[2] = z;
-  if(true){
+  if(verbosity){
     std::cout << "geoEff set nd event random throw vertex to " << ndrandvertex[0] << " "<< ndrandvertex[1] << " "<< ndrandvertex[2] << std::endl;
   }
 }
@@ -511,6 +511,18 @@ std::vector<float> geoEff::getCurrentThrowTranslationsZ(){
 std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
+
+
+std::vector<float> geoEff::getCurrentFDThrowTranslationsX(){
+  return fdtranslations[0];
+}
+std::vector<float> geoEff::getCurrentFDThrowTranslationsY(){
+  return fdtranslations[1];
+}
+std::vector<float> geoEff::getCurrentFDThrowTranslationsZ(){
+  return fdtranslations[2];
+}
+
 
 // Get the coordinates of hadron hits after eigen transformation, i is the # of throw
 std::vector< float > geoEff::getCurrentThrowDeps(int i, int dim){
@@ -1084,6 +1096,16 @@ Eigen::Matrix3Xf geoEff::move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix)
   Eigen::Matrix3Xf vtxNDoriginEdepspos = t2ndorig * randndhitSegPosMatrix;
 
   return vtxNDoriginEdepspos;
+}
+
+Eigen::Matrix3Xf geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix)
+{
+  // Move vertex from (0,0,0) back to the random thrown position in ND
+  Eigen::Affine3f tBack2ndVertex(Eigen::Translation3f(Eigen::Vector3f(ndrandvertex[0], ndrandvertex[1], ndrandvertex[2])));
+
+  Eigen::Matrix3Xf vtxNDEdepspos = tBack2ndVertex * randndhitSegPosMatrix;
+
+  return vtxNDEdepspos;
 }
 
 // Put events back to beam center

@@ -72,6 +72,9 @@ PYBIND11_MODULE(pyGeoEff, m) {
       .def("getCurrentThrowTranslationsY", &geoEff::getCurrentThrowTranslationsY)
       .def("getCurrentThrowTranslationsZ", &geoEff::getCurrentThrowTranslationsZ)
       .def("getCurrentThrowRotations", &geoEff::getCurrentThrowRotations)
+      .def("getCurrentFDThrowTranslationsX", &geoEff::getCurrentFDThrowTranslationsX)
+      .def("getCurrentFDThrowTranslationsY", &geoEff::getCurrentFDThrowTranslationsY)
+      .def("getCurrentFDThrowTranslationsZ", &geoEff::getCurrentFDThrowTranslationsZ)
       .def("getCurrentThrowDeps", &geoEff::getCurrentThrowDeps)
       .def("getCurrentThrowDepsX", &geoEff::getCurrentThrowDepsX)
       .def("getCurrentThrowDepsY", &geoEff::getCurrentThrowDepsY)
@@ -87,6 +90,7 @@ PYBIND11_MODULE(pyGeoEff, m) {
       .def("getn2fEarthCurvatureCorr", &geoEff::getn2fEarthCurvatureCorr)
       .def("getTranslations", &geoEff::getTranslations)
       .def("move2ndorigin", &geoEff::move2ndorigin)
+      .def("moveBack2ndVertex", &geoEff::moveBack2ndVertex)
       .def("RemainUnchanged", &geoEff::RemainUnchanged)
       .def("setSeed", &geoEff::setSeed);
 }

@@ -9,7 +9,7 @@ setup gcc v6_4_0
 setup eigen v3_3_5
 
 # only need this line when doing interactively on dunegpvm
-export PYTHONPATH=~/.local/lib/python3.9/site-packages:$PYTHONPATH
+export PYTHONPATH=/dune/app/users/weishi/python3libs:$PYTHONPATH
 setup geant4 v4_10_6_p01e -q e20:prof
 setup edepsim v3_2_0 -q e20:prof
 

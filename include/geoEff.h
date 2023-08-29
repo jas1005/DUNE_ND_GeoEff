@@ -171,6 +171,10 @@ class geoEff
   std::vector< float > getCurrentThrowTranslationsZ();
   std::vector< float > getCurrentThrowRotations();
 
+  std::vector< float > getCurrentFDThrowTranslationsX();
+  std::vector< float > getCurrentFDThrowTranslationsY();
+  std::vector< float > getCurrentFDThrowTranslationsZ();
+
   std::vector< float > getCurrentThrowDeps(int i, int dim);
   std::vector< float > getCurrentThrowDepsX(int i);
   std::vector< float > getCurrentThrowDepsY(int i);
@@ -202,6 +206,8 @@ class geoEff
   Eigen::Matrix3Xf move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix);
 
   Eigen::Matrix3Xf getn2fEarthCurvatureCorr(Eigen::Matrix3Xf EdepsposMatrix, double BeamAngle);
+
+  Eigen::Matrix3Xf moveBack2ndVertex( Eigen::Matrix3Xf randndhitSegPosMatrix);
 
   // Get pass/fail containment criterion for original event
   std::vector< std::vector< bool > > getHadronContainmentOrigin();

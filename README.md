@@ -20,10 +20,13 @@ make -j pyGeoEff                                                                
 ```
 source setup.sh
 
-python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root
+nohup python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root >& output.log &
 
-# The first time you may need to install a few packages via pip install, e.g., pip install matplotlib pandas
-# depending on what it complains when you run
+# The first time you may need to install a few packages via pip install, depending on what it complains when you run, e.g.:
+
+pip install --target=/dune/app/users/weishi/python3libs matplotlib
+pip install --target=/dune/app/users/weishi/python3libs pandas
+pip install --target=/dune/app/users/weishi/python3libs tables
 
 # /dune/app/users/weishi/testedepsim/edep.LArBath.mu10GeV.root
 # /dune/app/users/weishi/testedepsim/edep.LArBath.mu70GeV.root
