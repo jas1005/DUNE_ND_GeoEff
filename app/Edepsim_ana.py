@@ -82,81 +82,85 @@ maxEdeps = 100000 # max number of edeps for initialize arrays
 ##################################
 nEdeps = array('i', [0])
 myEvents.Branch('nEdeps', nEdeps, 'nEdeps/I')
-deps_E = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('deps_E', deps_E, 'deps_E[nEdeps]/F')
-larbath_vtx = array('f', 3*[0.0])
-myEvents.Branch('larbath_vtx', larbath_vtx, 'larbath_vtx[3]/F')
+deps_E_MeV = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('deps_E_MeV', deps_E_MeV, 'deps_E_MeV[nEdeps]/F')
+deps_start_t_us = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('deps_start_t_us', deps_start_t_us, 'deps_start_t_us[nEdeps]/F')
+deps_stop_t_us = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('deps_stop_t_us', deps_stop_t_us, 'deps_stop_t_us[nEdeps]/F')
+larbath_vtx_cm = array('f', 3*[0.0])
+myEvents.Branch('larbath_vtx_cm', larbath_vtx_cm, 'larbath_vtx_cm[3]/F')
 # edeps generated in LArBath (start point)
-larbath_deps_start_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_start_x', larbath_deps_start_x, 'larbath_deps_start_x[nEdeps]/F') # larbath edeps x
-larbath_deps_start_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_start_y', larbath_deps_start_y, 'larbath_deps_start_y[nEdeps]/F')
-larbath_deps_start_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_start_z', larbath_deps_start_z, 'larbath_deps_start_z[nEdeps]/F')
+larbath_deps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('larbath_deps_start_x_cm', larbath_deps_start_x_cm, 'larbath_deps_start_x_cm[nEdeps]/F') # larbath edeps x
+larbath_deps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('larbath_deps_start_y_cm', larbath_deps_start_y_cm, 'larbath_deps_start_y_cm[nEdeps]/F')
+larbath_deps_start_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('larbath_deps_start_z_cm', larbath_deps_start_z_cm, 'larbath_deps_start_z_cm[nEdeps]/F')
 # edeps generated in LArBath (stop point)
-larbath_deps_stop_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_stop_x', larbath_deps_stop_x, 'larbath_deps_stop_x[nEdeps]/F')
-larbath_deps_stop_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_stop_y', larbath_deps_stop_y, 'larbath_deps_stop_y[nEdeps]/F')
-larbath_deps_stop_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_stop_z', larbath_deps_stop_z, 'larbath_deps_stop_z[nEdeps]/F')
+larbath_deps_stop_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('larbath_deps_stop_x_cm', larbath_deps_stop_x_cm, 'larbath_deps_stop_x_cm[nEdeps]/F')
+larbath_deps_stop_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('larbath_deps_stop_y_cm', larbath_deps_stop_y_cm, 'larbath_deps_stop_y_cm[nEdeps]/F')
+larbath_deps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('larbath_deps_stop_z_cm', larbath_deps_stop_z_cm, 'larbath_deps_stop_z_cm[nEdeps]/F')
 
 ##################################
 # ND paired evt info
 ##################################
 # Random thrown vertex in ND (paired evt)
-throwVtx_nd = array('f', 3*[0.0])
-myEvents.Branch('throwVtx_nd', throwVtx_nd, 'throwVtx_nd[3]/F')
+throwVtx_nd_cm = array('f', 3*[0.0])
+myEvents.Branch('throwVtx_nd_cm', throwVtx_nd_cm, 'throwVtx_nd_cm[3]/F')
 # Edeps in ND random throw (start points)
-ndthrow_deps_start_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_deps_start_x', ndthrow_deps_start_x, 'ndthrow_deps_start_x[nEdeps]/F')
-ndthrow_deps_start_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_deps_start_y', ndthrow_deps_start_y, 'ndthrow_deps_start_y[nEdeps]/F')
-ndthrow_deps_start_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_deps_start_z', ndthrow_deps_start_z, 'ndthrow_deps_start_z[nEdeps]/F')
+ndthrow_deps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_deps_start_x_cm', ndthrow_deps_start_x_cm, 'ndthrow_deps_start_x_cm[nEdeps]/F')
+ndthrow_deps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_deps_start_y_cm', ndthrow_deps_start_y_cm, 'ndthrow_deps_start_y_cm[nEdeps]/F')
+ndthrow_deps_start_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_deps_start_z_cm', ndthrow_deps_start_z_cm, 'ndthrow_deps_start_z_cm[nEdeps]/F')
 # Edeps in ND random throw (stop points)
-ndthrow_deps_stop_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_deps_stop_x', ndthrow_deps_stop_x, 'ndthrow_deps_stop_x[nEdeps]/F')
-ndthrow_deps_stop_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_deps_stop_y', ndthrow_deps_stop_y, 'ndthrow_deps_stop_y[nEdeps]/F')
-ndthrow_deps_stop_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_deps_stop_z', ndthrow_deps_stop_z, 'ndthrow_deps_stop_z[nEdeps]/F')
+ndthrow_deps_stop_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_deps_stop_x_cm', ndthrow_deps_stop_x_cm, 'ndthrow_deps_stop_x_cm[nEdeps]/F')
+ndthrow_deps_stop_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_deps_stop_y_cm', ndthrow_deps_stop_y_cm, 'ndthrow_deps_stop_y_cm[nEdeps]/F')
+ndthrow_deps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_deps_stop_z_cm', ndthrow_deps_stop_z_cm, 'ndthrow_deps_stop_z_cm[nEdeps]/F')
 
 # Edeps in ND with earth curvature correction
-# this share the same vertex throwVtx_nd
-ndthrow_ecc_deps_start_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_ecc_deps_start_x', ndthrow_ecc_deps_start_x, 'ndthrow_ecc_deps_start_x[nEdeps]/F')
-ndthrow_ecc_deps_start_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_ecc_deps_start_y', ndthrow_ecc_deps_start_y, 'ndthrow_ecc_deps_start_y[nEdeps]/F')
-ndthrow_ecc_deps_start_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_ecc_deps_start_z', ndthrow_ecc_deps_start_z, 'ndthrow_ecc_deps_start_z[nEdeps]/F')
-ndthrow_ecc_deps_stop_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_ecc_deps_stop_x', ndthrow_ecc_deps_stop_x, 'ndthrow_ecc_deps_stop_x[nEdeps]/F')
-ndthrow_ecc_deps_stop_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_ecc_deps_stop_y', ndthrow_ecc_deps_stop_y, 'ndthrow_ecc_deps_stop_y[nEdeps]/F')
-ndthrow_ecc_deps_stop_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('ndthrow_ecc_deps_stop_z', ndthrow_ecc_deps_stop_z, 'ndthrow_ecc_deps_stop_z[nEdeps]/F')
+# this share the same vertex throwVtx_nd_cm
+ndthrow_ecc_deps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_ecc_deps_start_x_cm', ndthrow_ecc_deps_start_x_cm, 'ndthrow_ecc_deps_start_x_cm[nEdeps]/F')
+ndthrow_ecc_deps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_ecc_deps_start_y_cm', ndthrow_ecc_deps_start_y_cm, 'ndthrow_ecc_deps_start_y_cm[nEdeps]/F')
+ndthrow_ecc_deps_start_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_ecc_deps_start_z_cm', ndthrow_ecc_deps_start_z_cm, 'ndthrow_ecc_deps_start_z_cm[nEdeps]/F')
+ndthrow_ecc_deps_stop_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_ecc_deps_stop_x_cm', ndthrow_ecc_deps_stop_x_cm, 'ndthrow_ecc_deps_stop_x_cm[nEdeps]/F')
+ndthrow_ecc_deps_stop_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_ecc_deps_stop_y_cm', ndthrow_ecc_deps_stop_y_cm, 'ndthrow_ecc_deps_stop_y_cm[nEdeps]/F')
+ndthrow_ecc_deps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('ndthrow_ecc_deps_stop_z_cm', ndthrow_ecc_deps_stop_z_cm, 'ndthrow_ecc_deps_stop_z_cm[nEdeps]/F')
 
 ##################################
 # FD paired evt info
 ##################################
 # Random thrown vertex in FD
-throwVtx_fd = array('f', 3*[0.0])
-myEvents.Branch('throwVtx_fd', throwVtx_fd, 'throwVtx_fd[3]/F')
+throwVtx_fd_cm = array('f', 3*[0.0])
+myEvents.Branch('throwVtx_fd_cm', throwVtx_fd_cm, 'throwVtx_fd_cm[3]/F')
 # Edeps in FD random throw (start points)
-fdthrow_deps_start_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fdthrow_deps_start_x', fdthrow_deps_start_x, 'fdthrow_deps_start_x[nEdeps]/F')
-fdthrow_deps_start_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fdthrow_deps_start_y', fdthrow_deps_start_y, 'fdthrow_deps_start_y[nEdeps]/F')
-fdthrow_deps_start_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fdthrow_deps_start_z', fdthrow_deps_start_z, 'fdthrow_deps_start_z[nEdeps]/F')
+fdthrow_deps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('fdthrow_deps_start_x_cm', fdthrow_deps_start_x_cm, 'fdthrow_deps_start_x_cm[nEdeps]/F')
+fdthrow_deps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('fdthrow_deps_start_y_cm', fdthrow_deps_start_y_cm, 'fdthrow_deps_start_y_cm[nEdeps]/F')
+fdthrow_deps_start_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('fdthrow_deps_start_z_cm', fdthrow_deps_start_z_cm, 'fdthrow_deps_start_z_cm[nEdeps]/F')
 # Edeps in FD random throw (stop points)
-fdthrow_deps_stop_x = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fdthrow_deps_stop_x', fdthrow_deps_stop_x, 'fdthrow_deps_stop_x[nEdeps]/F')
-fdthrow_deps_stop_y = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fdthrow_deps_stop_y', fdthrow_deps_stop_y, 'fdthrow_deps_stop_y[nEdeps]/F')
-fdthrow_deps_stop_z = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fdthrow_deps_stop_z', fdthrow_deps_stop_z, 'fdthrow_deps_stop_z[nEdeps]/F')
+fdthrow_deps_stop_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('fdthrow_deps_stop_x_cm', fdthrow_deps_stop_x_cm, 'fdthrow_deps_stop_x_cm[nEdeps]/F')
+fdthrow_deps_stop_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('fdthrow_deps_stop_y_cm', fdthrow_deps_stop_y_cm, 'fdthrow_deps_stop_y_cm[nEdeps]/F')
+fdthrow_deps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
+myEvents.Branch('fdthrow_deps_stop_z_cm', fdthrow_deps_stop_z_cm, 'fdthrow_deps_stop_z_cm[nEdeps]/F')
 
 ###########################
 # Loop over edepsim events
@@ -170,17 +174,19 @@ for jentry in range(41):
     #print("number of primaries: ", event.Primaries.size())
     #print("number of trajectories: ", event.Trajectories.size())
     #print("number of segments: ", event.SegmentDetectors.size())
-    all_startposdep_list = list()
-    all_stopposdep_list = list()
+    all_dep_startpos_list = list()
+    all_dep_stoppos_list = list()
     all_edep_list   = list()
-    had_posdep_list = list()
+    all_dep_starttime_list = list()
+    all_dep_stoptime_list = list()
+    had_dep_pos_list = list()
     had_edep_list   = list()
 
     # initialize LArBath vertex
-    larbath_vtx[0] = 0; larbath_vtx[1] = 0; larbath_vtx[2] = 0;
+    larbath_vtx_cm[0] = 0; larbath_vtx_cm[1] = 0; larbath_vtx_cm[2] = 0;
     nEdeps[0] = 0
-    throwVtx_nd[0] = 0; throwVtx_nd[1] = 0; throwVtx_nd[2] = 0;
-    throwVtx_fd[0] = 0; throwVtx_fd[1] = 0; throwVtx_fd[2] = 0;
+    throwVtx_nd_cm[0] = 0; throwVtx_nd_cm[1] = 0; throwVtx_nd_cm[2] = 0;
+    throwVtx_fd_cm[0] = 0; throwVtx_fd_cm[1] = 0; throwVtx_fd_cm[2] = 0;
 
     for primary in event.Primaries:
         #print("number of particles: ", primary.Particles.size())
@@ -210,28 +216,32 @@ for jentry in range(41):
             edep_start_x = hitSegment.GetStart().X() * edep2cm
             edep_start_y = hitSegment.GetStart().Y() * edep2cm
             edep_start_z = hitSegment.GetStart().Z() * edep2cm
+            edep_start_t = hitSegment.GetStart().T() * edep2us
             edep_stop_x = hitSegment.GetStop().X() * edep2cm
             edep_stop_y = hitSegment.GetStop().Y() * edep2cm
             edep_stop_z = hitSegment.GetStop().Z() * edep2cm
+            edep_stop_t = hitSegment.GetStop().T() * edep2us
             edep_x = (edep_start_x + edep_stop_x)/2 # use this for hadronic veto
             edep_y = (edep_start_y + edep_stop_y)/2
             edep_z = (edep_start_z + edep_stop_z)/2
             edep = hitSegment.GetEnergyDeposit()
 
-            all_startposdep_list.append(edep_start_x)
-            all_startposdep_list.append(edep_start_y)
-            all_startposdep_list.append(edep_start_z)
-            all_stopposdep_list.append(edep_stop_x)
-            all_stopposdep_list.append(edep_stop_y)
-            all_stopposdep_list.append(edep_stop_z)
+            all_dep_startpos_list.append(edep_start_x)
+            all_dep_startpos_list.append(edep_start_y)
+            all_dep_startpos_list.append(edep_start_z)
+            all_dep_starttime_list.append(edep_start_t)
+            all_dep_stoppos_list.append(edep_stop_x)
+            all_dep_stoppos_list.append(edep_stop_y)
+            all_dep_stoppos_list.append(edep_stop_z)
+            all_dep_stoptime_list.append(edep_stop_t)
             all_edep_list.append(edep)
 
             # Hadronic part of edepsim
             # Later need these hadronic edeps to evaluate hadronic veto
             if primaryID != trackIDforPrimary:
-                had_posdep_list.append(edep_x)
-                had_posdep_list.append(edep_y)
-                had_posdep_list.append(edep_z)
+                had_dep_pos_list.append(edep_x)
+                had_dep_pos_list.append(edep_y)
+                had_dep_pos_list.append(edep_z)
                 had_edep_list.append(edep)
 
     # for use in processing events before and after transformations
@@ -336,7 +346,7 @@ for jentry in range(41):
             # Set the hadronic part list of edeps to evaluate ND hadronic veto
             # NOTE: in the future may need to add lepton selection at ND as well (to be discussed)
             geoEff.setHitSegEdeps(had_edep_list)
-            geoEff.setHitSegPoss(had_posdep_list)
+            geoEff.setHitSegPoss(had_dep_pos_list)
             ndrandthrowresulthad = geoEff.getNDContainment4RandomThrowX() # returns a struct
 
             if (ndrandthrowresulthad.containresult[0][0][0] != 0):
@@ -348,13 +358,13 @@ for jentry in range(41):
                 # Now change to the full list of edeps start points
                 # the random thrown x/y/z/angle should remain the same because throw was done above already
                 geoEff.setHitSegEdeps(all_edep_list)
-                geoEff.setHitSegPoss(all_startposdep_list)
+                geoEff.setHitSegPoss(all_dep_startpos_list)
                 # And call the function again to get new transformed positions for all edeps
                 ndrandthrowresultall_start = geoEff.getNDContainment4RandomThrowX()
 
                 # Repeat for edepsim stop points !!!
                 geoEff.setHitSegEdeps(all_edep_list)
-                geoEff.setHitSegPoss(all_stopposdep_list)
+                geoEff.setHitSegPoss(all_dep_stoppos_list)
                 ndrandthrowresultall_stop = geoEff.getNDContainment4RandomThrowX()
 
                 ###########################################################
@@ -421,7 +431,7 @@ for jentry in range(41):
 
                         for iDep in range(len(all_edep_list)):
                             # Save edeps and their positions in nd and fd
-                            print ("iDep #", iDep, ": E [MeV]:", all_edep_list[iDep], ", original genie gen pos[cm]:", all_startposdep_list[iDep*3:(iDep)*3+3], ", paired nd pos [cm]:", ndrandthrowresultall_start.thrownEdepspos[0][:, iDep], ", paired fd pos [cm]:", fdrandthrowresultall_start.thrownEdepspos[0][:, iDep])
+                            print ("iDep #", iDep, ": E [MeV]:", all_edep_list[iDep], ", original genie gen pos[cm]:", all_dep_startpos_list[iDep*3:(iDep)*3+3], ", paired nd pos [cm]:", ndrandthrowresultall_start.thrownEdepspos[0][:, iDep], ", paired fd pos [cm]:", fdrandthrowresultall_start.thrownEdepspos[0][:, iDep])
                         """
 
                         #################################
@@ -429,47 +439,49 @@ for jentry in range(41):
                         #################################
 
                         # LArBath info
-                        larbath_vtx[0] = posx
-                        larbath_vtx[1] = posy
-                        larbath_vtx[2] = posz
-                        deps_E[:nEdeps[0]] = np.array(all_edep_list, dtype=np.float32)
-                        larbath_deps_start_x[:nEdeps[0]] = np.array(all_startposdep_list[::3], dtype=np.float32) # every 3 element: x list
-                        larbath_deps_start_y[:nEdeps[0]] = np.array(all_startposdep_list[1::3], dtype=np.float32) # y list
-                        larbath_deps_start_z[:nEdeps[0]] = np.array(all_startposdep_list[2::3], dtype=np.float32) # z list
-                        larbath_deps_stop_x[:nEdeps[0]] = np.array(all_stopposdep_list[::3], dtype=np.float32)
-                        larbath_deps_stop_y[:nEdeps[0]] = np.array(all_stopposdep_list[1::3], dtype=np.float32)
-                        larbath_deps_stop_z[:nEdeps[0]] = np.array(all_stopposdep_list[2::3], dtype=np.float32)
+                        larbath_vtx_cm[0] = posx
+                        larbath_vtx_cm[1] = posy
+                        larbath_vtx_cm[2] = posz
+                        deps_E_MeV[:nEdeps[0]] = np.array(all_edep_list, dtype=np.float32)
+                        deps_start_t_us[:nEdeps[0]] = np.array(all_dep_starttime_list, dtype=np.float32)
+                        deps_stop_t_us[:nEdeps[0]] = np.array(all_dep_stoptime_list, dtype=np.float32)
+                        larbath_deps_start_x_cm[:nEdeps[0]] = np.array(all_dep_startpos_list[::3], dtype=np.float32) # every 3 element: x list
+                        larbath_deps_start_y_cm[:nEdeps[0]] = np.array(all_dep_startpos_list[1::3], dtype=np.float32) # y list
+                        larbath_deps_start_z_cm[:nEdeps[0]] = np.array(all_dep_startpos_list[2::3], dtype=np.float32) # z list
+                        larbath_deps_stop_x_cm[:nEdeps[0]] = np.array(all_dep_stoppos_list[::3], dtype=np.float32)
+                        larbath_deps_stop_y_cm[:nEdeps[0]] = np.array(all_dep_stoppos_list[1::3], dtype=np.float32)
+                        larbath_deps_stop_z_cm[:nEdeps[0]] = np.array(all_dep_stoppos_list[2::3], dtype=np.float32)
 
                         # Paired event in ND from random throw
-                        throwVtx_nd[0] = throwVtxX_nd[0]
-                        throwVtx_nd[1] = throwVtxY_nd[0]
-                        throwVtx_nd[2] = throwVtxZ_nd[0]
-                        ndthrow_deps_start_x[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
-                        ndthrow_deps_start_y[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
-                        ndthrow_deps_start_z[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
-                        ndthrow_deps_stop_x[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
-                        ndthrow_deps_stop_y[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
-                        ndthrow_deps_stop_z[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
+                        throwVtx_nd_cm[0] = throwVtxX_nd[0]
+                        throwVtx_nd_cm[1] = throwVtxY_nd[0]
+                        throwVtx_nd_cm[2] = throwVtxZ_nd[0]
+                        ndthrow_deps_start_x_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
+                        ndthrow_deps_start_y_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
+                        ndthrow_deps_start_z_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
+                        ndthrow_deps_stop_x_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
+                        ndthrow_deps_stop_y_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
+                        ndthrow_deps_stop_z_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
 
                         # Paired event in ND from random throw with earth curvature corrected (as FD)
-                        # vertx is the same as throwVtx_nd
-                        ndthrow_ecc_deps_start_x[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[0,:], dtype=np.float32) # ecc: earth curvature corrected
-                        ndthrow_ecc_deps_start_y[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[1,:], dtype=np.float32)
-                        ndthrow_ecc_deps_start_z[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[2,:], dtype=np.float32)
-                        ndthrow_ecc_deps_stop_x[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[0,:], dtype=np.float32) # ecc: earth curvature corrected
-                        ndthrow_ecc_deps_stop_y[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[1,:], dtype=np.float32)
-                        ndthrow_ecc_deps_stop_z[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[2,:], dtype=np.float32)
+                        # vertx is the same as throwVtx_nd_cm
+                        ndthrow_ecc_deps_start_x_cm[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[0,:], dtype=np.float32) # ecc: earth curvature corrected
+                        ndthrow_ecc_deps_start_y_cm[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[1,:], dtype=np.float32)
+                        ndthrow_ecc_deps_start_z_cm[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[2,:], dtype=np.float32)
+                        ndthrow_ecc_deps_stop_x_cm[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[0,:], dtype=np.float32) # ecc: earth curvature corrected
+                        ndthrow_ecc_deps_stop_y_cm[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[1,:], dtype=np.float32)
+                        ndthrow_ecc_deps_stop_z_cm[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[2,:], dtype=np.float32)
 
                         # Paired event in FD from random throw
-                        throwVtx_fd[0] = throwVtxX_fd[0]
-                        throwVtx_fd[1] = throwVtxY_fd[0]
-                        throwVtx_fd[2] = throwVtxZ_fd[0]
-                        fdthrow_deps_start_x[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
-                        fdthrow_deps_start_y[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
-                        fdthrow_deps_start_z[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
-                        fdthrow_deps_stop_x[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
-                        fdthrow_deps_stop_y[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
-                        fdthrow_deps_stop_z[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
+                        throwVtx_fd_cm[0] = throwVtxX_fd[0]
+                        throwVtx_fd_cm[1] = throwVtxY_fd[0]
+                        throwVtx_fd_cm[2] = throwVtxZ_fd[0]
+                        fdthrow_deps_start_x_cm[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
+                        fdthrow_deps_start_y_cm[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
+                        fdthrow_deps_start_z_cm[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
+                        fdthrow_deps_stop_x_cm[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
+                        fdthrow_deps_stop_y_cm[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
+                        fdthrow_deps_stop_z_cm[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
 
                         # event level
                         myEvents.Fill()
