@@ -830,16 +830,16 @@ for jentry in range( entries):
                                                 larbath_nd_hists, 'ND - LArBath, POI = ND Vertex', 'larbath_nd_dist2ndEvtVtx')
 
                         quality_check_graphs( nEdeps , all_larbath_dist2larbathEvtVtx, all_fd_dist2larbathEvtVtx, had_larbath_dist2larbathEvtVtx, had_fd_dist2larbathEvtVtx, \
-                                                larbath_fd_hists, 'ND - LArBath, POI = LArBath Vertex', 'larbath_fd_dist2larbathEvtVtx')
+                                                larbath_fd_hists, 'FD - LArBath, POI = LArBath Vertex', 'larbath_fd_dist2larbathEvtVtx')
                         quality_check_graphs( nEdeps , all_larbath_dist2ndPlusCurveEvtVtx, all_fd_dist2ndPlusCurveEvtVtx, had_larbath_dist2ndPlusCurveEvtVtx, had_fd_dist2ndPlusCurveEvtVtx, \
-                                                larbath_fd_hists, 'ND - LArBath, POI = [ND + Curve] Vertex', 'larbath_fd_dist2ndPlusCurveEvtVtx')
+                                                larbath_fd_hists, 'FD - LArBath, POI = [ND + Curve] Vertex', 'larbath_fd_dist2ndPlusCurveEvtVtx')
                         quality_check_graphs( nEdeps , all_larbath_dist2ndPlusCurveNDEvtVtx, all_fd_dist2ndPlusCurveNDEvtVtx, \
                                                         had_larbath_dist2ndPlusCurveNDEvtVtx, had_fd_dist2ndPlusCurveNDEvtVtx, \
-                                                larbath_fd_hists, 'ND - LArBath, POI = [ND + Curve + Trans.] Vertex', 'larbath_fd_dist2ndPlusCurveNDEvtVtx')
+                                                larbath_fd_hists, 'FD - LArBath, POI = [ND + Curve + Trans.] Vertex', 'larbath_fd_dist2ndPlusCurveNDEvtVtx')
                         quality_check_graphs( nEdeps , all_larbath_dist2ndEvtVtx, all_fd_dist2ndEvtVtx, had_larbath_dist2ndEvtVtx, had_fd_dist2ndEvtVtx, \
-                                                larbath_fd_hists, 'ND - LArBath, POI = ND Vertex', 'larbath_fd_dist2ndEvtVtx')
+                                                larbath_fd_hists, 'FD - LArBath, POI = ND Vertex', 'larbath_fd_dist2ndEvtVtx')
                         quality_check_graphs( nEdeps , all_larbath_dist2fdEvtVtx, all_fd_dist2fdEvtVtx, had_larbath_dist2fdEvtVtx, had_fd_dist2fdEvtVtx, \
-                                                larbath_fd_hists, 'ND - LArBath, POI = ND Vertex', 'larbath_fd_dist2fdEvtVtx')
+                                                larbath_fd_hists, 'FD - LArBath, POI = FD Vertex', 'larbath_fd_dist2fdEvtVtx')
 
 
 
