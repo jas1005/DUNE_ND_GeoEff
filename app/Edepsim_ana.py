@@ -238,7 +238,8 @@ trajectories_dtype = np.dtype([ ("pdgID", "i4"), ("trackID", "u4")]) #i4 - integ
 user = os.getlogin()
 out_path = "/pnfs/dune/scratch/users/" + user + "/eDepSim_out"
 plotpath = out_path + "/plots"
-rootpath = out_path + "/root_out" # for output ROOT files
+#rootpath = out_path + "/root_out" # for output ROOT files # couldn't access when not in Edepsim_ana.py directory
+rootpath = "/dune/app/users/smithja/testn2fd/DUNE_ND_GeoEff/app"
 if not os.path.exists( out_path):
     os.makedirs( out_path)
     print("out_path '" + out_path + "' did not exist. It has been created!")
@@ -355,8 +356,6 @@ loop_time = time.time()
 for jentry in range( entries):
     print("jentry = " + str( jentry))
 
-    event_data_branch.clear()
-    
     nb = inputTree.GetEntry( jentry) #number of bytes read
     #print("nb =" + str(nb))
     #print("event number: ", event.EventId)
@@ -876,7 +875,6 @@ for jentry in range( entries):
     # fill event branch with all the data available (which depends on
     # which transformations the data underwent and when the loops were
     # broken
-    event_data_branch.push_back( 
 
     # time each loop
     print("Time spent processing this event: ", time.time() - loop_time)
@@ -887,6 +885,7 @@ for jentry in range( entries):
 
 # save the output ROOT file
 f_out.Write( rootpath + "/n2fd_paired_output.root")
+f_out.Close()
 
 # time the whole program
 print("\n")
