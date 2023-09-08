@@ -25,7 +25,8 @@ ntupleVerbose = False
 
 N_throws = 64*64
 N_THROWS_FD = 1
-max_throws = 10
+primary_max_throws = 10
+max_throws = 15
 
 # Active volume for FD unit [cm]
 FDActiveVol_min = [-370., -600.,    0.]

@@ -21,10 +21,12 @@ geoEff::geoEff(int seed, bool verbose){
   }
 
   N_THROWS = 64*64;
+  N_THROWS_NDECC = 64*64;
   N_THROWS_FD = 64*64;
 
   if (verbosity){
     std::cout << "Number of throws at ND set to " << N_THROWS << std::endl;
+    std::cout << "Number of throws at ND after ECC set to " << N_THROWS_NDECC << std::endl;
     std::cout << "Number of throws at FD set to " << N_THROWS_FD << std::endl;
   }
 
@@ -42,6 +44,9 @@ geoEff::geoEff(int seed, bool verbose){
   translations[1].reserve(N_THROWS);
   translations[2].reserve(N_THROWS);
   rotations.reserve(N_THROWS);
+  ndecctranslations[0].reserve(N_THROWS_NDECC);
+  ndecctranslations[1].reserve(N_THROWS_NDECC);
+  ndecctranslations[2].reserve(N_THROWS_NDECC);
   fdtranslations[0].reserve(N_THROWS_FD);
   fdtranslations[1].reserve(N_THROWS_FD);
   fdtranslations[2].reserve(N_THROWS_FD);
@@ -73,6 +78,15 @@ void geoEff::setNthrows(unsigned long n){
   }
 
   if (N_THROWS%64 && verbosity) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
+}
+
+void geoEff::setNthrowsNDECC(unsigned long n){
+  N_THROWS_NDECC = n;
+  if (verbosity){
+    std::cout << "geoEff set number of throws at FD to " << N_THROWS_NDECC << std::endl;
+  }
+
+  if (N_THROWS_NDECC%64 && verbosity) std::cout << "geoEff warning: number of throws should be multiple of 64 for optimal use of output format."  << std::endl;
 }
 
 void geoEff::setNthrowsFD(unsigned long n){
@@ -294,6 +308,28 @@ void geoEff::throwTransforms(){
 
 }
 
+void geoEff::throwTransformsNDECC(){
+
+  // Clear vectors
+  ndecctranslations[0].clear();
+  ndecctranslations[1].clear();
+  ndecctranslations[2].clear();
+
+  // dim from 0 to 2, corresponding to x, y and z
+  for (int dim = 0; dim < 3; dim++){
+    if (not randomizeVertexfd[dim]){
+      ndecctranslations[dim].resize(0,0);
+    } else {
+      ndecctranslations[dim].clear();
+      for (unsigned int i = 0; i < N_THROWS_NDECC; i++){
+        ndecctranslations[dim].emplace_back(uniform(prnGenerator)*(range[dim][1]-range[dim][0])+range[dim][0]+offset[dim]);
+      }
+    }
+  }
+
+  // no need to rotate, keep same orientation after ECC
+}
+
 void geoEff::throwTransformsFD(){
 
   // Clear vectors
@@ -512,6 +548,15 @@ std::vector<float> geoEff::getCurrentThrowRotations(){
   return rotations;
 }
 
+std::vector<float> geoEff::getCurrentNDECCThrowTranslationsX(){
+  return ndecctranslations[0];
+}
+std::vector<float> geoEff::getCurrentNDECCThrowTranslationsY(){
+  return ndecctranslations[1];
+}
+std::vector<float> geoEff::getCurrentNDECCThrowTranslationsZ(){
+  return ndecctranslations[2];
+}
 
 std::vector<float> geoEff::getCurrentFDThrowTranslationsX(){
   return fdtranslations[0];
@@ -1098,14 +1143,42 @@ Eigen::Matrix3Xf geoEff::move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix)
   return vtxNDoriginEdepspos;
 }
 
-Eigen::Matrix3Xf geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix)
+struct throwcombo geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix)
 {
-  // Move vertex from (0,0,0) back to the random thrown position in ND
-  Eigen::Affine3f tBack2ndVertex(Eigen::Translation3f(Eigen::Vector3f(ndrandvertex[0], ndrandvertex[1], ndrandvertex[2])));
+  struct throwcombo ndeccthrowcombo;
+
+  // Figure out how many multiples of 64 bits needed to store output
+  int n_longs = N_THROWS_NDECC / 64;
+  if (N_THROWS_NDECC % 64) n_longs++;
+
+  std::vector< Eigen::Matrix3Xf > transformedEdepssNDECC;
+
+  // Pass/fail for each set of vetoSize and vetoEnergy
+  std::vector< std::vector< std::vector< uint64_t > > > NDECCContainment4RandomThrow(vetoSize.size(), std::vector< std::vector< uint64_t > >(vetoEnergy.size(), std::vector < uint64_t >(n_longs, 0)));
+
+  // Move vertex from (0,0,0) back to the random thrown position in ND after ECC
+  Eigen::Affine3f tBack2ndVertex(Eigen::Translation3f(Eigen::Vector3f(ndecctranslations[0][0], ndecctranslations[1][0], ndecctranslations[2][0])));
 
   Eigen::Matrix3Xf vtxNDEdepspos = tBack2ndVertex * randndhitSegPosMatrix;
+  transformedEdepssNDECC.emplace_back(vtxNDEdepspos);
 
-  return vtxNDEdepspos;
+  // Here I am cheating as we only have N_THROWS_NDECC = 1 each time, t == 0 is always true
+  // So no loop over throws
+  for (unsigned int i = 0; i < vetoSize.size(); i++){
+    for (unsigned int j = 0; j < vetoEnergy.size(); j++){
+      // Check containment and set bit
+      if (isContainedInND(vtxNDEdepspos, hitSegEdeps, vetoSize[i], vetoEnergy[j]))
+      {
+        // Here I am cheating as we only have N_THROWS_NDECC = 1 each time, t == 0 is always true
+        NDECCContainment4RandomThrow[i][j][0/64] |= ((uint64_t)1)<<(0%64);
+	    }
+    }
+  }
+
+  ndeccthrowcombo.thrownEdepspos = transformedEdepssNDECC;
+  ndeccthrowcombo.containresult = NDECCContainment4RandomThrow;
+
+  return ndeccthrowcombo;
 }
 
 // Put events back to beam center

@@ -127,7 +127,8 @@ ndthrow_deps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('ndthrow_deps_stop_z_cm', ndthrow_deps_stop_z_cm, 'ndthrow_deps_stop_z_cm[nEdeps]/F')
 
 # Edeps in ND with earth curvature correction
-# this share the same vertex throwVtx_nd_cm
+throwVtx_nd_ecc_cm = array('f', 3*[0.0])
+myEvents.Branch('throwVtx_nd_ecc_cm', throwVtx_nd_ecc_cm, 'throwVtx_nd_ecc_cm[3]/F')
 ndthrow_ecc_deps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('ndthrow_ecc_deps_start_x_cm', ndthrow_ecc_deps_start_x_cm, 'ndthrow_ecc_deps_start_x_cm[nEdeps]/F')
 ndthrow_ecc_deps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
@@ -186,6 +187,7 @@ for jentry in range(41):
     larbath_vtx_cm[0] = 0; larbath_vtx_cm[1] = 0; larbath_vtx_cm[2] = 0;
     nEdeps[0] = 0
     throwVtx_nd_cm[0] = 0; throwVtx_nd_cm[1] = 0; throwVtx_nd_cm[2] = 0;
+    throwVtx_nd_ecc_cm[0] = 0; throwVtx_nd_ecc_cm[1] = 0; throwVtx_nd_ecc_cm[2] = 0;
     throwVtx_fd_cm[0] = 0; throwVtx_fd_cm[1] = 0; throwVtx_fd_cm[2] = 0;
 
     for primary in event.Primaries:
@@ -311,8 +313,8 @@ for jentry in range(41):
     # Randomly throw the Genie Gen event in ND
     tot_nd_throw = 0
 
-    # If after max_throws still don't pass at nd, stop and move to next event (otherwise too much computing resources)
-    while tot_nd_throw < max_throws:
+    # If after primary_max_throws still don't pass at nd, stop and move to next event (otherwise too much computing resources)
+    while tot_nd_throw < primary_max_throws:
         print ("-- tot nd throw:", tot_nd_throw)
 
         ####################################
@@ -379,16 +381,81 @@ for jentry in range(41):
                 all_stopposdep_ndorig_matrix = geoEff.move2ndorigin(ndrandthrowresultall_stop.thrownEdepspos[0]) # repeat for stop points
                 had_posdep_ndorig_matrix = geoEff.move2ndorigin(ndrandthrowresulthad.thrownEdepspos[0])
 
-                # Apply earth curvature correction to translate into FD coordinate system, vtx now at (0,0,0) in FD det coordinate
+                ####################################################################################################################
+                # Apply earth curvature correction to translate into FD coordinate system, vtx now at (0,0,0) in ND/FD det coordinate
+                # this info will be used by both leg 1 and leg 2 transformations below
+                ####################################################################################################################
                 had_posdep_fdorig_matrix = geoEff.getn2fEarthCurvatureCorr(had_posdep_ndorig_matrix, beamLineRotation) # returns Eigen::Matrix3Xf
                 all_startposdep_fdorig_matrix = geoEff.getn2fEarthCurvatureCorr(all_startposdep_ndorig_matrix, beamLineRotation)
                 all_stopposdep_fdorig_matrix = geoEff.getn2fEarthCurvatureCorr(all_stopposdep_ndorig_matrix, beamLineRotation) # repeat for stop points
 
-                # Translate the event vertex back to the randomly thrown ND position (this step doesn't interfere with next steps)
-                # Do we care hadronic veto here???
-                all_startposdep_nd_earthcurvature_matrix = geoEff.moveBack2ndVertex(all_startposdep_fdorig_matrix) # returns Eigen::Matrix3Xf
-                all_stopposdep_nd_earthcurvature_matrix = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix) # returns Eigen::Matrix3Xf
+                ####################################################################################################################
+                # Here is where things branch out, we have two kinds of pairs (two legs)
+                # leg 1 needed by Radi:
+                #       this ECC event at origin (ND or FD) is randomly thrown again in FD, and needs to pass FD hadronic veto
+                # leg 2 needed by Alex:
+                #       this ECC event at origin (ND or FD) is randomly translated in ND LAr (without any beam direction effects, no rotation), and need to pass ND LAr veto.
+                ####################################################################################################################
 
+                ##################################################
+                # leg 2: paired ND evt with ECC needed by Alex
+                ##################################################
+                # throw a random point in ND LAr
+                # translate vtx from origin to that point and evaluate hadronic veto
+                # if pass, continue to leg 1
+                # if not, throw another one
+                # if after max throws no one passed, continue to next nd throw, do not even bother the leg 1
+
+                tot_nd_ecc_throw = 0
+
+                while tot_nd_ecc_throw < max_throws:
+                    print ("---- tot nd ecc throw:", tot_nd_ecc_throw)
+                    geoEff.setNthrowsNDECC(1)
+                    geoEff.throwTransformsNDECC() # this randomly generates new vtx position in ND LAr
+
+                    throwVtxX_nd_ecc = geoEff.getCurrentNDECCThrowTranslationsX()
+                    throwVtxY_nd_ecc = geoEff.getCurrentNDECCThrowTranslationsY()
+                    throwVtxZ_nd_ecc = geoEff.getCurrentNDECCThrowTranslationsZ()
+
+                    print ("---- nd ecc throw x: ", throwVtxX_nd_ecc[0], "y: ", throwVtxY_nd_ecc[0], ", z: ", throwVtxZ_nd_ecc[0])
+
+                    geoEff.setHitSegEdeps(had_edep_list) # use the same had edep list to evaluate hadronic veto
+                    # Here no need to setHitSegPoss because it's feed in next to moveBack2ndVertex
+
+                    # Translate the nd ecc event back to a randomly thrown position in ND LAr (this step doesn't interfere with next steps)
+                    ndeccrandthrowresulthad = geoEff.moveBack2ndVertex(had_posdep_fdorig_matrix)
+
+                    if (ndeccrandthrowresulthad.containresult[0][0][0] != 0):
+                        print ("---- nd ecc throw", tot_nd_ecc_throw, "passed nd had veto")
+
+                        # Now change to the full list of edeps start points
+                        # the random thrown x/y/z should remain the same because throw was done above already
+                        geoEff.setHitSegEdeps(all_edep_list)
+                        ndeccrandthrowresultall_start= geoEff.moveBack2ndVertex(all_startposdep_fdorig_matrix)
+
+                        # Repeat for edepsim stop points !!!
+                        geoEff.setHitSegEdeps(all_edep_list)
+                        ndeccrandthrowresultall_stop = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix)
+
+                        print ("Found paired ndecc-fd random thrown events")
+
+                        print ("Breaking nd ecc throw loop")
+                        break
+
+                    else:
+                        print ("-- nd ecc throw", tot_nd_ecc_throw, "failed fd had veto!")
+
+                    # indentation is important!
+                    tot_nd_ecc_throw = tot_nd_ecc_throw + 1
+
+                if tot_nd_ecc_throw == max_throws:
+                    print ("Reached max nd ecc throw", max_throws, ", continue to next nd throw")
+                    tot_nd_throw = tot_nd_throw + 1
+                    continue
+
+                ##################################################
+                # leg 1: paired FD evt needed by both Radi and Alex
+                ##################################################
                 # Tell the module where the vertex is in FD
                 geoEff.setVertexFD(0, 0, 0) # it's at FD origin because we moved it to ND origin and then just rotated at there
 
@@ -396,7 +463,9 @@ for jentry in range(41):
 
                 while tot_fd_throw < max_throws:
                     print ("---- tot fd throw:", tot_fd_throw)
-                    # Below do random throw (translate only) in FD similar to ND:
+                    ##########################################################################################
+                    # Below do random throw (translate only) in FD similar to ND: only one throw in FD at a time
+                    ##########################################################################################
                     geoEff.setNthrowsFD(1)
                     geoEff.throwTransformsFD() # this randomly generates new vtx position in FD FV
 
@@ -423,28 +492,20 @@ for jentry in range(41):
                         geoEff.setHitSegEdeps(all_edep_list)
                         fdrandthrowresultall_stop = geoEff.getFDContainment4RandomThrow(all_stopposdep_fdorig_matrix)
 
-                        print ("Found paired nd-fd random thrown events, saving...")
-
-                        """
-                        nEdeps = len(all_edep_list)
-                        print ("nEdeps:", nEdeps)
-
-                        for iDep in range(len(all_edep_list)):
-                            # Save edeps and their positions in nd and fd
-                            print ("iDep #", iDep, ": E [MeV]:", all_edep_list[iDep], ", original genie gen pos[cm]:", all_dep_startpos_list[iDep*3:(iDep)*3+3], ", paired nd pos [cm]:", ndrandthrowresultall_start.thrownEdepspos[0][:, iDep], ", paired fd pos [cm]:", fdrandthrowresultall_start.thrownEdepspos[0][:, iDep])
-                        """
+                        print ("Found paired nd-fd random thrown events")
 
                         #################################
                         # Unpack info and store to output
                         #################################
+                        print ("Saving...")
 
                         # LArBath info
-                        larbath_vtx_cm[0] = posx
-                        larbath_vtx_cm[1] = posy
-                        larbath_vtx_cm[2] = posz
                         deps_E_MeV[:nEdeps[0]] = np.array(all_edep_list, dtype=np.float32)
                         deps_start_t_us[:nEdeps[0]] = np.array(all_dep_starttime_list, dtype=np.float32)
                         deps_stop_t_us[:nEdeps[0]] = np.array(all_dep_stoptime_list, dtype=np.float32)
+                        larbath_vtx_cm[0] = posx
+                        larbath_vtx_cm[1] = posy
+                        larbath_vtx_cm[2] = posz
                         larbath_deps_start_x_cm[:nEdeps[0]] = np.array(all_dep_startpos_list[::3], dtype=np.float32) # every 3 element: x list
                         larbath_deps_start_y_cm[:nEdeps[0]] = np.array(all_dep_startpos_list[1::3], dtype=np.float32) # y list
                         larbath_deps_start_z_cm[:nEdeps[0]] = np.array(all_dep_startpos_list[2::3], dtype=np.float32) # z list
@@ -464,13 +525,15 @@ for jentry in range(41):
                         ndthrow_deps_stop_z_cm[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
 
                         # Paired event in ND from random throw with earth curvature corrected (as FD)
-                        # vertx is the same as throwVtx_nd_cm
-                        ndthrow_ecc_deps_start_x_cm[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[0,:], dtype=np.float32) # ecc: earth curvature corrected
-                        ndthrow_ecc_deps_start_y_cm[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[1,:], dtype=np.float32)
-                        ndthrow_ecc_deps_start_z_cm[:nEdeps[0]] = np.array(all_startposdep_nd_earthcurvature_matrix[2,:], dtype=np.float32)
-                        ndthrow_ecc_deps_stop_x_cm[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[0,:], dtype=np.float32) # ecc: earth curvature corrected
-                        ndthrow_ecc_deps_stop_y_cm[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[1,:], dtype=np.float32)
-                        ndthrow_ecc_deps_stop_z_cm[:nEdeps[0]] = np.array(all_stopposdep_nd_earthcurvature_matrix[2,:], dtype=np.float32)
+                        throwVtx_nd_ecc_cm[0] = throwVtxX_nd_ecc[0]
+                        throwVtx_nd_ecc_cm[1] = throwVtxY_nd_ecc[0]
+                        throwVtx_nd_ecc_cm[2] = throwVtxZ_nd_ecc[0]
+                        ndthrow_ecc_deps_start_x_cm[:nEdeps[0]] = np.array(ndeccrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32) # ecc: earth curvature corrected
+                        ndthrow_ecc_deps_start_y_cm[:nEdeps[0]] = np.array(ndeccrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
+                        ndthrow_ecc_deps_start_z_cm[:nEdeps[0]] = np.array(ndeccrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
+                        ndthrow_ecc_deps_stop_x_cm[:nEdeps[0]] = np.array(ndeccrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
+                        ndthrow_ecc_deps_stop_y_cm[:nEdeps[0]] = np.array(ndeccrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
+                        ndthrow_ecc_deps_stop_z_cm[:nEdeps[0]] = np.array(ndeccrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
 
                         # Paired event in FD from random throw
                         throwVtx_fd_cm[0] = throwVtxX_fd[0]
@@ -486,17 +549,6 @@ for jentry in range(41):
                         # event level
                         myEvents.Fill()
 
-
-                        # had dep only
-                        #for jDep in range(len(had_edep_list)):
-                        #    print ("Had dep #", jDep, ": E [MeV]:", had_edep_list[jDep], ", paired nd pos [cm]:", ndrandthrowresulthad.thrownEdepspos[0][:, jDep], ", paired fd pos [cm]:", fdrandthrowresulthad.thrownEdepspos[0][:, jDep])
-
-                        # these are the random throwed x y z in ND for all edeps
-                        # for print out/debug purposes
-                        #geoEff.getCurrentThrowDepsX(0) # we only have one throw (0th throw) ==> array x[ith edep]
-                        #geoEff.getCurrentThrowDepsY(0)
-                        #geoEff.getCurrentThrowDepsZ(0)
-
                         # Break the while loop, move on to next evt
                         print ("Paired data saved, breaking fd throw loop")
                         break
@@ -507,7 +559,14 @@ for jentry in range(41):
                     # if don't, put it in another random FD pos...until it passes FD veto
                     tot_fd_throw = tot_fd_throw + 1
 
-                print ("Breaking nd throw loop")
+                # if reached max fd throw and still didn't pass FD veto, try next nd throw
+                if tot_fd_throw == max_throws:
+                    print ("Reached max fd throw", max_throws, ", continue to next nd throw")
+                    tot_nd_throw = tot_nd_throw + 1
+                    continue
+
+                # if found paired fd evts, break nd throw loop
+                print ("And breaking nd throw loop")
                 break
 
             else:

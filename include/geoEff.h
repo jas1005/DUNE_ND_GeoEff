@@ -70,6 +70,8 @@ class geoEff
 
   // Number of throws at ND. Should be a multiple of 64 to optimize output efficiency
   unsigned long N_THROWS;
+  // Number of throws for ND ECC events
+  unsigned long N_THROWS_NDECC;
   // Number of throws at FD
   unsigned long N_THROWS_FD;
 
@@ -81,6 +83,7 @@ class geoEff
   // Current throws
   std::vector< float > translations[3];
   std::vector< float > rotations;
+  std::vector< float > ndecctranslations[3];
   std::vector< float > fdtranslations[3];
 
   bool verbosity;
@@ -108,6 +111,7 @@ class geoEff
   ~geoEff(){;}
 
   void setNthrows(unsigned long n);
+  void setNthrowsNDECC(unsigned long n);
   void setNthrowsFD(unsigned long n);
 
   void setVertex(float x, float y, float z);
@@ -164,12 +168,17 @@ class geoEff
   void setVetoEnergyThresholds(std::vector< float > vThresholds);
 
   void throwTransforms();
+  void throwTransformsNDECC();
   void throwTransformsFD();
 
   std::vector< float > getCurrentThrowTranslationsX();
   std::vector< float > getCurrentThrowTranslationsY();
   std::vector< float > getCurrentThrowTranslationsZ();
   std::vector< float > getCurrentThrowRotations();
+
+  std::vector< float > getCurrentNDECCThrowTranslationsX();
+  std::vector< float > getCurrentNDECCThrowTranslationsY();
+  std::vector< float > getCurrentNDECCThrowTranslationsZ();
 
   std::vector< float > getCurrentFDThrowTranslationsX();
   std::vector< float > getCurrentFDThrowTranslationsY();
@@ -207,7 +216,7 @@ class geoEff
 
   Eigen::Matrix3Xf getn2fEarthCurvatureCorr(Eigen::Matrix3Xf EdepsposMatrix, double BeamAngle);
 
-  Eigen::Matrix3Xf moveBack2ndVertex( Eigen::Matrix3Xf randndhitSegPosMatrix);
+  struct throwcombo moveBack2ndVertex( Eigen::Matrix3Xf randndhitSegPosMatrix);
 
   // Get pass/fail containment criterion for original event
   std::vector< std::vector< bool > > getHadronContainmentOrigin();
