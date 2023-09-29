@@ -20,6 +20,7 @@ make -j pyGeoEff                                                                
 ```
 source setup.sh
 
+cd app
 nohup python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root >& output.log &
 
 # The first time you may need to install a few packages via pip install, depending on what it complains when you run, e.g.:

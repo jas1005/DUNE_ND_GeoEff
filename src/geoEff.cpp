@@ -47,6 +47,7 @@ geoEff::geoEff(int seed, bool verbose){
   ndecctranslations[0].reserve(N_THROWS_NDECC);
   ndecctranslations[1].reserve(N_THROWS_NDECC);
   ndecctranslations[2].reserve(N_THROWS_NDECC);
+  ndeccrotations.reserve(N_THROWS_NDECC);
   fdtranslations[0].reserve(N_THROWS_FD);
   fdtranslations[1].reserve(N_THROWS_FD);
   fdtranslations[2].reserve(N_THROWS_FD);
@@ -314,6 +315,12 @@ void geoEff::throwTransformsNDECC(){
   ndecctranslations[0].clear();
   ndecctranslations[1].clear();
   ndecctranslations[2].clear();
+  ndeccrotations.clear();
+
+  // Rotate around on axis ND LAr center or FD beam axis, keep same orientation after ECC
+  for (unsigned int i = 0; i < N_THROWS_NDECC; i++){
+    ndeccrotations.emplace_back((uniform(prnGenerator)-0.5)*2*M_PI);
+  }
 
   // dim from 0 to 2, corresponding to x, y and z
   for (int dim = 0; dim < 3; dim++){
@@ -327,7 +334,6 @@ void geoEff::throwTransformsNDECC(){
     }
   }
 
-  // no need to rotate, keep same orientation after ECC
 }
 
 void geoEff::throwTransformsFD(){
@@ -513,12 +519,6 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransformsFD(u
 
   std::vector< Eigen::Transform<float,3,Eigen::Affine> > transformsfd;
 
-  // Tranformations that do not depend on the throws:
-  // Move vertex to coordinate system origin to apply rotation
-  Eigen::Affine3f tThere(Eigen::Translation3f(Eigen::Vector3f(-fdvertex[0], -fdvertex[1], -fdvertex[2])));
-  // Move vertex back
-  Eigen::Affine3f tBack(Eigen::Translation3f(Eigen::Vector3f(fdvertex[0], fdvertex[1], fdvertex[2])));
-
   for (unsigned int iThrow = iStart; iThrow < thisEnd; iThrow++){
 
     // Vertex displacement:
@@ -526,10 +526,10 @@ std::vector< Eigen::Transform<float,3,Eigen::Affine> > geoEff::getTransformsFD(u
 								randomizeVertexfd[1] ? fdtranslations[1][iThrow]-fdvertex[1] : 0.,
 								randomizeVertexfd[2] ? fdtranslations[2][iThrow]-fdvertex[2] : 0.)));
 
-    // no need to rotate, keep same orientation from ND rand throw
+    // No need to rotate, keep same orientation from ND rand throw
 
     // Put everything together in single transform and store.
-    transformsfd.emplace_back(tThrow * tBack * tThere);
+    transformsfd.emplace_back(tThrow);
   }
 
   return transformsfd;
@@ -556,6 +556,9 @@ std::vector<float> geoEff::getCurrentNDECCThrowTranslationsY(){
 }
 std::vector<float> geoEff::getCurrentNDECCThrowTranslationsZ(){
   return ndecctranslations[2];
+}
+std::vector<float> geoEff::getCurrentNDECCThrowRotations(){
+  return ndeccrotations;
 }
 
 std::vector<float> geoEff::getCurrentFDThrowTranslationsX(){
@@ -1127,6 +1130,7 @@ double geoEff::getEarthCurvature(double v[3], double BeamAngle, int dim)
 //                        0     -sin(theta)    cos(theta) ]
 Eigen::Matrix3Xf geoEff::getn2fEarthCurvatureCorr(Eigen::Matrix3Xf EdepsposMatrix, double BeamAngle)
 {
+  // Calculate rotation due to earth curvature
   Eigen::Affine3f rECC;
   rECC = Eigen::Affine3f(Eigen::AngleAxisf(-2*abs(BeamAngle), Eigen::Vector3f(1,0,0))); // X-axis is rotation axis
   Eigen::Matrix3Xf ECCposEdeps = rECC * EdepsposMatrix;
@@ -1143,7 +1147,7 @@ Eigen::Matrix3Xf geoEff::move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix)
   return vtxNDoriginEdepspos;
 }
 
-struct throwcombo geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix)
+struct throwcombo geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix, double BeamAngle)
 {
   struct throwcombo ndeccthrowcombo;
 
@@ -1156,10 +1160,15 @@ struct throwcombo geoEff::moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatr
   // Pass/fail for each set of vetoSize and vetoEnergy
   std::vector< std::vector< std::vector< uint64_t > > > NDECCContainment4RandomThrow(vetoSize.size(), std::vector< std::vector< uint64_t > >(vetoEnergy.size(), std::vector < uint64_t >(n_longs, 0)));
 
-  // Move vertex from (0,0,0) back to the random thrown position in ND after ECC
+  // Calculate rotation due to randomly thrown angle at FD
+  // this is a rotation w.r.t. the beam direction at FD {0., sin(|beamLineRotation|), cos(|beamLineRotation|)]
+  Eigen::Affine3f rFDbeamThrow;
+  rFDbeamThrow = Eigen::Affine3f(Eigen::AngleAxisf(ndeccrotations[0], Eigen::Vector3f(0, sin(abs(BeamAngle)), cos(abs(BeamAngle)))));
+
+  // Move vertex from (0,0,0) back to the random thrown position in ND
   Eigen::Affine3f tBack2ndVertex(Eigen::Translation3f(Eigen::Vector3f(ndecctranslations[0][0], ndecctranslations[1][0], ndecctranslations[2][0])));
 
-  Eigen::Matrix3Xf vtxNDEdepspos = tBack2ndVertex * randndhitSegPosMatrix;
+  Eigen::Matrix3Xf vtxNDEdepspos = tBack2ndVertex * rFDbeamThrow * randndhitSegPosMatrix;
   transformedEdepssNDECC.emplace_back(vtxNDEdepspos);
 
   // Here I am cheating as we only have N_THROWS_NDECC = 1 each time, t == 0 is always true

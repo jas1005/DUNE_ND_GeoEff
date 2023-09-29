@@ -77,6 +77,7 @@ PYBIND11_MODULE(pyGeoEff, m) {
       .def("getCurrentNDECCThrowTranslationsX", &geoEff::getCurrentNDECCThrowTranslationsX)
       .def("getCurrentNDECCThrowTranslationsY", &geoEff::getCurrentNDECCThrowTranslationsY)
       .def("getCurrentNDECCThrowTranslationsZ", &geoEff::getCurrentNDECCThrowTranslationsZ)
+      .def("getCurrentNDECCThrowRotations", &geoEff::getCurrentNDECCThrowRotations)
       .def("getCurrentFDThrowTranslationsX", &geoEff::getCurrentFDThrowTranslationsX)
       .def("getCurrentFDThrowTranslationsY", &geoEff::getCurrentFDThrowTranslationsY)
       .def("getCurrentFDThrowTranslationsZ", &geoEff::getCurrentFDThrowTranslationsZ)

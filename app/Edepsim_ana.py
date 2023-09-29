@@ -313,8 +313,8 @@ for jentry in range(41):
     # Randomly throw the Genie Gen event in ND
     tot_nd_throw = 0
 
-    # If after primary_max_throws still don't pass at nd, stop and move to next event (otherwise too much computing resources)
-    while tot_nd_throw < primary_max_throws:
+    # If after max_nd_throws still don't pass at nd, stop and move to next event (otherwise too much computing resources)
+    while tot_nd_throw < max_nd_throws:
         print ("-- tot nd throw:", tot_nd_throw)
 
         ####################################
@@ -382,7 +382,7 @@ for jentry in range(41):
                 had_posdep_ndorig_matrix = geoEff.move2ndorigin(ndrandthrowresulthad.thrownEdepspos[0])
 
                 ####################################################################################################################
-                # Apply earth curvature correction to translate into FD coordinate system, vtx now at (0,0,0) in ND/FD det coordinate
+                # Apply earth curvature correction to translate into FD coordinate system, vtx now at (0,0,0) in FD det coordinate,
                 # this info will be used by both leg 1 and leg 2 transformations below
                 ####################################################################################################################
                 had_posdep_fdorig_matrix = geoEff.getn2fEarthCurvatureCorr(had_posdep_ndorig_matrix, beamLineRotation) # returns Eigen::Matrix3Xf
@@ -391,39 +391,43 @@ for jentry in range(41):
 
                 ####################################################################################################################
                 # Here is where things branch out, we have two kinds of pairs (two legs)
-                # leg 1 needed by Radi:
-                #       this ECC event at origin (ND or FD) is randomly thrown again in FD, and needs to pass FD hadronic veto
-                # leg 2 needed by Alex:
-                #       this ECC event at origin (ND or FD) is randomly translated in ND LAr (without any beam direction effects, no rotation), and need to pass ND LAr veto.
+                #
+                # leg 1 needed by Alex:
+                #       this randomly rotated ECC event is now at FD origin,
+                #       then randomly rotated it around the beam axis w.r.t. FD as if the event is at FD,
+                #       we further translated it randomly in ND LAr and it needs to pass ND LAr hadronic veto.
+                # leg 2 needed by Radi:
+                #       same FD event obtained in leg 1 (after random rot), but ND event is without ECC (already obtained above)
                 ####################################################################################################################
 
                 ##################################################
-                # leg 2: paired ND evt with ECC needed by Alex
+                # leg 1: paired ND evt with ECC needed by Alex
                 ##################################################
-                # throw a random point in ND LAr
-                # translate vtx from origin to that point and evaluate hadronic veto
+                # throw a random rotation angle around FD beam axis and a random point in ND LAr,
+                # rotate the event and translate vtx from origin to that point and evaluate ND hadronic veto
                 # if pass, continue to leg 1
                 # if not, throw another one
                 # if after max throws no one passed, continue to next nd throw, do not even bother the leg 1
 
                 tot_nd_ecc_throw = 0
 
-                while tot_nd_ecc_throw < max_throws:
+                while tot_nd_ecc_throw < max_nd_throws:
                     print ("---- tot nd ecc throw:", tot_nd_ecc_throw)
                     geoEff.setNthrowsNDECC(1)
-                    geoEff.throwTransformsNDECC() # this randomly generates new vtx position in ND LAr
+                    geoEff.throwTransformsNDECC() # this randomly generates a rotation angle and a new vtx position in ND LAr
 
                     throwVtxX_nd_ecc = geoEff.getCurrentNDECCThrowTranslationsX()
                     throwVtxY_nd_ecc = geoEff.getCurrentNDECCThrowTranslationsY()
                     throwVtxZ_nd_ecc = geoEff.getCurrentNDECCThrowTranslationsZ()
+                    throwAngle_nd_ecc = geoEff.getCurrentNDECCThrowRotations()
 
-                    print ("---- nd ecc throw x: ", throwVtxX_nd_ecc[0], "y: ", throwVtxY_nd_ecc[0], ", z: ", throwVtxZ_nd_ecc[0])
+                    print ("---- nd ecc throw x: ", throwVtxX_nd_ecc[0], "y: ", throwVtxY_nd_ecc[0], ", z: ", throwVtxZ_nd_ecc[0], ", angle: ", throwAngle_nd_ecc[0])
 
                     geoEff.setHitSegEdeps(had_edep_list) # use the same had edep list to evaluate hadronic veto
                     # Here no need to setHitSegPoss because it's feed in next to moveBack2ndVertex
 
-                    # Translate the nd ecc event back to a randomly thrown position in ND LAr (this step doesn't interfere with next steps)
-                    ndeccrandthrowresulthad = geoEff.moveBack2ndVertex(had_posdep_fdorig_matrix)
+                    # Rotate around fd beam axis and then translate the nd ecc event back to a randomly thrown position in ND LAr
+                    ndeccrandthrowresulthad = geoEff.moveBack2ndVertex(had_posdep_fdorig_matrix, beamLineRotation)
 
                     if (ndeccrandthrowresulthad.containresult[0][0][0] != 0):
                         print ("---- nd ecc throw", tot_nd_ecc_throw, "passed nd had veto")
@@ -431,11 +435,11 @@ for jentry in range(41):
                         # Now change to the full list of edeps start points
                         # the random thrown x/y/z should remain the same because throw was done above already
                         geoEff.setHitSegEdeps(all_edep_list)
-                        ndeccrandthrowresultall_start= geoEff.moveBack2ndVertex(all_startposdep_fdorig_matrix)
+                        ndeccrandthrowresultall_start= geoEff.moveBack2ndVertex(all_startposdep_fdorig_matrix, beamLineRotation)
 
                         # Repeat for edepsim stop points !!!
                         geoEff.setHitSegEdeps(all_edep_list)
-                        ndeccrandthrowresultall_stop = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix)
+                        ndeccrandthrowresultall_stop = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix, beamLineRotation)
 
                         print ("Found paired ndecc-fd random thrown events")
 
@@ -448,20 +452,29 @@ for jentry in range(41):
                     # indentation is important!
                     tot_nd_ecc_throw = tot_nd_ecc_throw + 1
 
-                if tot_nd_ecc_throw == max_throws:
-                    print ("Reached max nd ecc throw", max_throws, ", continue to next nd throw")
+                if tot_nd_ecc_throw == max_nd_throws:
+                    print ("Reached max nd ecc throw", max_nd_throws, ", continue to next nd throw")
                     tot_nd_throw = tot_nd_throw + 1
                     continue
 
+                ######################################################
+                # If it gets this far, the event already
+                #   1) has a random rotation around FD beam axis,
+                #   2) placed at a random position in ND LAr,
+                #   3) passed ND LAr hadronic veto
+                ######################################################
+
                 ##################################################
-                # leg 1: paired FD evt needed by both Radi and Alex
+                # leg 2: paired FD evt needed by both Radi and Alex
+                #        here only involves a translation in fd
                 ##################################################
                 # Tell the module where the vertex is in FD
-                geoEff.setVertexFD(0, 0, 0) # it's at FD origin because we moved it to ND origin and then just rotated at there
+                # We pass the above random position in ND LAr, this doesn't matter as we are just doing translation
+                geoEff.setVertexFD(throwVtxX_nd_ecc[0], throwVtxY_nd_ecc[0], throwVtxZ_nd_ecc[0])
 
                 tot_fd_throw = 0
 
-                while tot_fd_throw < max_throws:
+                while tot_fd_throw < max_fd_throws:
                     print ("---- tot fd throw:", tot_fd_throw)
                     ##########################################################################################
                     # Below do random throw (translate only) in FD similar to ND: only one throw in FD at a time
@@ -475,7 +488,7 @@ for jentry in range(41):
 
                     # Check if it passes FD hadronic veto
                     geoEff.setHitSegEdeps(had_edep_list) # use the same had edep list
-                    fdrandthrowresulthad = geoEff.getFDContainment4RandomThrow(had_posdep_fdorig_matrix)
+                    fdrandthrowresulthad = geoEff.getFDContainment4RandomThrow(ndeccrandthrowresulthad.thrownEdepspos[0])
 
                     if (fdrandthrowresulthad.containresult[0][0][0] != 0):
                         print ("---- fd throw", tot_fd_throw, "passed fd had veto")
@@ -487,10 +500,10 @@ for jentry in range(41):
                         # Now change to the full list of edeps
                         # the random thrown x/y/z should reamin the same because throw is done above already
                         geoEff.setHitSegEdeps(all_edep_list)
-                        fdrandthrowresultall_start = geoEff.getFDContainment4RandomThrow(all_startposdep_fdorig_matrix)
+                        fdrandthrowresultall_start = geoEff.getFDContainment4RandomThrow(ndeccrandthrowresultall_start.thrownEdepspos[0])
                         # Repeat for edepsim stop points !!!
                         geoEff.setHitSegEdeps(all_edep_list)
-                        fdrandthrowresultall_stop = geoEff.getFDContainment4RandomThrow(all_stopposdep_fdorig_matrix)
+                        fdrandthrowresultall_stop = geoEff.getFDContainment4RandomThrow(ndeccrandthrowresultall_stop.thrownEdepspos[0])
 
                         print ("Found paired nd-fd random thrown events")
 
@@ -560,8 +573,8 @@ for jentry in range(41):
                     tot_fd_throw = tot_fd_throw + 1
 
                 # if reached max fd throw and still didn't pass FD veto, try next nd throw
-                if tot_fd_throw == max_throws:
-                    print ("Reached max fd throw", max_throws, ", continue to next nd throw")
+                if tot_fd_throw == max_fd_throws:
+                    print ("Reached max fd throw", max_fd_throws, ", continue to next nd throw")
                     tot_nd_throw = tot_nd_throw + 1
                     continue
 
