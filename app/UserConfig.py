@@ -9,6 +9,8 @@ from array import array
 # Convert from EDepSim default units (mm, ns)
 edep2cm = 0.1   # convert to cm
 edep2us = 0.001 # convert to microseconds
+# Convert GENIE to common units
+gev2mev  = 1000 # convert GeV to MeV
 # LArBath length each side
 dimension = 40000 #cm
 # Beamline point downward: clockwise rotate around ND det coordinate x axis
@@ -63,6 +65,10 @@ ND_local_x_stepsize = 48. # unit cm, must be a positive number below 200
 ND_local_x_min      = -312. # unit cm,
 ND_local_x_max      = 312.  # unit cm,
 
+def IsFromPrimaryLep(trkid, parentid, primaryleptrkid):
+    if ( trkid == primaryleptrkid ) or ( parentid[trkid] == primaryleptrkid ): return True
+    elif ( parentid[trkid] == -1 ): return False
+    else: return IsFromPrimaryLep(parentid[trkid], parentid, primaryleptrkid)
 
 def IsInNDFV(pos_x_cm, pos_y_cm, pos_z_cm):
     # This ND FV cut function is copied from CAFAna:

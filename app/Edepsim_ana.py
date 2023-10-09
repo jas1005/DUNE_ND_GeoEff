@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """
 Runs over edepsim files and produce paired events in near and far detector.
-Produce validation plots to see if the data is being manipulated correctly.
+Adapted from https://github.com/DUNE/larnd-sim/blob/main/cli/dumpTree.py
 """
 import time
 start_time = time.time()
@@ -43,14 +43,21 @@ a = str(sys.argv[1])
 #edep_file = TFile("edep.*.root")
 edep_file = TFile(a, "OPEN")
 if not edep_file:
-  print ("Error: could not open file", a)
-  sys.exit()
+    print ("Error: could not open file", a)
+    sys.exit()
 inputTree = edep_file.Get("EDepSimEvents")
+genieTree = edep_file.Get("DetSimPassThru/gRooTracker")
+
 event = TG4Event()
 inputTree.SetBranchAddress("Event", event)
+
 entries = inputTree.GetEntriesFast()
+genie_entries = genieTree.GetEntriesFast()
+if entries != genie_entries:
+    print("Edep-sim tree and GENIE tree number of entries do not match!")
+    sys.exit()
+
 gDecayZ = TGraph(27, OffAxisPoints, meanPDPZ)
-#print(entries)
 
 #########
 # OUTPUT
@@ -76,12 +83,45 @@ print(" \n") # separate output
 f_out = TFile('{0}/n2fd_paired_out.root'.format(rootpath), 'RECREATE')
 myEvents = TTree('myEvents', 'myEvents')
 maxEdeps = 100000 # max number of edeps for initialize arrays
+maxGenieParts = 1000
+
+##################################
+# Genie evt info
+##################################
+Genie_nParts = array('i', [0])
+myEvents.Branch('Genie_nParts', Genie_nParts, 'Genie_nParts/I')
+GenieParts_pdg = np.zeros((maxGenieParts,), dtype=np.int32)
+myEvents.Branch('GenieParts_pdg', GenieParts_pdg, 'GenieParts_pdg[Genie_nParts]/I')
+GenieParts_p0_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
+myEvents.Branch('GenieParts_p0_MeV', GenieParts_p0_MeV, 'GenieParts_p0_MeV[Genie_nParts]/F')
+GenieParts_p1_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
+myEvents.Branch('GenieParts_p1_MeV', GenieParts_p1_MeV, 'GenieParts_p1_MeV[Genie_nParts]/F')
+GenieParts_p2_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
+myEvents.Branch('GenieParts_p2_MeV', GenieParts_p2_MeV, 'GenieParts_p2_MeV[Genie_nParts]/F')
+GenieParts_p3_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
+myEvents.Branch('GenieParts_p3_MeV', GenieParts_p3_MeV, 'GenieParts_p3_MeV[Genie_nParts]/F')
+Genie_final_lep_pdg = array('i', [0])
+myEvents.Branch('Genie_final_lep_pdg', Genie_final_lep_pdg, 'Genie_final_lep_pdg/I')
+Genie_final_lep_p0_MeV = array('f', [0.0])
+myEvents.Branch('Genie_final_lep_p0_MeV', Genie_final_lep_p0_MeV, 'Genie_final_lep_p0_MeV/F')
+Genie_final_lep_p1_MeV = array('f', [0.0])
+myEvents.Branch('Genie_final_lep_p1_MeV', Genie_final_lep_p1_MeV, 'Genie_final_lep_p1_MeV/F')
+Genie_final_lep_p2_MeV = array('f', [0.0])
+myEvents.Branch('Genie_final_lep_p2_MeV', Genie_final_lep_p2_MeV, 'Genie_final_lep_p2_MeV/F')
+Genie_final_lep_p3_MeV = array('f', [0.0])
+myEvents.Branch('Genie_final_lep_p3_MeV', Genie_final_lep_p3_MeV, 'Genie_final_lep_p3_MeV/F')
 
 ##################################
 # LArBath evt info
 ##################################
 nEdeps = array('i', [0])
 myEvents.Branch('nEdeps', nEdeps, 'nEdeps/I')
+deps_trkID = np.zeros((maxEdeps,), dtype=np.int32)
+myEvents.Branch('deps_trkID', deps_trkID, 'deps_trkID[nEdeps]/I')
+deps_parentID = np.zeros((maxEdeps,), dtype=np.int32)
+myEvents.Branch('deps_parentID', deps_parentID, 'deps_parentID[nEdeps]/I')
+deps_pdg = np.zeros((maxEdeps,), dtype=np.int32)
+myEvents.Branch('deps_pdg', deps_pdg, 'deps_pdg[nEdeps]/I')
 deps_E_MeV = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('deps_E_MeV', deps_E_MeV, 'deps_E_MeV[nEdeps]/F')
 deps_start_t_us = np.zeros((maxEdeps,), dtype=np.float32)
@@ -191,9 +231,10 @@ myEvents.Branch('fd_deps_stop_z_cm_pair_nd_ecc', fd_deps_stop_z_cm_pair_nd_ecc, 
 # Loop over edepsim events
 ##########################
 
-for jentry in range(41):
+for jentry in range(entries):
     print("jentry = " + str(jentry))
-    nb = inputTree.GetEntry(jentry) #number of bytes read
+    nb = inputTree.GetEntry(jentry)
+    gb = genieTree.GetEntry(jentry)
     #print("nb =" + str(nb))
     #print("event number: ", event.EventId)
     #print("number of primaries: ", event.Primaries.size())
@@ -201,6 +242,9 @@ for jentry in range(41):
     #print("number of segments: ", event.SegmentDetectors.size())
     all_dep_startpos_list = list()
     all_dep_stoppos_list = list()
+    all_dep_trkID_list  = list()
+    all_dep_parentID_list = list()
+    all_dep_pdg_list = list()
     all_edep_list   = list()
     all_dep_starttime_list = list()
     all_dep_stoptime_list = list()
@@ -228,17 +272,25 @@ for jentry in range(41):
                 momx = particle.GetMomentum().X()
                 momy = particle.GetMomentum().Y()
                 momz = particle.GetMomentum().Z()
-                trackIDforPrimary = particle.GetTrackId()
+                PrimaryLepTrackID = particle.GetTrackId()
                 """
                 print("pos x: ", posx, " y: ", posy, " z: ", posz, " [cm]")
                 print("mom x: ", momx, " y: ", momy, " z: ", momz, " [MeV]")
-                print("trackIDforPrimary: ", trackIDforPrimary)
+                print("PrimaryLepTrackID: ", PrimaryLepTrackID)
                 """
+
+    trajectories_parentid = np.empty(len(event.Trajectories), dtype=np.int32)
+    trajectories_pdg = np.empty(len(event.Trajectories), dtype=np.int32)
+    for iTraj, trajectory in enumerate(event.Trajectories):
+        # iTraj is same as TrackId, starts from #0
+        trajectories_parentid[iTraj] = trajectory.GetParentId()
+        trajectories_pdg[iTraj] = trajectory.GetPDGCode()
+        #print("iTraj #", iTraj, " parentID: ", trajectories_parentid[iTraj], " pdg: ", trajectories_pdg[iTraj] )
 
     for containerName, hitSegments in event.SegmentDetectors:
         # iHit is the index, hitSEgment is the data stored at the index in the second item in event.SegementDectectors
         for iHit, hitSegment in enumerate(hitSegments):
-            primaryID = hitSegment.GetPrimaryId()
+
             # Energy deposit from primary particles
             edep_start_x = hitSegment.GetStart().X() * edep2cm
             edep_start_y = hitSegment.GetStart().Y() * edep2cm
@@ -251,6 +303,9 @@ for jentry in range(41):
             edep_x = (edep_start_x + edep_stop_x)/2 # use this for hadronic veto
             edep_y = (edep_start_y + edep_stop_y)/2
             edep_z = (edep_start_z + edep_stop_z)/2
+            edep_trkID = hitSegment.Contrib[0] # what is different if use GetPrimaryId()?
+            edep_parentID = trajectories_parentid[edep_trkID]
+            edep_pdg = trajectories_pdg[edep_trkID]
             edep = hitSegment.GetEnergyDeposit()
 
             all_dep_startpos_list.append(edep_start_x)
@@ -261,11 +316,15 @@ for jentry in range(41):
             all_dep_stoppos_list.append(edep_stop_y)
             all_dep_stoppos_list.append(edep_stop_z)
             all_dep_stoptime_list.append(edep_stop_t)
+            all_dep_trkID_list.append(edep_trkID)
+            all_dep_parentID_list.append(edep_parentID)
+            all_dep_pdg_list.append(edep_pdg)
             all_edep_list.append(edep)
 
             # Hadronic part of edepsim
             # Later need these hadronic edeps to evaluate hadronic veto
-            if primaryID != trackIDforPrimary:
+            #if edep_trkID != PrimaryLepTrackID:
+            if IsFromPrimaryLep(edep_trkID, trajectories_parentid, PrimaryLepTrackID) == False:
                 had_dep_pos_list.append(edep_x)
                 had_dep_pos_list.append(edep_y)
                 had_dep_pos_list.append(edep_z)
@@ -273,6 +332,38 @@ for jentry in range(41):
 
     # for use in processing events before and after transformations
     nEdeps[0] = len(all_edep_list)
+
+    # Also save truth info from GENIE
+    Genie_nParts[0] = 0
+    Genie_final_lep_pdg[0] = 0
+    Genie_final_lep_p0_MeV[0] = 0
+    Genie_final_lep_p1_MeV[0] = 0
+    Genie_final_lep_p2_MeV[0] = 0
+    Genie_final_lep_p3_MeV[0] = 0
+    all_genie_pdg_list = list()
+    all_genie_p0_list = list()
+    all_genie_p1_list = list()
+    all_genie_p2_list = list()
+    all_genie_p3_list = list()
+    for p in range(genieTree.StdHepN):
+        # Get only final state particles
+        if genieTree.StdHepStatus[p] == 1:
+            #print("GENIE pdg: ", genieTree.StdHepPdg[p], " status: ", genieTree.StdHepStatus[p], " p0: ", genieTree.StdHepP4[p*4 + 0]*gev2mev, " p1: ", genieTree.StdHepP4[p*4 + 1]*gev2mev, " p2: ", genieTree.StdHepP4[p*4 + 2]*gev2mev, " p3: ", genieTree.StdHepP4[p*4 + 3]*gev2mev)
+            all_genie_pdg_list.append(genieTree.StdHepPdg[p])
+            all_genie_p0_list.append(genieTree.StdHepP4[p*4 + 0]*gev2mev)
+            all_genie_p1_list.append(genieTree.StdHepP4[p*4 + 1]*gev2mev)
+            all_genie_p2_list.append(genieTree.StdHepP4[p*4 + 2]*gev2mev)
+            all_genie_p3_list.append(genieTree.StdHepP4[p*4 + 3]*gev2mev)
+
+            if abs(genieTree.StdHepPdg[p]) >= 11 and abs(genieTree.StdHepPdg[p]) <= 16:
+                #print("GENIE final lep pdg: ", genieTree.StdHepPdg[p], " status: ", genieTree.StdHepStatus[p], " p0: ", genieTree.StdHepP4[p*4 + 0]*gev2mev, " p1: ", genieTree.StdHepP4[p*4 + 1]*gev2mev, " p2: ", genieTree.StdHepP4[p*4 + 2]*gev2mev, " p3: ", genieTree.StdHepP4[p*4 + 3]*gev2mev)
+                Genie_final_lep_pdg[0] = genieTree.StdHepPdg[p]
+                Genie_final_lep_p0_MeV[0] = genieTree.StdHepP4[p*4 + 0]*gev2mev
+                Genie_final_lep_p1_MeV[0] = genieTree.StdHepP4[p*4 + 1]*gev2mev
+                Genie_final_lep_p2_MeV[0] = genieTree.StdHepP4[p*4 + 2]*gev2mev
+                Genie_final_lep_p3_MeV[0] = genieTree.StdHepP4[p*4 + 3]*gev2mev
+    # End particle loop in genie
+    Genie_nParts[0] = len(all_genie_pdg_list)
 
     ##################################################################
     # Initialize geometric efficiency module to manipulate energy deps
@@ -593,7 +684,17 @@ for jentry in range(41):
                         #################################
                         print ("Saving...")
 
+                        # Genie info
+                        GenieParts_pdg[:Genie_nParts[0]] = np.array(all_genie_pdg_list, dtype=np.int32)
+                        GenieParts_p0_MeV[:Genie_nParts[0]] = np.array(all_genie_p0_list, dtype=np.float32)
+                        GenieParts_p1_MeV[:Genie_nParts[0]] = np.array(all_genie_p1_list, dtype=np.float32)
+                        GenieParts_p2_MeV[:Genie_nParts[0]] = np.array(all_genie_p2_list, dtype=np.float32)
+                        GenieParts_p3_MeV[:Genie_nParts[0]] = np.array(all_genie_p3_list, dtype=np.float32)
+
                         # LArBath info
+                        deps_trkID[:nEdeps[0]] = np.array(all_dep_trkID_list, dtype=np.int32)
+                        deps_parentID[:nEdeps[0]] = np.array(all_dep_parentID_list, dtype=np.int32)
+                        deps_pdg[:nEdeps[0]] = np.array(all_dep_pdg_list, dtype=np.int32)
                         deps_E_MeV[:nEdeps[0]] = np.array(all_edep_list, dtype=np.float32)
                         deps_start_t_us[:nEdeps[0]] = np.array(all_dep_starttime_list, dtype=np.float32)
                         deps_stop_t_us[:nEdeps[0]] = np.array(all_dep_stoptime_list, dtype=np.float32)
