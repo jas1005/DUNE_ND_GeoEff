@@ -24,12 +24,6 @@ cd app
 nohup python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root >& output.log &
 
 # The first time you may need to install a few packages via pip install, depending on what it complains when you run, e.g.:
-
-pip install --target=/dune/app/users/weishi/python3libs matplotlib
-pip install --target=/dune/app/users/weishi/python3libs pandas
-pip install --target=/dune/app/users/weishi/python3libs tables
-
-# /dune/app/users/weishi/testedepsim/edep.LArBath.mu10GeV.root
-# /dune/app/users/weishi/testedepsim/edep.LArBath.mu70GeV.root
-# /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root
+pip install --target=/dune/app/users/weishi/python3libs torch --upgrade
+pip install --target=/dune/app/users/weishi/python3libs scipy --upgrade
 ```

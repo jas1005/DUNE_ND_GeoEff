@@ -1,25 +1,20 @@
 #! /usr/bin/env python
 """
 Runs over edepsim files and produce paired events in near and far detector.
-Adapted from https://github.com/DUNE/larnd-sim/blob/main/cli/dumpTree.py
 """
 import time
 start_time = time.time()
 
 import numpy as np
-import matplotlib.pyplot as plt
-import glob
 import os
 import os.path
-
 import sys
-
+import torch
+from scipy.spatial.transform import Rotation as R
+from muonEffModel import muonEffModel
 import ROOT
-from ROOT import TG4Event, TFile, TTree, TCanvas, TGraph, TH1D
-
-from optparse import OptionParser
-import xml.etree.ElementTree as ET
-
+from ROOT import TG4Event, TFile, TTree, TGraph
+from ROOT import gROOT # for creating the output file
 from array import array
 from math import cos, sin
 import random
@@ -27,8 +22,6 @@ import random
 with open("UserConfig.py") as infile:
     exec(infile.read())
 import pyGeoEff
-
-from ROOT import gROOT # for creating the output file
 
 ROOT.gROOT.ProcessLine('#include<vector>') # for outputting data to ROOT file
 
@@ -79,7 +72,6 @@ if not os.path.exists( rootpath):
 print(" \n") # separate output
 
 # Create the ROOT file that will hold the output of this script
-# including but not limited to the output TH1D objects and raw data
 f_out = TFile('{0}/n2fd_paired_out.root'.format(rootpath), 'RECREATE')
 myEvents = TTree('myEvents', 'myEvents')
 maxEdeps = 100000 # max number of edeps for initialize arrays
@@ -151,6 +143,11 @@ myEvents.Branch('larbath_deps_stop_z_cm', larbath_deps_stop_z_cm, 'larbath_deps_
 # Random thrown vertex in ND (paired evt)
 nd_vtx_cm_nonecc = array('f', 3*[0.0])
 myEvents.Branch('nd_vtx_cm_nonecc', nd_vtx_cm_nonecc, 'nd_vtx_cm_nonecc[3]/F')
+# Muon selection probability in ND LAr and tracker
+nd_lep_contained_prob_nonecc = array('f', [0.0])
+myEvents.Branch('nd_lep_contained_prob_nonecc', nd_lep_contained_prob_nonecc, 'nd_lep_contained_prob_nonecc/F')
+nd_lep_tracker_prob_nonecc = array('f', [0.0])
+myEvents.Branch('nd_lep_tracker_prob_nonecc', nd_lep_tracker_prob_nonecc, 'nd_lep_tracker_prob_nonecc/F')
 # Edeps in ND random throw (start points)
 nd_deps_start_x_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_start_x_cm_nonecc', nd_deps_start_x_cm_nonecc, 'nd_deps_start_x_cm_nonecc[nEdeps]/F')
@@ -254,6 +251,7 @@ for jentry in range(entries):
     # initialize LArBath vertex
     larbath_vtx_cm[0] = 0; larbath_vtx_cm[1] = 0; larbath_vtx_cm[2] = 0;
     nEdeps[0] = 0
+    nd_lep_contained_prob_nonecc[0] = -1; nd_lep_tracker_prob_nonecc[0] = -1;
     nd_vtx_cm_nonecc[0] = 0; nd_vtx_cm_nonecc[1] = 0; nd_vtx_cm_nonecc[2] = 0;
     fd_vtx_cm_pair_nd_nonecc[0] = 0; fd_vtx_cm_pair_nd_nonecc[1] = 0; fd_vtx_cm_pair_nd_nonecc[2] = 0;
     nd_vtx_cm_ecc[0] = 0; nd_vtx_cm_ecc[1] = 0; nd_vtx_cm_ecc[2] = 0;
@@ -269,10 +267,14 @@ for jentry in range(entries):
                 posx = primary.GetPosition().X() * edep2cm
                 posy = primary.GetPosition().Y() * edep2cm
                 posz = primary.GetPosition().Z() * edep2cm
-                momx = particle.GetMomentum().X()
+                momx = particle.GetMomentum().X() # MeV
                 momy = particle.GetMomentum().Y()
                 momz = particle.GetMomentum().Z()
+                # Generated lepton momentum in edepsim
+                lep_p = [momx/gev2mev, momy/gev2mev, momz/gev2mev]
                 PrimaryLepTrackID = particle.GetTrackId()
+                print("edepsim lep pos x: ", posx, "  y: ", posy, "  z: ", posz, " [cm]")
+                print("edepsim lep    px: ", lep_p[0], " py: ", lep_p[1], " pz: ", lep_p[2], " [GeV]")
                 """
                 print("pos x: ", posx, " y: ", posy, " z: ", posz, " [cm]")
                 print("mom x: ", momx, " y: ", momy, " z: ", momz, " [MeV]")
@@ -356,7 +358,7 @@ for jentry in range(entries):
             all_genie_p3_list.append(genieTree.StdHepP4[p*4 + 3]*gev2mev)
 
             if abs(genieTree.StdHepPdg[p]) >= 11 and abs(genieTree.StdHepPdg[p]) <= 16:
-                #print("GENIE final lep pdg: ", genieTree.StdHepPdg[p], " status: ", genieTree.StdHepStatus[p], " p0: ", genieTree.StdHepP4[p*4 + 0]*gev2mev, " p1: ", genieTree.StdHepP4[p*4 + 1]*gev2mev, " p2: ", genieTree.StdHepP4[p*4 + 2]*gev2mev, " p3: ", genieTree.StdHepP4[p*4 + 3]*gev2mev)
+                print("GENIE final lep pdg: ", genieTree.StdHepPdg[p], " status: ", genieTree.StdHepStatus[p], " p0 MeV: ", genieTree.StdHepP4[p*4 + 0]*gev2mev, " p1: ", genieTree.StdHepP4[p*4 + 1]*gev2mev, " p2: ", genieTree.StdHepP4[p*4 + 2]*gev2mev, " p3: ", genieTree.StdHepP4[p*4 + 3]*gev2mev)
                 Genie_final_lep_pdg[0] = genieTree.StdHepPdg[p]
                 Genie_final_lep_p0_MeV[0] = genieTree.StdHepP4[p*4 + 0]*gev2mev
                 Genie_final_lep_p1_MeV[0] = genieTree.StdHepP4[p*4 + 1]*gev2mev
@@ -486,6 +488,66 @@ for jentry in range(entries):
                 ndrandthrowresultall_stop = geoEff.getNDContainment4RandomThrowX()
 
                 ###########################################################
+                #  (Oct 25, 2023)
+                # Since we don't have a good TMS reco now, interested to know
+                # probability of muons selected in tracker and its kinetic energy after exiting NDLAr
+                ###########################################################
+
+                # Perform same transformation on lepton momentum vec: needed for evaluate muon nn
+                # this should go in a function similar to hadron manipulation
+                # input would be decayToVertex and decayToTranslated
+
+                # Vector from neutrino production point to original event vertex
+                decayToVertex     = [posx - decayXdetCoord*100, posy - decayYdetCoord*100, posz - decayZdetCoord*100]
+                # Vector from neutrino production point to randomly thrown vertex.
+                decayToTranslated = [throwVtxX_nd[0] - RandomthrowdecayXdetCoord*100, throwVtxY_nd[0] - RandomthrowdecayYdetCoord*100, throwVtxZ_nd[0] - RandomthrowdecayZdetCoord*100]
+
+                magDecayToVertex     = np.sqrt(np.sum(np.square(decayToVertex)))
+                magDecayToTranslated = np.sqrt(np.sum(np.square(decayToTranslated)))
+
+                translationAngle = np.dot(decayToTranslated, decayToVertex)
+                translationAngle = np.divide(translationAngle, np.multiply(magDecayToVertex, magDecayToTranslated));
+                #for angleval in translationAngle:if angleval<=-1 or angleval>=1: print(i_event, angleval)
+                translationAngle = np.arccos(translationAngle);
+                translationAxis = np.cross(decayToTranslated, decayToVertex)
+                translationAxis = translationAxis/np.linalg.norm(translationAxis)
+                translation_rot_vec = np.multiply(translationAxis, translationAngle)
+
+                decayToTranslated = decayToTranslated/np.linalg.norm(decayToTranslated)
+                phi_rot_vec = np.multiply(decayToTranslated, throwAngle)
+
+                # Get rotation matrices due to:
+                # Vertex translation (which "rotates" the average neutrino direction)
+                translation_rot = R.from_rotvec(translation_rot_vec)
+                # Random phi rotation around average neutrino direction
+                phi_rot = R.from_rotvec(phi_rot_vec)
+                # Rotate momentum
+                lep_p = translation_rot.apply(lep_p)
+                lep_p = phi_rot.apply(lep_p)
+
+                print ("--- mu pos x cm: ", throwVtxX_nd[0] - NDLAr_OnAxis_offset[0], ", y: ", throwVtxY_nd[0] - NDLAr_OnAxis_offset[1], ", pz: ", throwVtxZ_nd[0] - NDLAr_OnAxis_offset[2])
+                print ("--- mu px GeV: ", lep_p[0], ", py: ", lep_p[1], ", pz: ", lep_p[2])
+
+                # Load muon neural network
+                net = muonEffModel()
+                net.load_state_dict(torch.load("./muonEff30.nn", map_location=torch.device('cpu')))
+                net.eval()
+                # Input features for nn: momentum and vertex
+                inputfeatures = np.column_stack((lep_p[0], lep_p[1], lep_p[2], throwVtxX_nd[0] - NDLAr_OnAxis_offset[0], throwVtxY_nd[0] - NDLAr_OnAxis_offset[1], throwVtxZ_nd[0] - NDLAr_OnAxis_offset[2]))
+                # Convert to Pytorch tensor
+                inputfeatures = torch.as_tensor(inputfeatures).type(torch.FloatTensor)
+                # Evaluate neural network
+                with torch.no_grad() :
+                    netOut = net(inputfeatures)
+                    netOut = torch.nn.functional.softmax(netOut, dim=1).detach().numpy()
+                # Get contained probability for this throw
+                nd_lep_contained_prob_nonecc[0] = np.array(netOut[:,0], dtype = float)
+                # Get tracker probability for this throw
+                nd_lep_tracker_prob_nonecc[0] = np.array(netOut[:,1], dtype = float)
+                print ("--- nn prob. contained: ", nd_lep_contained_prob_nonecc[0], ", tracker: ", nd_lep_tracker_prob_nonecc[0])
+                # Muon kinetic energy in TMS
+
+                ###########################################################
                 # Now translate this event vertex to ND det coordinate (0,0,0) (and the edeps accordingly)
                 # Do it for all edeps and also had part edeps (because later we need had part only to evaluate FD had veto)
                 ###########################################################
@@ -611,6 +673,9 @@ for jentry in range(entries):
                         # Repeat for edepsim stop points !!!
                         geoEff.setHitSegEdeps(all_edep_list)
                         ndeccrandthrowresultall_stop = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix, beamLineRotation)
+
+                        # Because we don't have a good TMS reco now (Oct 25, 2023)
+                        # interested to know probability of muons selected by tracker and its kinetic energy after exiting NDLAr
 
                         print ("Found ndecc event")
 
