@@ -190,46 +190,6 @@ myEvents.Branch('fd_deps_stop_y_cm_pair_nd_nonecc', fd_deps_stop_y_cm_pair_nd_no
 fd_deps_stop_z_cm_pair_nd_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('fd_deps_stop_z_cm_pair_nd_nonecc', fd_deps_stop_z_cm_pair_nd_nonecc, 'fd_deps_stop_z_cm_pair_nd_nonecc[nEdeps]/F')
 
-####################
-# ND evt ecc
-####################
-# Edeps in ND with earth curvature correction
-nd_vtx_cm_ecc = array('f', 3*[0.0])
-myEvents.Branch('nd_vtx_cm_ecc', nd_vtx_cm_ecc, 'nd_vtx_cm_ecc[3]/F')
-nd_deps_start_x_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_start_x_cm_ecc', nd_deps_start_x_cm_ecc, 'nd_deps_start_x_cm_ecc[nEdeps]/F')
-nd_deps_start_y_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_start_y_cm_ecc', nd_deps_start_y_cm_ecc, 'nd_deps_start_y_cm_ecc[nEdeps]/F')
-nd_deps_start_z_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_start_z_cm_ecc', nd_deps_start_z_cm_ecc, 'nd_deps_start_z_cm_ecc[nEdeps]/F')
-nd_deps_stop_x_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_stop_x_cm_ecc', nd_deps_stop_x_cm_ecc, 'nd_deps_stop_x_cm_ecc[nEdeps]/F')
-nd_deps_stop_y_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_stop_y_cm_ecc', nd_deps_stop_y_cm_ecc, 'nd_deps_stop_y_cm_ecc[nEdeps]/F')
-nd_deps_stop_z_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_stop_z_cm_ecc', nd_deps_stop_z_cm_ecc, 'nd_deps_stop_z_cm_ecc[nEdeps]/F')
-
-##################################
-# FD paired evt with nd ecc
-##################################
-# Random thrown vertex in FD
-fd_vtx_cm_pair_nd_ecc = array('f', 3*[0.0])
-myEvents.Branch('fd_vtx_cm_pair_nd_ecc', fd_vtx_cm_pair_nd_ecc, 'fd_vtx_cm_pair_nd_ecc[3]/F')
-# Edeps in FD random throw (start points)
-fd_deps_start_x_cm_pair_nd_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fd_deps_start_x_cm_pair_nd_ecc', fd_deps_start_x_cm_pair_nd_ecc, 'fd_deps_start_x_cm_pair_nd_ecc[nEdeps]/F')
-fd_deps_start_y_cm_pair_nd_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fd_deps_start_y_cm_pair_nd_ecc', fd_deps_start_y_cm_pair_nd_ecc, 'fd_deps_start_y_cm_pair_nd_ecc[nEdeps]/F')
-fd_deps_start_z_cm_pair_nd_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fd_deps_start_z_cm_pair_nd_ecc', fd_deps_start_z_cm_pair_nd_ecc, 'fd_deps_start_z_cm_pair_nd_ecc[nEdeps]/F')
-# Edeps in FD random throw (stop points)
-fd_deps_stop_x_cm_pair_nd_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fd_deps_stop_x_cm_pair_nd_ecc', fd_deps_stop_x_cm_pair_nd_ecc, 'fd_deps_stop_x_cm_pair_nd_ecc[nEdeps]/F')
-fd_deps_stop_y_cm_pair_nd_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fd_deps_stop_y_cm_pair_nd_ecc', fd_deps_stop_y_cm_pair_nd_ecc, 'fd_deps_stop_y_cm_pair_nd_ecc[nEdeps]/F')
-fd_deps_stop_z_cm_pair_nd_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('fd_deps_stop_z_cm_pair_nd_ecc', fd_deps_stop_z_cm_pair_nd_ecc, 'fd_deps_stop_z_cm_pair_nd_ecc[nEdeps]/F')
-
 ###########################
 # Loop over edepsim events
 ##########################
@@ -271,8 +231,6 @@ for jentry in range(entries):
     nd_lep_ke_MeV_exit_ndlar_nonecc[0] = 0
     nd_vtx_cm_nonecc[0] = 0; nd_vtx_cm_nonecc[1] = 0; nd_vtx_cm_nonecc[2] = 0;
     fd_vtx_cm_pair_nd_nonecc[0] = 0; fd_vtx_cm_pair_nd_nonecc[1] = 0; fd_vtx_cm_pair_nd_nonecc[2] = 0;
-    nd_vtx_cm_ecc[0] = 0; nd_vtx_cm_ecc[1] = 0; nd_vtx_cm_ecc[2] = 0;
-    fd_vtx_cm_pair_nd_ecc[0] = 0; fd_vtx_cm_pair_nd_ecc[1] = 0; fd_vtx_cm_pair_nd_ecc[2] = 0;
 
     for primary in event.Primaries:
         #print("number of particles: ", primary.Particles.size())
@@ -515,28 +473,6 @@ for jentry in range(entries):
                 geoEff.setHitSegEdeps(lep_edep_list)
                 geoEff.setHitSegPoss(lep_dep_pos_list)
                 ndrandthrowresultlep = geoEff.getNDContainment4RandomThrowX()
-                # All info we need for transformed lep e deposits
-                lepdeps_E_MeV[:nLepEdeps[0]] = np.array(lep_edep_list, dtype=np.float32)
-                nd_lepdeps_x_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][0,:], dtype=np.float32)
-                nd_lepdeps_y_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][1,:], dtype=np.float32)
-                nd_lepdeps_z_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][2,:], dtype=np.float32)
-                # Now loop over nLepEdeps
-                print ("---- lep array KE tot (MeV):", np.sum(lepdeps_E_MeV))
-                print ("---- lep list KE tot (MeV):", np.sum(lep_edep_list))
-                print ("---- nLepEdeps:", nLepEdeps[0])
-                for iedep in range(0, nLepEdeps[0]):
-                    # Deposit inside ND LAr, continue to next
-                    if nd_lepdeps_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] > NDActiveVol_min[0] and nd_lepdeps_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] < NDActiveVol_max[0] and \
-                       nd_lepdeps_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] > NDActiveVol_min[1] and nd_lepdeps_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] < NDActiveVol_max[1] and \
-                       nd_lepdeps_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] > NDActiveVol_min[2] and nd_lepdeps_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] < NDActiveVol_max[2]:
-                       nLepEdeps_insideNDLAr = nLepEdeps_insideNDLAr + 1
-                       continue
-
-                    # if not in ND LAr active vol, add up energy
-                    nd_lep_ke_MeV_exit_ndlar_nonecc[0] = nd_lep_ke_MeV_exit_ndlar_nonecc[0] + lepdeps_E_MeV[iedep]
-
-                print ("---- lep number of edeps inside active NDLAr:", nLepEdeps_insideNDLAr)
-                print ("---- lep KE outside active NDLAr (MeV):", nd_lep_ke_MeV_exit_ndlar_nonecc[0])
 
                 ###########################################################
                 #  (Oct 25, 2023)
@@ -592,7 +528,29 @@ for jentry in range(entries):
                 # Get tracker probability for this throw
                 nd_lep_tracker_prob_nonecc[0] = np.array(netOut[:,1], dtype = float)
                 print ("--- nn prob. contained: ", nd_lep_contained_prob_nonecc[0], ", tracker: ", nd_lep_tracker_prob_nonecc[0])
-                # Muon kinetic energy in TMS
+
+                # All info we need for transformed lep e deposits
+                lepdeps_E_MeV[:nLepEdeps[0]] = np.array(lep_edep_list, dtype=np.float32)
+                nd_lepdeps_x_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][0,:], dtype=np.float32)
+                nd_lepdeps_y_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][1,:], dtype=np.float32)
+                nd_lepdeps_z_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][2,:], dtype=np.float32)
+                # Now loop over nLepEdeps
+                print ("---- lep array KE tot (MeV):", np.sum(lepdeps_E_MeV))
+                print ("---- lep list KE tot (MeV):", np.sum(lep_edep_list))
+                print ("---- nLepEdeps:", nLepEdeps[0])
+                for iedep in range(0, nLepEdeps[0]):
+                    # Deposit inside ND LAr, continue to next
+                    if nd_lepdeps_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] > NDActiveVol_min[0] and nd_lepdeps_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] < NDActiveVol_max[0] and \
+                       nd_lepdeps_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] > NDActiveVol_min[1] and nd_lepdeps_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] < NDActiveVol_max[1] and \
+                       nd_lepdeps_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] > NDActiveVol_min[2] and nd_lepdeps_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] < NDActiveVol_max[2]:
+                       nLepEdeps_insideNDLAr = nLepEdeps_insideNDLAr + 1
+                       continue
+
+                    # if not in ND LAr active vol, add up energy
+                    nd_lep_ke_MeV_exit_ndlar_nonecc[0] = nd_lep_ke_MeV_exit_ndlar_nonecc[0] + lepdeps_E_MeV[iedep]
+
+                print ("---- lep number of edeps inside active NDLAr:", nLepEdeps_insideNDLAr)
+                print ("---- lep KE outside active NDLAr (MeV):", nd_lep_ke_MeV_exit_ndlar_nonecc[0])
 
                 ###########################################################
                 # Now translate this event vertex to ND det coordinate (0,0,0) (and the edeps accordingly)
@@ -614,20 +572,13 @@ for jentry in range(entries):
                 all_startposdep_fdorig_matrix = geoEff.getn2fEarthCurvatureCorr(all_startposdep_ndorig_matrix, beamLineRotation)
                 all_stopposdep_fdorig_matrix = geoEff.getn2fEarthCurvatureCorr(all_stopposdep_ndorig_matrix, beamLineRotation) # repeat for stop points
 
-                ####################################################################################################################
-                # Here is where things branch out, we have two kinds of nd-fd pairs (two legs)
-                # leg 1 needed by Radi: non ecc nd evt + fd evt with same random rotation with non ecc nd
-                #       ND event is without any earth curvature correction (already obtained above),
-                #       after earth curvature correction, only random translate the nd event in fd to obtain paired FD event
-                #
-                # leg 2 needed by Alex: ecc nd + fd evt with same random rotation with ecc nd
-                #       this randomly rotated ECC event is now at FD origin,
-                #       then randomly rotated it around the beam axis w.r.t. FD as if the event is at FD,
-                #       we further translated it randomly in ND LAr and it needs to pass ND LAr hadronic veto.
-                ####################################################################################################################
-                ##################################################
-                # leg 1: paired FD evt needed by Radi
-                ##################################################
+                ################
+                # Paired FD evt
+                ################
+                # non ecc nd evt + fd evt with same random rotation with non ecc nd
+                # ND event is without any earth curvature correction (already obtained above),
+                # after earth curvature correction, only random translate the nd event in fd to obtain paired FD event
+
                 # Tell the module where the vertex is in FD
                 geoEff.setVertexFD(0, 0, 0) # it's at FD origin because we moved it to origin and then just rotated at there
 
@@ -665,128 +616,6 @@ for jentry in range(entries):
                         fdthrowresultall_stop_pair_nd_nonecc = geoEff.getFDContainment4RandomThrow(all_stopposdep_fdorig_matrix)
 
                         print ("Found paired fd-nd non ecc event")
-                        # Break the while loop, move on to next evt
-                        break
-                    else:
-                        print ("---- tot fd throw to pair nd-non-ecc:", tot_fd_throw_pair_nd_nonecc, "failed fd had veto!")
-
-                    # indentation is important!
-                    # if don't, put it in another random FD pos...until it passes FD veto
-                    tot_fd_throw_pair_nd_nonecc = tot_fd_throw_pair_nd_nonecc + 1
-
-                # if reached max fd throw and still didn't pass FD veto, try next nd throw
-                if tot_fd_throw_pair_nd_nonecc == max_fd_throws:
-                    print ("Reached max fd throw to pair nd-non-ecc", max_fd_throws, ", continue to next nd throw")
-                    tot_nd_throw = tot_nd_throw + 1
-                    continue
-
-                ##################################################
-                # leg 2: paired ND evt with ECC needed by Alex
-                ##################################################
-                # throw a random rotation angle around FD beam axis and a random point in ND LAr,
-                # rotate the event and translate vtx from origin to that point and evaluate ND hadronic veto
-                # if pass, continue to leg 1
-                # if not, throw another one
-                # if after max throws no one passed, continue to next nd throw, do not even bother the leg 1
-
-                tot_nd_ecc_throw = 0
-
-                while tot_nd_ecc_throw < max_nd_throws:
-                    print ("---- tot nd ecc throw:", tot_nd_ecc_throw)
-                    geoEff.setNthrowsNDECC(1)
-                    geoEff.throwTransformsNDECC() # this randomly generates a rotation angle and a new vtx position in ND LAr
-
-                    nd_vtx_x_cm_ecc = geoEff.getCurrentNDECCThrowTranslationsX()
-                    nd_vtx_y_cm_ecc = geoEff.getCurrentNDECCThrowTranslationsY()
-                    nd_vtx_z_cm_ecc = geoEff.getCurrentNDECCThrowTranslationsZ()
-                    nd_angle_ecc = geoEff.getCurrentNDECCThrowRotations()
-
-                    print ("---- nd ecc throw x: ", nd_vtx_x_cm_ecc[0], "y: ", nd_vtx_y_cm_ecc[0], ", z: ", nd_vtx_z_cm_ecc[0], ", angle: ", nd_angle_ecc[0])
-
-                    geoEff.setHitSegEdeps(had_edep_list) # use the same had edep list to evaluate hadronic veto
-                    # Here no need to setHitSegPoss because it's feed in next to moveBack2ndVertex
-
-                    # Rotate around fd beam axis and then translate the nd ecc event back to a randomly thrown position in ND LAr
-                    ndeccrandthrowresulthad = geoEff.moveBack2ndVertex(had_posdep_fdorig_matrix, beamLineRotation)
-
-                    if (ndeccrandthrowresulthad.containresult[0][0][0] != 0):
-                        print ("---- nd ecc throw", tot_nd_ecc_throw, "passed nd had veto")
-
-                        # Now change to the full list of edeps start points
-                        # the random thrown x/y/z should remain the same because throw was done above already
-                        geoEff.setHitSegEdeps(all_edep_list)
-                        ndeccrandthrowresultall_start= geoEff.moveBack2ndVertex(all_startposdep_fdorig_matrix, beamLineRotation)
-
-                        # Repeat for edepsim stop points !!!
-                        geoEff.setHitSegEdeps(all_edep_list)
-                        ndeccrandthrowresultall_stop = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix, beamLineRotation)
-
-                        print ("Found ndecc event")
-
-                        print ("Breaking nd ecc throw loop")
-                        break
-
-                    else:
-                        print ("-- nd ecc throw", tot_nd_ecc_throw, "failed fd had veto!")
-
-                    # indentation is important!
-                    tot_nd_ecc_throw = tot_nd_ecc_throw + 1
-
-                if tot_nd_ecc_throw == max_nd_throws:
-                    print ("Reached max nd ecc throw", max_nd_throws, ", continue to next nd throw")
-                    tot_nd_throw = tot_nd_throw + 1
-                    continue
-
-                ######################################################
-                # If it gets this far, the event already
-                #   1) has a random rotation around FD beam axis,
-                #   2) placed at a random position in ND LAr,
-                #   3) passed ND LAr hadronic veto
-                ######################################################
-
-                ##################################################################################
-                # leg 2: paired FD evt needed by Alex
-                #        here only involves a random translation in fd
-                #        but keeps the same rotation around fd beam axis as nd ecc event pair
-                ##################################################################################
-                # Tell the module where the vertex is in FD
-                # We pass the above random position in ND LAr, this doesn't matter as we are just doing translation
-                geoEff.setVertexFD(nd_vtx_x_cm_ecc[0], nd_vtx_y_cm_ecc[0], nd_vtx_z_cm_ecc[0])
-
-                tot_fd_throw = 0
-
-                while tot_fd_throw < max_fd_throws:
-                    print ("---- tot fd throw:", tot_fd_throw)
-                    ##########################################################################################
-                    # Below do random throw (translate only) in FD similar to ND: only one throw in FD at a time
-                    ##########################################################################################
-                    geoEff.setNthrowsFD(1)
-                    geoEff.throwTransformsFD() # this randomly generates new vtx position in FD FV
-
-                    throwVtxX_fd = geoEff.getCurrentFDThrowTranslationsX()
-                    throwVtxY_fd = geoEff.getCurrentFDThrowTranslationsY()
-                    throwVtxZ_fd = geoEff.getCurrentFDThrowTranslationsZ()
-
-                    # Check if it passes FD hadronic veto
-                    geoEff.setHitSegEdeps(had_edep_list) # use the same had edep list
-                    fdrandthrowresulthad = geoEff.getFDContainment4RandomThrow(ndeccrandthrowresulthad.thrownEdepspos[0])
-
-                    if (fdrandthrowresulthad.containresult[0][0][0] != 0):
-                        print ("---- fd throw", tot_fd_throw, "passed fd had veto")
-                        print ("---- fd throw x: ", throwVtxX_fd[0], "y: ", throwVtxY_fd[0], ", z: ", throwVtxZ_fd[0])
-                        ###########################################################
-                        # FD rand throw passes veto, write paired evt info
-                        ###########################################################
-
-                        # Now change to the full list of edeps
-                        # the random thrown x/y/z should reamin the same because throw is done above already
-                        geoEff.setHitSegEdeps(all_edep_list)
-                        fdrandthrowresultall_start = geoEff.getFDContainment4RandomThrow(ndeccrandthrowresultall_start.thrownEdepspos[0])
-                        # Repeat for edepsim stop points !!!
-                        geoEff.setHitSegEdeps(all_edep_list)
-                        fdrandthrowresultall_stop = geoEff.getFDContainment4RandomThrow(ndeccrandthrowresultall_stop.thrownEdepspos[0])
-
-                        print ("Found paired fd-nd ecc event")
 
                         #################################
                         # Unpack info and store to output
@@ -839,28 +668,6 @@ for jentry in range(entries):
                         fd_deps_stop_y_cm_pair_nd_nonecc[:nEdeps[0]] = np.array(fdthrowresultall_stop_pair_nd_nonecc.thrownEdepspos[0][1,:], dtype=np.float32)
                         fd_deps_stop_z_cm_pair_nd_nonecc[:nEdeps[0]] = np.array(fdthrowresultall_stop_pair_nd_nonecc.thrownEdepspos[0][2,:], dtype=np.float32)
 
-                        # Paired event in ND from random throw with earth curvature corrected (as FD)
-                        nd_vtx_cm_ecc[0] = nd_vtx_x_cm_ecc[0]
-                        nd_vtx_cm_ecc[1] = nd_vtx_y_cm_ecc[0]
-                        nd_vtx_cm_ecc[2] = nd_vtx_z_cm_ecc[0]
-                        nd_deps_start_x_cm_ecc[:nEdeps[0]] = np.array(ndeccrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32) # ecc: earth curvature corrected
-                        nd_deps_start_y_cm_ecc[:nEdeps[0]] = np.array(ndeccrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
-                        nd_deps_start_z_cm_ecc[:nEdeps[0]] = np.array(ndeccrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
-                        nd_deps_stop_x_cm_ecc[:nEdeps[0]] = np.array(ndeccrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
-                        nd_deps_stop_y_cm_ecc[:nEdeps[0]] = np.array(ndeccrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
-                        nd_deps_stop_z_cm_ecc[:nEdeps[0]] = np.array(ndeccrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
-
-                        # Paired fd event to nd ecc evt
-                        fd_vtx_cm_pair_nd_ecc[0] = throwVtxX_fd[0]
-                        fd_vtx_cm_pair_nd_ecc[1] = throwVtxY_fd[0]
-                        fd_vtx_cm_pair_nd_ecc[2] = throwVtxZ_fd[0]
-                        fd_deps_start_x_cm_pair_nd_ecc[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
-                        fd_deps_start_y_cm_pair_nd_ecc[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
-                        fd_deps_start_z_cm_pair_nd_ecc[:nEdeps[0]] = np.array(fdrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
-                        fd_deps_stop_x_cm_pair_nd_ecc[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
-                        fd_deps_stop_y_cm_pair_nd_ecc[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
-                        fd_deps_stop_z_cm_pair_nd_ecc[:nEdeps[0]] = np.array(fdrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
-
                         # event level
                         myEvents.Fill()
 
@@ -868,15 +675,15 @@ for jentry in range(entries):
                         print ("Paired data saved, breaking fd throw loop")
                         break
                     else:
-                        print ("---- fd throw", tot_fd_throw, "failed fd had veto!")
+                        print ("---- tot fd throw to pair nd-non-ecc:", tot_fd_throw_pair_nd_nonecc, "failed fd had veto!")
 
                     # indentation is important!
                     # if don't, put it in another random FD pos...until it passes FD veto
-                    tot_fd_throw = tot_fd_throw + 1
+                    tot_fd_throw_pair_nd_nonecc = tot_fd_throw_pair_nd_nonecc + 1
 
                 # if reached max fd throw and still didn't pass FD veto, try next nd throw
-                if tot_fd_throw == max_fd_throws:
-                    print ("Reached max fd throw", max_fd_throws, ", continue to next nd throw")
+                if tot_fd_throw_pair_nd_nonecc == max_fd_throws:
+                    print ("Reached max fd throw to pair nd-non-ecc", max_fd_throws, ", continue to next nd throw")
                     tot_nd_throw = tot_nd_throw + 1
                     continue
 
