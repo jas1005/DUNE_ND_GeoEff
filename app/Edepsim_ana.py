@@ -51,6 +51,10 @@ if entries != genie_entries:
     sys.exit()
 
 gDecayZ = TGraph(27, OffAxisPoints, meanPDPZ)
+# Load muon neural network
+net = muonEffModel()
+net.load_state_dict(torch.load("./muonEff30.nn", map_location=torch.device('cpu')))
+net.eval()
 
 #########
 # OUTPUT
@@ -148,6 +152,8 @@ nd_lep_contained_prob_nonecc = array('f', [0.0])
 myEvents.Branch('nd_lep_contained_prob_nonecc', nd_lep_contained_prob_nonecc, 'nd_lep_contained_prob_nonecc/F')
 nd_lep_tracker_prob_nonecc = array('f', [0.0])
 myEvents.Branch('nd_lep_tracker_prob_nonecc', nd_lep_tracker_prob_nonecc, 'nd_lep_tracker_prob_nonecc/F')
+nd_lep_ke_MeV_exit_ndlar_nonecc = array('f', [0.0])
+myEvents.Branch('nd_lep_ke_MeV_exit_ndlar_nonecc', nd_lep_ke_MeV_exit_ndlar_nonecc, 'nd_lep_ke_MeV_exit_ndlar_nonecc/F')
 # Edeps in ND random throw (start points)
 nd_deps_start_x_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_start_x_cm_nonecc', nd_deps_start_x_cm_nonecc, 'nd_deps_start_x_cm_nonecc[nEdeps]/F')
@@ -247,11 +253,22 @@ for jentry in range(entries):
     all_dep_stoptime_list = list()
     had_dep_pos_list = list()
     had_edep_list   = list()
+    lep_dep_pos_list = list()
+    lep_edep_list   = list()
 
-    # initialize LArBath vertex
+    # initialize
+    # Define here but do not write out
+    nLepEdeps = array('i', [0])
+    lepdeps_E_MeV = np.zeros((maxEdeps,), dtype=np.float32)
+    nd_lepdeps_x_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
+    nd_lepdeps_y_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
+    nd_lepdeps_z_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
     larbath_vtx_cm[0] = 0; larbath_vtx_cm[1] = 0; larbath_vtx_cm[2] = 0;
     nEdeps[0] = 0
+    nLepEdeps[0] = 0
+    nLepEdeps_insideNDLAr = 0
     nd_lep_contained_prob_nonecc[0] = -1; nd_lep_tracker_prob_nonecc[0] = -1;
+    nd_lep_ke_MeV_exit_ndlar_nonecc[0] = 0
     nd_vtx_cm_nonecc[0] = 0; nd_vtx_cm_nonecc[1] = 0; nd_vtx_cm_nonecc[2] = 0;
     fd_vtx_cm_pair_nd_nonecc[0] = 0; fd_vtx_cm_pair_nd_nonecc[1] = 0; fd_vtx_cm_pair_nd_nonecc[2] = 0;
     nd_vtx_cm_ecc[0] = 0; nd_vtx_cm_ecc[1] = 0; nd_vtx_cm_ecc[2] = 0;
@@ -323,17 +340,23 @@ for jentry in range(entries):
             all_dep_pdg_list.append(edep_pdg)
             all_edep_list.append(edep)
 
-            # Hadronic part of edepsim
+            # Separate hadronic and leptonic part of edepsim
             # Later need these hadronic edeps to evaluate hadronic veto
-            #if edep_trkID != PrimaryLepTrackID:
+            # Need to calculate remaining kinetic energy for muons exit ND LAr
             if IsFromPrimaryLep(edep_trkID, trajectories_parentid, PrimaryLepTrackID) == False:
                 had_dep_pos_list.append(edep_x)
                 had_dep_pos_list.append(edep_y)
                 had_dep_pos_list.append(edep_z)
                 had_edep_list.append(edep)
+            else:
+                lep_dep_pos_list.append(edep_x)
+                lep_dep_pos_list.append(edep_y)
+                lep_dep_pos_list.append(edep_z)
+                lep_edep_list.append(edep)
 
     # for use in processing events before and after transformations
     nEdeps[0] = len(all_edep_list)
+    nLepEdeps[0] = len(lep_edep_list)
 
     # Also save truth info from GENIE
     Genie_nParts[0] = 0
@@ -487,6 +510,34 @@ for jentry in range(entries):
                 geoEff.setHitSegPoss(all_dep_stoppos_list)
                 ndrandthrowresultall_stop = geoEff.getNDContainment4RandomThrowX()
 
+                # Repeat for lepton edeps(probably don't care start/stop points)
+                # we need this to calculate muon ke after it exits NDLAr active vol
+                geoEff.setHitSegEdeps(lep_edep_list)
+                geoEff.setHitSegPoss(lep_dep_pos_list)
+                ndrandthrowresultlep = geoEff.getNDContainment4RandomThrowX()
+                # All info we need for transformed lep e deposits
+                lepdeps_E_MeV[:nLepEdeps[0]] = np.array(lep_edep_list, dtype=np.float32)
+                nd_lepdeps_x_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][0,:], dtype=np.float32)
+                nd_lepdeps_y_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][1,:], dtype=np.float32)
+                nd_lepdeps_z_cm_nonecc[:nLepEdeps[0]] = np.array(ndrandthrowresultlep.thrownEdepspos[0][2,:], dtype=np.float32)
+                # Now loop over nLepEdeps
+                print ("---- lep array KE tot (MeV):", np.sum(lepdeps_E_MeV))
+                print ("---- lep list KE tot (MeV):", np.sum(lep_edep_list))
+                print ("---- nLepEdeps:", nLepEdeps[0])
+                for iedep in range(0, nLepEdeps[0]):
+                    # Deposit inside ND LAr, continue to next
+                    if nd_lepdeps_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] > NDActiveVol_min[0] and nd_lepdeps_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] < NDActiveVol_max[0] and \
+                       nd_lepdeps_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] > NDActiveVol_min[1] and nd_lepdeps_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] < NDActiveVol_max[1] and \
+                       nd_lepdeps_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] > NDActiveVol_min[2] and nd_lepdeps_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] < NDActiveVol_max[2]:
+                       nLepEdeps_insideNDLAr = nLepEdeps_insideNDLAr + 1
+                       continue
+
+                    # if not in ND LAr active vol, add up energy
+                    nd_lep_ke_MeV_exit_ndlar_nonecc[0] = nd_lep_ke_MeV_exit_ndlar_nonecc[0] + lepdeps_E_MeV[iedep]
+
+                print ("---- lep number of edeps inside active NDLAr:", nLepEdeps_insideNDLAr)
+                print ("---- lep KE outside active NDLAr (MeV):", nd_lep_ke_MeV_exit_ndlar_nonecc[0])
+
                 ###########################################################
                 #  (Oct 25, 2023)
                 # Since we don't have a good TMS reco now, interested to know
@@ -525,13 +576,9 @@ for jentry in range(entries):
                 lep_p = translation_rot.apply(lep_p)
                 lep_p = phi_rot.apply(lep_p)
 
-                print ("--- mu pos x cm: ", throwVtxX_nd[0] - NDLAr_OnAxis_offset[0], ", y: ", throwVtxY_nd[0] - NDLAr_OnAxis_offset[1], ", pz: ", throwVtxZ_nd[0] - NDLAr_OnAxis_offset[2])
+                print ("--- mu pos x cm: ", throwVtxX_nd[0] - NDLAr_OnAxis_offset[0], ", y: ", throwVtxY_nd[0] - NDLAr_OnAxis_offset[1], ", z: ", throwVtxZ_nd[0] - NDLAr_OnAxis_offset[2])
                 print ("--- mu px GeV: ", lep_p[0], ", py: ", lep_p[1], ", pz: ", lep_p[2])
 
-                # Load muon neural network
-                net = muonEffModel()
-                net.load_state_dict(torch.load("./muonEff30.nn", map_location=torch.device('cpu')))
-                net.eval()
                 # Input features for nn: momentum and vertex
                 inputfeatures = np.column_stack((lep_p[0], lep_p[1], lep_p[2], throwVtxX_nd[0] - NDLAr_OnAxis_offset[0], throwVtxY_nd[0] - NDLAr_OnAxis_offset[1], throwVtxZ_nd[0] - NDLAr_OnAxis_offset[2]))
                 # Convert to Pytorch tensor
@@ -673,9 +720,6 @@ for jentry in range(entries):
                         # Repeat for edepsim stop points !!!
                         geoEff.setHitSegEdeps(all_edep_list)
                         ndeccrandthrowresultall_stop = geoEff.moveBack2ndVertex(all_stopposdep_fdorig_matrix, beamLineRotation)
-
-                        # Because we don't have a good TMS reco now (Oct 25, 2023)
-                        # interested to know probability of muons selected by tracker and its kinetic energy after exiting NDLAr
 
                         print ("Found ndecc event")
 
