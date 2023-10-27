@@ -161,6 +161,8 @@ nd_deps_start_y_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_start_y_cm_nonecc', nd_deps_start_y_cm_nonecc, 'nd_deps_start_y_cm_nonecc[nEdeps]/F')
 nd_deps_start_z_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_start_z_cm_nonecc', nd_deps_start_z_cm_nonecc, 'nd_deps_start_z_cm_nonecc[nEdeps]/F')
+nd_deps_start_InNDLAr_nonecc = np.zeros((maxEdeps,), dtype=np.int32)
+myEvents.Branch('nd_deps_start_InNDLAr_nonecc', nd_deps_start_InNDLAr_nonecc, 'nd_deps_start_InNDLAr_nonecc[nEdeps]/I')
 # Edeps in ND random throw (stop points)
 nd_deps_stop_x_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_stop_x_cm_nonecc', nd_deps_stop_x_cm_nonecc, 'nd_deps_stop_x_cm_nonecc[nEdeps]/F')
@@ -168,6 +170,8 @@ nd_deps_stop_y_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_stop_y_cm_nonecc', nd_deps_stop_y_cm_nonecc, 'nd_deps_stop_y_cm_nonecc[nEdeps]/F')
 nd_deps_stop_z_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('nd_deps_stop_z_cm_nonecc', nd_deps_stop_z_cm_nonecc, 'nd_deps_stop_z_cm_nonecc[nEdeps]/F')
+nd_deps_stop_InNDLAr_nonecc = np.zeros((maxEdeps,), dtype=np.int32)
+myEvents.Branch('nd_deps_stop_InNDLAr_nonecc', nd_deps_stop_InNDLAr_nonecc, 'nd_deps_stop_InNDLAr_nonecc[nEdeps]/I')
 
 ##################################
 # FD paired evt with nd non-ecc
@@ -215,6 +219,8 @@ for jentry in range(entries):
     had_edep_list   = list()
     lep_dep_pos_list = list()
     lep_edep_list   = list()
+    dep_startpos_in_ndlar_list = list()
+    dep_stoppos_in_ndlar_list = list()
 
     # initialize
     # Define here but do not write out
@@ -552,6 +558,38 @@ for jentry in range(entries):
                 print ("---- lep number of edeps inside active NDLAr:", nLepEdeps_insideNDLAr)
                 print ("---- lep KE outside active NDLAr (MeV):", nd_lep_ke_MeV_exit_ndlar_nonecc[0])
 
+                # This set of info will be saved to ttree
+                nd_deps_start_x_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
+                nd_deps_start_y_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
+                nd_deps_start_z_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
+                nd_deps_stop_x_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
+                nd_deps_stop_y_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
+                nd_deps_stop_z_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
+
+                # Add flags to inform downstream LAr-nd-sim which deposits are in active NDLAr volume
+                for iedep in range(0, nEdeps[0]):
+                    # Deposit inside ND LAr
+                    if nd_deps_start_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] > NDActiveVol_min[0] and nd_deps_start_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] < NDActiveVol_max[0] and \
+                       nd_deps_start_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] > NDActiveVol_min[1] and nd_deps_start_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] < NDActiveVol_max[1] and \
+                       nd_deps_start_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] > NDActiveVol_min[2] and nd_deps_start_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] < NDActiveVol_max[2]:
+
+                       dep_startpos_in_ndlar_list.append(1)
+                    else:
+                       dep_startpos_in_ndlar_list.append(0)
+
+                    # repeat for stopping point
+                    if nd_deps_stop_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] > NDActiveVol_min[0] and nd_deps_stop_x_cm_nonecc[iedep]-NDLAr_OnAxis_offset[0] < NDActiveVol_max[0] and \
+                       nd_deps_stop_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] > NDActiveVol_min[1] and nd_deps_stop_y_cm_nonecc[iedep]-NDLAr_OnAxis_offset[1] < NDActiveVol_max[1] and \
+                       nd_deps_stop_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] > NDActiveVol_min[2] and nd_deps_stop_z_cm_nonecc[iedep]-NDLAr_OnAxis_offset[2] < NDActiveVol_max[2]:
+                       dep_stoppos_in_ndlar_list.append(1)
+                    else:
+                       dep_stoppos_in_ndlar_list.append(0)
+
+                nd_deps_start_InNDLAr_nonecc[:nEdeps[0]] = np.array(dep_startpos_in_ndlar_list, dtype=np.int32)
+                nd_deps_stop_InNDLAr_nonecc[:nEdeps[0]] = np.array(dep_stoppos_in_ndlar_list, dtype=np.int32)
+                print ("---- nd_deps_start_InNDLAr_nonecc:", nd_deps_start_InNDLAr_nonecc[:nEdeps[0]], "size: ", nd_deps_start_InNDLAr_nonecc.size, "len of list: ", len(dep_startpos_in_ndlar_list))
+                print ("---- nd_deps_stop_InNDLAr_nonecc:", nd_deps_stop_InNDLAr_nonecc[:nEdeps[0]], "size: ", nd_deps_stop_InNDLAr_nonecc.size, "len of list: ", len(dep_stoppos_in_ndlar_list))
+
                 ###########################################################
                 # Now translate this event vertex to ND det coordinate (0,0,0) (and the edeps accordingly)
                 # Do it for all edeps and also had part edeps (because later we need had part only to evaluate FD had veto)
@@ -650,13 +688,7 @@ for jentry in range(entries):
                         nd_vtx_cm_nonecc[0] = throwVtxX_nd[0]
                         nd_vtx_cm_nonecc[1] = throwVtxY_nd[0]
                         nd_vtx_cm_nonecc[2] = throwVtxZ_nd[0]
-                        nd_deps_start_x_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][0,:], dtype=np.float32)
-                        nd_deps_start_y_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][1,:], dtype=np.float32)
-                        nd_deps_start_z_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_start.thrownEdepspos[0][2,:], dtype=np.float32)
-                        nd_deps_stop_x_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][0,:], dtype=np.float32)
-                        nd_deps_stop_y_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][1,:], dtype=np.float32)
-                        nd_deps_stop_z_cm_nonecc[:nEdeps[0]] = np.array(ndrandthrowresultall_stop.thrownEdepspos[0][2,:], dtype=np.float32)
-
+                        
                         # Paired fd event to nd non-ecc evt
                         fd_vtx_cm_pair_nd_nonecc[0] = fd_vtx_x_cm_pair_nd_nonecc[0]
                         fd_vtx_cm_pair_nd_nonecc[1] = fd_vtx_y_cm_pair_nd_nonecc[0]
