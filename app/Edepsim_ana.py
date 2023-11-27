@@ -19,18 +19,23 @@ from array import array
 from math import cos, sin
 import random
 
-with open("UserConfig.py") as infile:
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("input")
+parser.add_argument("--config", type=str, default="UserConfig.py")
+parser.add_argument(
+    "--out_dir", type=str, default="/dune/app/users/weishi/testn2fd/DUNE_ND_GeoEff/app/output"
+)
+args = parser.parse_args()
+a, config_file, out_path = args.input, args.config, args.out_dir
+
+with open(config_file) as infile:
     exec(infile.read())
 import pyGeoEff
 
 ROOT.gROOT.ProcessLine('#include<vector>') # for outputting data to ROOT file
-
-#########
-# INPUT
-#########
-a = str(sys.argv[1])
-#print(a)
-#print(sys.argv[1])
 
 # this works interactively
 #edep_file = TFile("edep.*.root")
@@ -61,7 +66,6 @@ net.eval()
 #########
 
 # create directory for plots to be stored if it doesn't already exist
-out_path = "/dune/app/users/weishi/testn2fd/DUNE_ND_GeoEff/app/output"
 plotpath = out_path + "/plots"
 rootpath = out_path + "/root_out" # for output ROOT files
 if not os.path.exists( out_path):
@@ -194,6 +198,9 @@ myEvents.Branch('fd_deps_stop_y_cm_pair_nd_nonecc', fd_deps_stop_y_cm_pair_nd_no
 fd_deps_stop_z_cm_pair_nd_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
 myEvents.Branch('fd_deps_stop_z_cm_pair_nd_nonecc', fd_deps_stop_z_cm_pair_nd_nonecc, 'fd_deps_stop_z_cm_pair_nd_nonecc[nEdeps]/F')
 
+nd_fd_throws_passed = array('i', [0])
+myEvents.Branch('nd_fd_throws_passed', nd_fd_throws_passed, 'nd_fd_throws_passed/I')
+
 ###########################
 # Loop over edepsim events
 ##########################
@@ -237,6 +244,7 @@ for jentry in range(entries):
     nd_lep_ke_MeV_exit_ndlar_nonecc[0] = 0
     nd_vtx_cm_nonecc[0] = 0; nd_vtx_cm_nonecc[1] = 0; nd_vtx_cm_nonecc[2] = 0;
     fd_vtx_cm_pair_nd_nonecc[0] = 0; fd_vtx_cm_pair_nd_nonecc[1] = 0; fd_vtx_cm_pair_nd_nonecc[2] = 0;
+    nd_fd_throws_passed[0] = 0
 
     for primary in event.Primaries:
         #print("number of particles: ", primary.Particles.size())
@@ -429,9 +437,9 @@ for jentry in range(entries):
         geoEff.throwTransforms() # this randomly generates new vtx position and a rotation angle w.r.t. the neutrino direction
 
         # Get the randomly generated vtx x, y, z, and the angle
-        throwVtxX_nd  = geoEff.getCurrentThrowTranslationsX() # cm
-        throwVtxY_nd  = geoEff.getCurrentThrowTranslationsY() # cm
-        throwVtxZ_nd  = geoEff.getCurrentThrowTranslationsZ() # cm
+        throwVtxX_nd = geoEff.getCurrentThrowTranslationsX() # cm
+        throwVtxY_nd = geoEff.getCurrentThrowTranslationsY() # cm
+        throwVtxZ_nd = geoEff.getCurrentThrowTranslationsZ() # cm
         throwAngle = geoEff.getCurrentThrowRotations()
 
         # Require random thrown vtx pos outside in ND dead regions
@@ -655,6 +663,8 @@ for jentry in range(entries):
 
                         print ("Found paired fd-nd non ecc event")
 
+                        nd_fd_throws_passed[0] = 1
+
                         #################################
                         # Unpack info and store to output
                         #################################
@@ -700,9 +710,6 @@ for jentry in range(entries):
                         fd_deps_stop_y_cm_pair_nd_nonecc[:nEdeps[0]] = np.array(fdthrowresultall_stop_pair_nd_nonecc.thrownEdepspos[0][1,:], dtype=np.float32)
                         fd_deps_stop_z_cm_pair_nd_nonecc[:nEdeps[0]] = np.array(fdthrowresultall_stop_pair_nd_nonecc.thrownEdepspos[0][2,:], dtype=np.float32)
 
-                        # event level
-                        myEvents.Fill()
-
                         # Break the while loop, move on to next evt
                         print ("Paired data saved, breaking fd throw loop")
                         break
@@ -731,6 +738,16 @@ for jentry in range(entries):
 
         # indentation is important!
         tot_nd_throw = tot_nd_throw + 1
+
+    if not nd_fd_throws_passed[0]:
+        print("-- no nd fd throw pairs found after max tries. Giving up!")
+        nEdeps[0] = 0
+        nd_lep_contained_prob_nonecc[0] = 0
+        nd_lep_tracker_prob_nonecc[0] = 0
+        nd_lep_ke_MeV_exit_ndlar_nonecc[0] = 0
+
+    # event level
+    myEvents.Fill()
 
 f_out.cd()
 myEvents.Write()
