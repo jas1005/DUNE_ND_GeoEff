@@ -4,11 +4,11 @@
 
 # Define the particle and it's energy.
 /gps/particle e-
-/gps/energy 70000 MeV
+/gps/energy lep_e MeV
 
 # Set the position of the particle gun.
 /gps/position 0.0 0.0 0.0 m
 
 # This is the direction of the electron.
 # Use momentum direction (unit vector is not mandatory)
-/gps/direction 1 0 0
+/gps/direction lep_px lep_py lep_pz

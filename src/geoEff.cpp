@@ -601,6 +601,13 @@ std::vector< float > geoEff::getCurrentThrowDepsZ(int i){
   return getCurrentThrowDeps(i, 2);
 }
 
+Eigen::Matrix3Xf geoEff::Vecf2EigenMat3Xf(std::vector<float> EdepPoss){
+
+  // Set the Eigen map
+  Eigen::Map<Eigen::Matrix3Xf,0,Eigen::OuterStride<> > EdepPosOrig_matrix(EdepPoss.data(),3,EdepPoss.size()/3,Eigen::OuterStride<>(3));
+
+  return EdepPosOrig_matrix;
+}
 
 std::vector< std::vector< std::vector< uint64_t > > > geoEff::getHadronContainmentThrows(bool ignore_uncontained){
 

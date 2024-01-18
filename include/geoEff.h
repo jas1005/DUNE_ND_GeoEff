@@ -217,6 +217,7 @@ class geoEff
   Eigen::Matrix3Xf move2ndorigin(Eigen::Matrix3Xf randndhitSegPosMatrix);
 
   Eigen::Matrix3Xf getn2fEarthCurvatureCorr(Eigen::Matrix3Xf EdepsposMatrix, double BeamAngle);
+  Eigen::Matrix3Xf Vecf2EigenMat3Xf(std::vector<float> EdepPoss);
 
   struct throwcombo moveBack2ndVertex(Eigen::Matrix3Xf randndhitSegPosMatrix, double BeamAngle);
 

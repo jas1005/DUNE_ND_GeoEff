@@ -15,50 +15,33 @@ make -j geoEff                                                                  
 make -j pyGeoEff                                                                                 # Build pygeoEff
 ```
 
-# Analyze edepsim data
+# ND numu to FD numu event pair
 
 ```
 source setup.sh
 
 cd app
-nohup python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root >& output.log &
+python3 Edepsim_ana.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root
 
 # The first time you may need to install a few packages via pip install, depending on what it complains when you run, e.g.:
 pip install --target=/dune/app/users/weishi/python3libs torch --upgrade
 pip install --target=/dune/app/users/weishi/python3libs scipy --upgrade
 ```
 
-## Numu to nue event translation: paired energy deposits
+# ND numu to FD nue event pair
 
 It reflects the [workflow](https://indico.fnal.gov/event/62304/contributions/280309/attachments/173208/234357/Numu2nue.pdf).
 
 ```
-python3 Edepsim_ana_nueapp_stage1.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root 
-```
+source setup.sh
 
-## Set up edep-sim
+# Keeps non leptonic deposits at the earth curvature correction step and extracts lepton kinematics
+python3 Edepsim_ana_nueapp_stage1.py /dune/data/users/awilkins/extrapolation/edep.LArBath.NDGenieGen.root
 
-Once obtained a GDML file (below use ```LArBath.gdml``` as example), run edep-sim to simulate event energy deposits.
+# Runs electron edepsim based on lepton kinematics from stage 1
+# it assumes to look for the txt file in ./output/nue_output
+./Electron_gen_edepsim.sh n2fd_nueapp_paired_stage1.txt
 
-```
-# Setup edep-sim
-mkdir edepsim
-cd edepsim
-
-source /cvmfs/dune.opensciencegrid.org/products/dune/setup_dune.sh
-setup geant4 v4_10_6_p01e -q e20:prof
-setup edepsim v3_2_0 -q e20:prof
-
-# The following config file generates muons with energy of 10GeV
-wget https://raw.githubusercontent.com/weishi10141993/NeutrinoPhysics/main/PRISM/N2FD/Gen_muon.mac
-
-edep-sim \
-    -C \
-    -g LArBath.gdml \
-    -o edep.LArBath.electron.root \
-    -u \
-    -e 1 \
-    Gen_electron.mac
-
-# Run options refer to https://github.com/ClarkMcGrew/edep-sim#running-the-detector-simulation
+# Collate energy deposits of electron to those non-leptonic ones from stage 1
+python3 Edepsim_ana_nueapp_stage2.py  n2fd_nueapp_paired_stage1.root
 ```

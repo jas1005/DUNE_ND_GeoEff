@@ -94,6 +94,7 @@ PYBIND11_MODULE(pyGeoEff, m) {
       .def("getDistance", &geoEff::getDistance)
       .def("getEarthCurvature", &geoEff::getEarthCurvature)
       .def("getn2fEarthCurvatureCorr", &geoEff::getn2fEarthCurvatureCorr)
+      .def("Vecf2EigenMat3Xf", &geoEff::Vecf2EigenMat3Xf)
       .def("getTranslations", &geoEff::getTranslations)
       .def("move2ndorigin", &geoEff::move2ndorigin)
       .def("moveBack2ndVertex", &geoEff::moveBack2ndVertex)

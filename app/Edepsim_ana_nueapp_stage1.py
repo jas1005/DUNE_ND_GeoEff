@@ -66,14 +66,10 @@ net.eval()
 #########
 
 # create directory for plots to be stored if it doesn't already exist
-plotpath = out_path + "/plots"
-rootpath = out_path + "/root_out" # for output ROOT files
+rootpath = out_path + "/nue_output"
 if not os.path.exists( out_path):
     os.makedirs( out_path)
     print("out_path '" + out_path + "' did not exist. It has been created!")
-if not os.path.exists( plotpath):
-    os.makedirs( plotpath)
-    print("plotpath '" + plotpath + "' did not exist. It has been created!")
 if not os.path.exists( rootpath):
     os.makedirs( rootpath)
     print("rootpath '" + rootpath + "' did not exist. It has been created!")
@@ -84,9 +80,9 @@ outfilename = "n2fd_nueapp_paired_stage1"
 f_out = TFile('{}/{}.root'.format(rootpath, outfilename), 'RECREATE')
 # Create the text file to hold lepton kinematics for electron gen-sim
 with open('{}/{}.txt'.format(rootpath, outfilename), "w") as text_file:
-    text_file.write("start time: {0}\n".format(start_time))
+    text_file.write("event_number lepton_total_energy_MeV lepton_px_GeV lepton_py_GeV lepton_pz_GeV\n")
 
-myEvents = TTree('myEvents', 'myEvents')
+myStage1Events = TTree('myStage1Events', 'myStage1Events')
 maxEdeps = 100000 # max number of edeps for initialize arrays
 maxGenieParts = 1000
 
@@ -94,143 +90,146 @@ maxGenieParts = 1000
 # Genie evt info
 ##################################
 Genie_nParts = array('i', [0])
-myEvents.Branch('Genie_nParts', Genie_nParts, 'Genie_nParts/I')
+myStage1Events.Branch('Genie_nParts', Genie_nParts, 'Genie_nParts/I')
 GenieParts_pdg = np.zeros((maxGenieParts,), dtype=np.int32)
-myEvents.Branch('GenieParts_pdg', GenieParts_pdg, 'GenieParts_pdg[Genie_nParts]/I')
+myStage1Events.Branch('GenieParts_pdg', GenieParts_pdg, 'GenieParts_pdg[Genie_nParts]/I')
 GenieParts_p0_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
-myEvents.Branch('GenieParts_p0_MeV', GenieParts_p0_MeV, 'GenieParts_p0_MeV[Genie_nParts]/F')
+myStage1Events.Branch('GenieParts_p0_MeV', GenieParts_p0_MeV, 'GenieParts_p0_MeV[Genie_nParts]/F')
 GenieParts_p1_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
-myEvents.Branch('GenieParts_p1_MeV', GenieParts_p1_MeV, 'GenieParts_p1_MeV[Genie_nParts]/F')
+myStage1Events.Branch('GenieParts_p1_MeV', GenieParts_p1_MeV, 'GenieParts_p1_MeV[Genie_nParts]/F')
 GenieParts_p2_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
-myEvents.Branch('GenieParts_p2_MeV', GenieParts_p2_MeV, 'GenieParts_p2_MeV[Genie_nParts]/F')
+myStage1Events.Branch('GenieParts_p2_MeV', GenieParts_p2_MeV, 'GenieParts_p2_MeV[Genie_nParts]/F')
 GenieParts_p3_MeV = np.zeros((maxGenieParts,), dtype=np.float32)
-myEvents.Branch('GenieParts_p3_MeV', GenieParts_p3_MeV, 'GenieParts_p3_MeV[Genie_nParts]/F')
+myStage1Events.Branch('GenieParts_p3_MeV', GenieParts_p3_MeV, 'GenieParts_p3_MeV[Genie_nParts]/F')
 Genie_final_lep_pdg = array('i', [0])
-myEvents.Branch('Genie_final_lep_pdg', Genie_final_lep_pdg, 'Genie_final_lep_pdg/I')
+myStage1Events.Branch('Genie_final_lep_pdg', Genie_final_lep_pdg, 'Genie_final_lep_pdg/I')
 Genie_final_lep_p0_MeV = array('f', [0.0])
-myEvents.Branch('Genie_final_lep_p0_MeV', Genie_final_lep_p0_MeV, 'Genie_final_lep_p0_MeV/F')
+myStage1Events.Branch('Genie_final_lep_p0_MeV', Genie_final_lep_p0_MeV, 'Genie_final_lep_p0_MeV/F')
 Genie_final_lep_p1_MeV = array('f', [0.0])
-myEvents.Branch('Genie_final_lep_p1_MeV', Genie_final_lep_p1_MeV, 'Genie_final_lep_p1_MeV/F')
+myStage1Events.Branch('Genie_final_lep_p1_MeV', Genie_final_lep_p1_MeV, 'Genie_final_lep_p1_MeV/F')
 Genie_final_lep_p2_MeV = array('f', [0.0])
-myEvents.Branch('Genie_final_lep_p2_MeV', Genie_final_lep_p2_MeV, 'Genie_final_lep_p2_MeV/F')
+myStage1Events.Branch('Genie_final_lep_p2_MeV', Genie_final_lep_p2_MeV, 'Genie_final_lep_p2_MeV/F')
 Genie_final_lep_p3_MeV = array('f', [0.0])
-myEvents.Branch('Genie_final_lep_p3_MeV', Genie_final_lep_p3_MeV, 'Genie_final_lep_p3_MeV/F')
+myStage1Events.Branch('Genie_final_lep_p3_MeV', Genie_final_lep_p3_MeV, 'Genie_final_lep_p3_MeV/F')
 
 ##################################
 # LArBath evt info
 ##################################
 nEdeps = array('i', [0])
-myEvents.Branch('nEdeps', nEdeps, 'nEdeps/I')
+myStage1Events.Branch('nEdeps', nEdeps, 'nEdeps/I')
 deps_trkID = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('deps_trkID', deps_trkID, 'deps_trkID[nEdeps]/I')
+myStage1Events.Branch('deps_trkID', deps_trkID, 'deps_trkID[nEdeps]/I')
 deps_parentID = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('deps_parentID', deps_parentID, 'deps_parentID[nEdeps]/I')
+myStage1Events.Branch('deps_parentID', deps_parentID, 'deps_parentID[nEdeps]/I')
 deps_pdg = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('deps_pdg', deps_pdg, 'deps_pdg[nEdeps]/I')
+myStage1Events.Branch('deps_pdg', deps_pdg, 'deps_pdg[nEdeps]/I')
 deps_E_MeV = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('deps_E_MeV', deps_E_MeV, 'deps_E_MeV[nEdeps]/F')
+myStage1Events.Branch('deps_E_MeV', deps_E_MeV, 'deps_E_MeV[nEdeps]/F')
 deps_start_t_us = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('deps_start_t_us', deps_start_t_us, 'deps_start_t_us[nEdeps]/F')
+myStage1Events.Branch('deps_start_t_us', deps_start_t_us, 'deps_start_t_us[nEdeps]/F')
 deps_stop_t_us = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('deps_stop_t_us', deps_stop_t_us, 'deps_stop_t_us[nEdeps]/F')
+myStage1Events.Branch('deps_stop_t_us', deps_stop_t_us, 'deps_stop_t_us[nEdeps]/F')
 larbath_vtx_cm = array('f', 3*[0.0])
-myEvents.Branch('larbath_vtx_cm', larbath_vtx_cm, 'larbath_vtx_cm[3]/F')
+myStage1Events.Branch('larbath_vtx_cm', larbath_vtx_cm, 'larbath_vtx_cm[3]/F')
 # edeps generated in LArBath (start point)
 larbath_deps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_start_x_cm', larbath_deps_start_x_cm, 'larbath_deps_start_x_cm[nEdeps]/F') # larbath edeps x
+myStage1Events.Branch('larbath_deps_start_x_cm', larbath_deps_start_x_cm, 'larbath_deps_start_x_cm[nEdeps]/F') # larbath edeps x
 larbath_deps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_start_y_cm', larbath_deps_start_y_cm, 'larbath_deps_start_y_cm[nEdeps]/F')
+myStage1Events.Branch('larbath_deps_start_y_cm', larbath_deps_start_y_cm, 'larbath_deps_start_y_cm[nEdeps]/F')
 larbath_deps_start_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_start_z_cm', larbath_deps_start_z_cm, 'larbath_deps_start_z_cm[nEdeps]/F')
+myStage1Events.Branch('larbath_deps_start_z_cm', larbath_deps_start_z_cm, 'larbath_deps_start_z_cm[nEdeps]/F')
 # edeps generated in LArBath (stop point)
 larbath_deps_stop_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_stop_x_cm', larbath_deps_stop_x_cm, 'larbath_deps_stop_x_cm[nEdeps]/F')
+myStage1Events.Branch('larbath_deps_stop_x_cm', larbath_deps_stop_x_cm, 'larbath_deps_stop_x_cm[nEdeps]/F')
 larbath_deps_stop_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_stop_y_cm', larbath_deps_stop_y_cm, 'larbath_deps_stop_y_cm[nEdeps]/F')
+myStage1Events.Branch('larbath_deps_stop_y_cm', larbath_deps_stop_y_cm, 'larbath_deps_stop_y_cm[nEdeps]/F')
 larbath_deps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_deps_stop_z_cm', larbath_deps_stop_z_cm, 'larbath_deps_stop_z_cm[nEdeps]/F')
+myStage1Events.Branch('larbath_deps_stop_z_cm', larbath_deps_stop_z_cm, 'larbath_deps_stop_z_cm[nEdeps]/F')
 
 ####################
 # ND evt non-ecc
 ####################
 # Random thrown vertex in ND (paired evt)
 nd_vtx_cm_nonecc = array('f', 3*[0.0])
-myEvents.Branch('nd_vtx_cm_nonecc', nd_vtx_cm_nonecc, 'nd_vtx_cm_nonecc[3]/F')
+myStage1Events.Branch('nd_vtx_cm_nonecc', nd_vtx_cm_nonecc, 'nd_vtx_cm_nonecc[3]/F')
 # Muon selection probability in ND LAr and tracker
 nd_lep_contained_prob_nonecc = array('f', [0.0])
-myEvents.Branch('nd_lep_contained_prob_nonecc', nd_lep_contained_prob_nonecc, 'nd_lep_contained_prob_nonecc/F')
+myStage1Events.Branch('nd_lep_contained_prob_nonecc', nd_lep_contained_prob_nonecc, 'nd_lep_contained_prob_nonecc/F')
 nd_lep_tracker_prob_nonecc = array('f', [0.0])
-myEvents.Branch('nd_lep_tracker_prob_nonecc', nd_lep_tracker_prob_nonecc, 'nd_lep_tracker_prob_nonecc/F')
+myStage1Events.Branch('nd_lep_tracker_prob_nonecc', nd_lep_tracker_prob_nonecc, 'nd_lep_tracker_prob_nonecc/F')
 nd_lep_ke_MeV_exit_ndlar_nonecc = array('f', [0.0])
-myEvents.Branch('nd_lep_ke_MeV_exit_ndlar_nonecc', nd_lep_ke_MeV_exit_ndlar_nonecc, 'nd_lep_ke_MeV_exit_ndlar_nonecc/F')
+myStage1Events.Branch('nd_lep_ke_MeV_exit_ndlar_nonecc', nd_lep_ke_MeV_exit_ndlar_nonecc, 'nd_lep_ke_MeV_exit_ndlar_nonecc/F')
 # Edeps in ND random throw (start points)
 nd_deps_start_x_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_start_x_cm_nonecc', nd_deps_start_x_cm_nonecc, 'nd_deps_start_x_cm_nonecc[nEdeps]/F')
+myStage1Events.Branch('nd_deps_start_x_cm_nonecc', nd_deps_start_x_cm_nonecc, 'nd_deps_start_x_cm_nonecc[nEdeps]/F')
 nd_deps_start_y_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_start_y_cm_nonecc', nd_deps_start_y_cm_nonecc, 'nd_deps_start_y_cm_nonecc[nEdeps]/F')
+myStage1Events.Branch('nd_deps_start_y_cm_nonecc', nd_deps_start_y_cm_nonecc, 'nd_deps_start_y_cm_nonecc[nEdeps]/F')
 nd_deps_start_z_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_start_z_cm_nonecc', nd_deps_start_z_cm_nonecc, 'nd_deps_start_z_cm_nonecc[nEdeps]/F')
+myStage1Events.Branch('nd_deps_start_z_cm_nonecc', nd_deps_start_z_cm_nonecc, 'nd_deps_start_z_cm_nonecc[nEdeps]/F')
 nd_deps_start_InNDLAr_nonecc = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('nd_deps_start_InNDLAr_nonecc', nd_deps_start_InNDLAr_nonecc, 'nd_deps_start_InNDLAr_nonecc[nEdeps]/I')
+myStage1Events.Branch('nd_deps_start_InNDLAr_nonecc', nd_deps_start_InNDLAr_nonecc, 'nd_deps_start_InNDLAr_nonecc[nEdeps]/I')
 # Edeps in ND random throw (stop points)
 nd_deps_stop_x_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_stop_x_cm_nonecc', nd_deps_stop_x_cm_nonecc, 'nd_deps_stop_x_cm_nonecc[nEdeps]/F')
+myStage1Events.Branch('nd_deps_stop_x_cm_nonecc', nd_deps_stop_x_cm_nonecc, 'nd_deps_stop_x_cm_nonecc[nEdeps]/F')
 nd_deps_stop_y_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_stop_y_cm_nonecc', nd_deps_stop_y_cm_nonecc, 'nd_deps_stop_y_cm_nonecc[nEdeps]/F')
+myStage1Events.Branch('nd_deps_stop_y_cm_nonecc', nd_deps_stop_y_cm_nonecc, 'nd_deps_stop_y_cm_nonecc[nEdeps]/F')
 nd_deps_stop_z_cm_nonecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_deps_stop_z_cm_nonecc', nd_deps_stop_z_cm_nonecc, 'nd_deps_stop_z_cm_nonecc[nEdeps]/F')
+myStage1Events.Branch('nd_deps_stop_z_cm_nonecc', nd_deps_stop_z_cm_nonecc, 'nd_deps_stop_z_cm_nonecc[nEdeps]/F')
 nd_deps_stop_InNDLAr_nonecc = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('nd_deps_stop_InNDLAr_nonecc', nd_deps_stop_InNDLAr_nonecc, 'nd_deps_stop_InNDLAr_nonecc[nEdeps]/I')
+myStage1Events.Branch('nd_deps_stop_InNDLAr_nonecc', nd_deps_stop_InNDLAr_nonecc, 'nd_deps_stop_InNDLAr_nonecc[nEdeps]/I')
 
 ###############################################################
 # ND evt nd ecc: non primary lepton and associated larbath info
 ###############################################################
 # For collation with electron info
 nNonLepEdeps = array('i', [0])
-myEvents.Branch('nNonLepEdeps', nNonLepEdeps, 'nNonLepEdeps/I')
+myStage1Events.Branch('nNonLepEdeps', nNonLepEdeps, 'nNonLepEdeps/I')
 nonlepdeps_trkID = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('nonlepdeps_trkID', nonlepdeps_trkID, 'nonlepdeps_trkID[nNonLepEdeps]/I')
+myStage1Events.Branch('nonlepdeps_trkID', nonlepdeps_trkID, 'nonlepdeps_trkID[nNonLepEdeps]/I')
 nonlepdeps_parentID = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('nonlepdeps_parentID', nonlepdeps_parentID, 'nonlepdeps_parentID[nNonLepEdeps]/I')
+myStage1Events.Branch('nonlepdeps_parentID', nonlepdeps_parentID, 'nonlepdeps_parentID[nNonLepEdeps]/I')
 nonlepdeps_pdg = np.zeros((maxEdeps,), dtype=np.int32)
-myEvents.Branch('nonlepdeps_pdg', nonlepdeps_pdg, 'nonlepdeps_pdg[nNonLepEdeps]/I')
+myStage1Events.Branch('nonlepdeps_pdg', nonlepdeps_pdg, 'nonlepdeps_pdg[nNonLepEdeps]/I')
 nonlepdeps_E_MeV = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nonlepdeps_E_MeV', nonlepdeps_E_MeV, 'nonlepdeps_E_MeV[nNonLepEdeps]/F')
+myStage1Events.Branch('nonlepdeps_E_MeV', nonlepdeps_E_MeV, 'nonlepdeps_E_MeV[nNonLepEdeps]/F')
 nonlepdeps_start_t_us = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nonlepdeps_start_t_us', nonlepdeps_start_t_us, 'nonlepdeps_start_t_us[nNonLepEdeps]/F')
+myStage1Events.Branch('nonlepdeps_start_t_us', nonlepdeps_start_t_us, 'nonlepdeps_start_t_us[nNonLepEdeps]/F')
 nonlepdeps_stop_t_us = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nonlepdeps_stop_t_us', nonlepdeps_stop_t_us, 'nonlepdeps_stop_t_us[nNonLepEdeps]/F')
+myStage1Events.Branch('nonlepdeps_stop_t_us', nonlepdeps_stop_t_us, 'nonlepdeps_stop_t_us[nNonLepEdeps]/F')
 # non-lep edeps generated in LArBath (start point)
 larbath_nonlepdeps_start_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_nonlepdeps_start_x_cm', larbath_nonlepdeps_start_x_cm, 'larbath_nonlepdeps_start_x_cm[nNonLepEdeps]/F') # larbath edeps x
+myStage1Events.Branch('larbath_nonlepdeps_start_x_cm', larbath_nonlepdeps_start_x_cm, 'larbath_nonlepdeps_start_x_cm[nNonLepEdeps]/F') # larbath edeps x
 larbath_nonlepdeps_start_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_nonlepdeps_start_y_cm', larbath_nonlepdeps_start_y_cm, 'larbath_nonlepdeps_start_y_cm[nNonLepEdeps]/F')
+myStage1Events.Branch('larbath_nonlepdeps_start_y_cm', larbath_nonlepdeps_start_y_cm, 'larbath_nonlepdeps_start_y_cm[nNonLepEdeps]/F')
 larbath_nonlepdeps_start_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_nonlepdeps_start_z_cm', larbath_nonlepdeps_start_z_cm, 'larbath_nonlepdeps_start_z_cm[nNonLepEdeps]/F')
+myStage1Events.Branch('larbath_nonlepdeps_start_z_cm', larbath_nonlepdeps_start_z_cm, 'larbath_nonlepdeps_start_z_cm[nNonLepEdeps]/F')
 # (stop point)
 larbath_nonlepdeps_stop_x_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_nonlepdeps_stop_x_cm', larbath_nonlepdeps_stop_x_cm, 'larbath_nonlepdeps_stop_x_cm[nNonLepEdeps]/F')
+myStage1Events.Branch('larbath_nonlepdeps_stop_x_cm', larbath_nonlepdeps_stop_x_cm, 'larbath_nonlepdeps_stop_x_cm[nNonLepEdeps]/F')
 larbath_nonlepdeps_stop_y_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_nonlepdeps_stop_y_cm', larbath_nonlepdeps_stop_y_cm, 'larbath_nonlepdeps_stop_y_cm[nNonLepEdeps]/F')
+myStage1Events.Branch('larbath_nonlepdeps_stop_y_cm', larbath_nonlepdeps_stop_y_cm, 'larbath_nonlepdeps_stop_y_cm[nNonLepEdeps]/F')
 larbath_nonlepdeps_stop_z_cm = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('larbath_nonlepdeps_stop_z_cm', larbath_nonlepdeps_stop_z_cm, 'larbath_nonlepdeps_stop_z_cm[nNonLepEdeps]/F')
+myStage1Events.Branch('larbath_nonlepdeps_stop_z_cm', larbath_nonlepdeps_stop_z_cm, 'larbath_nonlepdeps_stop_z_cm[nNonLepEdeps]/F')
 # ND start ECC
 nd_nonlepdeps_start_x_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_nonlepdeps_start_x_cm_ecc', nd_nonlepdeps_start_x_cm_ecc, 'nd_nonlepdeps_start_x_cm_ecc[nNonLepEdeps]/F')
+myStage1Events.Branch('nd_nonlepdeps_start_x_cm_ecc', nd_nonlepdeps_start_x_cm_ecc, 'nd_nonlepdeps_start_x_cm_ecc[nNonLepEdeps]/F')
 nd_nonlepdeps_start_y_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_nonlepdeps_start_y_cm_ecc', nd_nonlepdeps_start_y_cm_ecc, 'nd_nonlepdeps_start_y_cm_ecc[nNonLepEdeps]/F')
+myStage1Events.Branch('nd_nonlepdeps_start_y_cm_ecc', nd_nonlepdeps_start_y_cm_ecc, 'nd_nonlepdeps_start_y_cm_ecc[nNonLepEdeps]/F')
 nd_nonlepdeps_start_z_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_nonlepdeps_start_z_cm_ecc', nd_nonlepdeps_start_z_cm_ecc, 'nd_nonlepdeps_start_z_cm_ecc[nNonLepEdeps]/F')
+myStage1Events.Branch('nd_nonlepdeps_start_z_cm_ecc', nd_nonlepdeps_start_z_cm_ecc, 'nd_nonlepdeps_start_z_cm_ecc[nNonLepEdeps]/F')
 # ND stop ECC
 nd_nonlepdeps_stop_x_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_nonlepdeps_stop_x_cm_ecc', nd_nonlepdeps_stop_x_cm_ecc, 'nd_nonlepdeps_stop_x_cm_ecc[nNonLepEdeps]/F')
+myStage1Events.Branch('nd_nonlepdeps_stop_x_cm_ecc', nd_nonlepdeps_stop_x_cm_ecc, 'nd_nonlepdeps_stop_x_cm_ecc[nNonLepEdeps]/F')
 nd_nonlepdeps_stop_y_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_nonlepdeps_stop_y_cm_ecc', nd_nonlepdeps_stop_y_cm_ecc, 'nd_nonlepdeps_stop_y_cm_ecc[nNonLepEdeps]/F')
+myStage1Events.Branch('nd_nonlepdeps_stop_y_cm_ecc', nd_nonlepdeps_stop_y_cm_ecc, 'nd_nonlepdeps_stop_y_cm_ecc[nNonLepEdeps]/F')
 nd_nonlepdeps_stop_z_cm_ecc = np.zeros((maxEdeps,), dtype=np.float32)
-myEvents.Branch('nd_nonlepdeps_stop_z_cm_ecc', nd_nonlepdeps_stop_z_cm_ecc, 'nd_nonlepdeps_stop_z_cm_ecc[nNonLepEdeps]/F')
+myStage1Events.Branch('nd_nonlepdeps_stop_z_cm_ecc', nd_nonlepdeps_stop_z_cm_ecc, 'nd_nonlepdeps_stop_z_cm_ecc[nNonLepEdeps]/F')
+# Also save lepton momentum at ecc stage
+nd_lep_mom_GeV_ecc = array('f', 3*[0.0])
+myStage1Events.Branch('nd_lep_mom_GeV_ecc', nd_lep_mom_GeV_ecc, 'nd_lep_mom_GeV_ecc[3]/F')
 
 nd_throws_passed = array('i', [0])
-myEvents.Branch('nd_throws_passed', nd_throws_passed, 'nd_throws_passed/I')
+myStage1Events.Branch('nd_throws_passed', nd_throws_passed, 'nd_throws_passed/I')
 
 ###########################
 # Loop over edepsim events
@@ -277,6 +276,7 @@ for jentry in range(entries):
     nd_lep_contained_prob_nonecc[0] = -1; nd_lep_tracker_prob_nonecc[0] = -1;
     nd_lep_ke_MeV_exit_ndlar_nonecc[0] = 0
     nd_vtx_cm_nonecc[0] = 0; nd_vtx_cm_nonecc[1] = 0; nd_vtx_cm_nonecc[2] = 0;
+    nd_lep_mom_GeV_ecc[0] = 0; nd_lep_mom_GeV_ecc[1] = 0; nd_lep_mom_GeV_ecc[2] = 0;
     nd_throws_passed[0] = 0
 
     for primary in event.Primaries:
@@ -696,10 +696,11 @@ for jentry in range(entries):
                     # Unpack info and store to output
                     #################################
                     print ("Saving lepton info to txt file.")
-                    # per event format: energy MeV lep_px lep_py lep_pz
+                    # per event format: evt_number lep_tot_energy (MeV) lep_px lep_py lep_pz (GeV)
                     # lep momentun is in GeV, this is only for particle gun direction, so unit doesn't matter
+                    # append instead of write
                     with open('{}/{}.txt'.format(rootpath, outfilename), "a") as text_file:
-                        text_file.write("{0} {1:.1f} MeV {2} {3} {4}\n".format(jentry, Genie_final_lep_p3_MeV[0], lep_p[0], lep_p[1], lep_p[2]))
+                        text_file.write("{0} {1:.1f} {2} {3} {4}\n".format(jentry, Genie_final_lep_p3_MeV[0], lep_p[0], lep_p[1], lep_p[2]))
 
                     print ("Saving energy deposits to root file.")
 
@@ -755,6 +756,10 @@ for jentry in range(entries):
                     larbath_nonlepdeps_stop_x_cm[:nNonLepEdeps[0]] = np.array(had_dep_stoppos_list[::3], dtype=np.float32)
                     larbath_nonlepdeps_stop_y_cm[:nNonLepEdeps[0]] = np.array(had_dep_stoppos_list[1::3], dtype=np.float32)
                     larbath_nonlepdeps_stop_z_cm[:nNonLepEdeps[0]] = np.array(had_dep_stoppos_list[2::3], dtype=np.float32)
+                    # lepton mom at ecc
+                    nd_lep_mom_GeV_ecc[0] = lep_p[0]
+                    nd_lep_mom_GeV_ecc[1] = lep_p[1]
+                    nd_lep_mom_GeV_ecc[2] = lep_p[2]
 
                     # if reached this far, break nd throw loop
                     print ("And breaking nd throw loop")
@@ -775,18 +780,20 @@ for jentry in range(entries):
     if not nd_throws_passed[0]:
         print("-- no selected nd throw found after max tries. Giving up!")
         nEdeps[0] = 0
+        nNonLepEdeps[0] = 0
         nd_lep_contained_prob_nonecc[0] = 0
         nd_lep_tracker_prob_nonecc[0] = 0
         nd_lep_ke_MeV_exit_ndlar_nonecc[0] = 0
-        # per event format: energy MeV lep_px lep_py lep_pz
+        # per event format: tot energy (MeV) lep_px lep_py lep_pz (GeV)
+        # append instead of write
         with open('{}/{}.txt'.format(rootpath, outfilename), "a") as text_file:
-            text_file.write("{} 0 MeV 1 0 0\n".format(jentry))
+            text_file.write("{} 0 1 0 0\n".format(jentry))
 
     # event level
-    myEvents.Fill()
+    myStage1Events.Fill()
 
 f_out.cd()
-myEvents.Write()
+myStage1Events.Write()
 
 print("\n")
 print("~~~ Nue app paired dataset stage 1 finished ~~~ \n")
